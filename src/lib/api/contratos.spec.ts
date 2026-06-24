@@ -150,7 +150,13 @@ describe("E4-06: campos condicionais do Aditivo por tipo (RN-CON-06/07)", () => 
         aditivo({ tipo: "PRAZO", tipoPrazoExecucao: "DIAS", prazoExecucaoDias: "" }),
       ),
     ).toContain("Informe o prazo aditivado em dias");
-    expect(validarAditivo(aditivo({ tipo: "OUTROS" }))).toEqual([]);
+    // OUTROS exige observacoes (label "Observacoes *").
+    expect(validarAditivo(aditivo({ tipo: "OUTROS" }))).toContain(
+      "Informe as observacoes",
+    );
+    expect(
+      validarAditivo(aditivo({ tipo: "OUTROS", observacoes: "ajuste" })),
+    ).toEqual([]);
   });
 
   it("payload de aditivo OUTROS nao carrega prazo/vigencia/fontes", () => {

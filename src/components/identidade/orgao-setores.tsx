@@ -36,6 +36,10 @@ export function OrgaoSetores({ orgaoId }: { orgaoId: string }) {
   async function criar(e: React.FormEvent) {
     e.preventDefault();
     setErro(null);
+    if (!nome.trim()) {
+      setErro("Informe o nome do setor");
+      return;
+    }
     const r = await fetch(base, {
       method: "POST",
       headers: { "content-type": "application/json" },

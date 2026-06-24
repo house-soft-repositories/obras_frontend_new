@@ -160,6 +160,7 @@ export function AditivoForm({
               Dias
               <input
                 type="number"
+                min={1}
                 value={form.prazoExecucaoDias ?? ""}
                 onChange={(e) => set("prazoExecucaoDias", e.target.value)}
               />
@@ -185,6 +186,7 @@ export function AditivoForm({
             Dias de vigencia
             <input
               type="number"
+              min={1}
               value={form.vigenciaDias ?? ""}
               onChange={(e) => set("vigenciaDias", e.target.value)}
             />

@@ -64,6 +64,29 @@ export function EstagioForm({
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
     setErro(null);
+    if (form.latitude?.trim()) {
+      const lat = Number(form.latitude);
+      if (!Number.isFinite(lat) || lat < -90 || lat > 90) {
+        setErro("Latitude deve estar entre -90 e 90");
+        return;
+      }
+    }
+    if (form.longitude?.trim()) {
+      const lng = Number(form.longitude);
+      if (!Number.isFinite(lng) || lng < -180 || lng > 180) {
+        setErro("Longitude deve estar entre -180 e 180");
+        return;
+      }
+    }
+    if (diasCorridos) {
+      const temDias = !!form.totalDias?.trim();
+      const temInicio = !!form.dataInicio?.trim();
+      const temPrazo = !!form.dataPrazo?.trim();
+      if (!temPrazo && !(temInicio && temDias)) {
+        setErro("Informe inicio + total de dias ou um prazo");
+        return;
+      }
+    }
     setEnviando(true);
     try {
       const payload = construirPayloadEstagio({
@@ -198,6 +221,10 @@ export function EstagioForm({
         <label style={campo}>
           Latitude
           <input
+            type="number"
+            min={-90}
+            max={90}
+            step="any"
             value={form.latitude}
             onChange={(e) => set("latitude", e.target.value)}
           />
@@ -205,6 +232,10 @@ export function EstagioForm({
         <label style={campo}>
           Longitude
           <input
+            type="number"
+            min={-180}
+            max={180}
+            step="any"
             value={form.longitude}
             onChange={(e) => set("longitude", e.target.value)}
           />

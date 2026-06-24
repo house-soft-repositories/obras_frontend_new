@@ -132,6 +132,7 @@ export function ContratoForm({
       <label style={lbl}>
         Empresa contratada *
         <select
+          required
           value={form.empresaContratadaId}
           onChange={(e) => set("empresaContratadaId", e.target.value)}
         >
@@ -174,6 +175,7 @@ export function ContratoForm({
       <label style={lbl}>
         Data da O.S. *
         <input
+          required
           type="date"
           value={form.dataOs}
           onChange={(e) => set("dataOs", e.target.value)}
@@ -202,6 +204,7 @@ export function ContratoForm({
             Prazo em dias *
             <input
               type="number"
+              min={1}
               value={form.prazoExecucaoDias ?? ""}
               onChange={(e) => set("prazoExecucaoDias", e.target.value)}
             />

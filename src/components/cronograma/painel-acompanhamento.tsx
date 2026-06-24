@@ -39,6 +39,7 @@ export function PainelAcompanhamento({
   const [acomps, setAcomps] = useState<Acompanhamento[]>([]);
   const [comentarios, setComentarios] = useState<Comentario[]>([]);
   const [erro, setErro] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState(false);
 
   const [dataReferencia, setDataReferencia] = useState("");
   const [tipoValor, setTipoValor] = useState<TipoValorAcompanhamento>(
@@ -81,6 +82,21 @@ export function PainelAcompanhamento({
   async function lancar(e: React.FormEvent) {
     e.preventDefault();
     setErro(null);
+    const metaInformada = valorMeta.trim() !== "";
+    const realizadoInformado = valorRealizado.trim() !== "";
+    if (!metaInformada && !realizadoInformado) {
+      setErro("Informe meta ou realizado");
+      return;
+    }
+    if (metaInformada && !Number.isFinite(Number(valorMeta))) {
+      setErro("Meta deve ser numerica");
+      return;
+    }
+    if (realizadoInformado && !Number.isFinite(Number(valorRealizado))) {
+      setErro("Realizado deve ser numerico");
+      return;
+    }
+    setEnviando(true);
     try {
       await criarAcompanhamento(obraId, estagio.id, {
         dataReferencia,
@@ -93,18 +109,23 @@ export function PainelAcompanhamento({
       await recarregar();
     } catch (e) {
       setErro(mensagemErro(e));
+    } finally {
+      setEnviando(false);
     }
   }
 
   async function comentar(e: React.FormEvent) {
     e.preventDefault();
     setErro(null);
+    setEnviando(true);
     try {
       await criarComentario(obraId, estagio.id, { texto });
       setTexto("");
       await recarregar();
     } catch (e) {
       setErro(mensagemErro(e));
+    } finally {
+      setEnviando(false);
     }
   }
 
@@ -169,6 +190,7 @@ export function PainelAcompanhamento({
         <label style={{ display: "grid", fontSize: 13 }}>
           Meta
           <input
+            type="number"
             value={valorMeta}
             onChange={(e) => setValorMeta(e.target.value)}
             placeholder="acumulado"
@@ -177,12 +199,15 @@ export function PainelAcompanhamento({
         <label style={{ display: "grid", fontSize: 13 }}>
           Realizado
           <input
+            type="number"
             value={valorRealizado}
             onChange={(e) => setValorRealizado(e.target.value)}
             placeholder="so EM_DESENVOLVIMENTO"
           />
         </label>
-        <button type="submit">Lancar</button>
+        <button type="submit" disabled={enviando}>
+          {enviando ? "Lancando..." : "Lancar"}
+        </button>
       </form>
 
       {/* Historico Meta x Realizado (RN-CRO-17) */}
@@ -266,7 +291,9 @@ export function PainelAcompanhamento({
             style={{ flex: 1 }}
             required
           />
-          <button type="submit">Comentar</button>
+          <button type="submit" disabled={enviando}>
+            Comentar
+          </button>
         </form>
       </div>
     </div>

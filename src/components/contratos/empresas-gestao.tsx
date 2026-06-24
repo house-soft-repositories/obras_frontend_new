@@ -7,6 +7,7 @@ import {
   ErroApi,
   excluirEmpresa,
   listarEmpresas,
+  validarEmpresa,
   type EmpresaContratada,
 } from "@/lib/api/contratos";
 
@@ -123,6 +124,11 @@ export function EmpresasGestao({
   async function salvar(e: React.FormEvent) {
     e.preventDefault();
     setErro(null);
+    const problemas = validarEmpresa(form);
+    if (problemas.length > 0) {
+      setErro(problemas.join(", "));
+      return;
+    }
     setSalvando(true);
     const payload = {
       nome: form.nome.trim(),

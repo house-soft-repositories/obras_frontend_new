@@ -19,6 +19,7 @@ import {
   obterUrlDownload,
   removerArquivo,
   validarNomePasta,
+  validarUpload,
 } from "@/lib/api/documentos";
 
 interface Props {
@@ -89,6 +90,11 @@ export function NavegadorArquivos({ obraId, raiz, podeEditar }: Props) {
         nomeOriginal: f.name,
         mimeType: f.type || "application/octet-stream",
       }));
+      const erros = validarUpload(itens);
+      if (erros.length) {
+        setErro(erros[0]);
+        return;
+      }
       const ups = await iniciarUpload(pastaId, { arquivos: itens });
       await Promise.all(
         ups.map(async (up, i) => {
@@ -118,6 +124,10 @@ export function NavegadorArquivos({ obraId, raiz, podeEditar }: Props) {
   async function aoEditar(arquivo: Arquivo) {
     const nome = window.prompt("Novo nome do arquivo", arquivo.nome);
     if (nome == null) return;
+    if (!nome.trim()) {
+      setErro("Informe o nome do arquivo");
+      return;
+    }
     try {
       await editarArquivo(arquivo.id, { nome });
       await recarregar(pastaId);

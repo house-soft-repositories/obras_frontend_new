@@ -100,6 +100,21 @@ export function ObraForm({
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
     setErro(null);
+    for (const o of form.orcamentos) {
+      const informado = o.fonteId.trim() !== "" || o.valor.trim() !== "";
+      if (!informado) continue;
+      const valorNum = Number(o.valor);
+      if (!Number.isFinite(valorNum) || valorNum <= 0) {
+        setErro("Cada orcamento informado deve ter valor numerico maior que zero");
+        return;
+      }
+    }
+    if (form.quantidade != null && form.quantidade.trim() !== "") {
+      if (!Number.isFinite(Number(form.quantidade))) {
+        setErro("Quantidade deve ser numerica");
+        return;
+      }
+    }
     setEnviando(true);
     try {
       const payload = construirPayloadObra(form);
@@ -183,6 +198,7 @@ export function ObraForm({
               opcoes={opcoes.orgaos}
               valor={form.orgaoId}
               onChange={(v) => set("orgaoId", v)}
+              required
             />
           </Campo>
           {modo === "editar" && (
@@ -404,14 +420,20 @@ function Selecao({
   valor,
   onChange,
   vazio,
+  required,
 }: {
   opcoes: OpcaoSelect[];
   valor: string;
   onChange: (v: string) => void;
   vazio: string;
+  required?: boolean;
 }) {
   return (
-    <select value={valor} onChange={(e) => onChange(e.target.value)}>
+    <select
+      value={valor}
+      onChange={(e) => onChange(e.target.value)}
+      required={required}
+    >
       <option value="">{vazio}</option>
       {opcoes.map((o) => (
         <option key={o.id} value={o.id}>

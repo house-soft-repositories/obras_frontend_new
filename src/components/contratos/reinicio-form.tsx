@@ -102,6 +102,7 @@ export function ReinicioForm({
         ou Dias parados
         <input
           type="number"
+          min={1}
           value={form.diasParados}
           disabled={desabilitado.diasParados}
           onChange={(e) => set("diasParados", e.target.value)}

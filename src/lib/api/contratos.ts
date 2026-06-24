@@ -200,15 +200,22 @@ export function validarContrato(form: FormularioContrato): string[] {
   if (!form.numero.trim()) erros.push("Informe o numero do contrato");
   if (!form.dataOs) erros.push("Informe a data da O.S.");
   // RN-CON-03: a alternancia DIAS/DATA exige o campo correspondente.
-  if (form.tipoPrazoExecucao === "DIAS" && !form.prazoExecucaoDias) {
-    erros.push("Informe o prazo de execucao em dias");
+  if (form.tipoPrazoExecucao === "DIAS") {
+    if (!form.prazoExecucaoDias) {
+      erros.push("Informe o prazo de execucao em dias");
+    } else if (Number(form.prazoExecucaoDias) <= 0) {
+      erros.push("O prazo de execucao em dias deve ser maior que zero");
+    }
   }
   if (form.tipoPrazoExecucao === "DATA" && !form.prazoExecucaoData) {
     erros.push("Informe a data do prazo de execucao");
   }
   // RN-CON-04: ao menos uma fonte com valor.
-  if (fontesValidas(form.fontes).length === 0) {
+  const fontes = fontesValidas(form.fontes);
+  if (fontes.length === 0) {
     erros.push("Adicione ao menos uma fonte de recurso com valor");
+  } else if (fontes.some((f) => Number(f.valor) <= 0)) {
+    erros.push("O valor de cada fonte de recurso deve ser maior que zero");
   }
   return erros;
 }
@@ -282,15 +289,27 @@ export function validarAditivo(form: FormularioAditivo): string[] {
   const erros: string[] = [];
   if (!form.numero.trim()) erros.push("Informe o numero do aditivo");
   if (aditivoMostraPrazo(form.tipo)) {
-    if (form.tipoPrazoExecucao === "DIAS" && !form.prazoExecucaoDias) {
-      erros.push("Informe o prazo aditivado em dias");
+    if (form.tipoPrazoExecucao === "DIAS") {
+      if (!form.prazoExecucaoDias) {
+        erros.push("Informe o prazo aditivado em dias");
+      } else if (Number(form.prazoExecucaoDias) <= 0) {
+        erros.push("O prazo aditivado em dias deve ser maior que zero");
+      }
     }
     if (form.tipoPrazoExecucao === "DATA" && !form.prazoExecucaoData) {
       erros.push("Informe a data do prazo aditivado");
     }
   }
+  if (aditivoMostraVigencia(form.tipo) && form.vigenciaDias) {
+    if (Number(form.vigenciaDias) <= 0) {
+      erros.push("Os dias de vigencia devem ser maiores que zero");
+    }
+  }
   if (aditivoMostraFontes(form.tipo) && fontesValidas(form.fontes).length === 0) {
     erros.push("Adicione ao menos uma fonte com valor");
+  }
+  if (aditivoSomenteBasico(form.tipo) && !form.observacoes?.trim()) {
+    erros.push("Informe as observacoes");
   }
   return erros;
 }
@@ -379,6 +398,22 @@ export function validarReinicio(form: FormularioReinicio): string[] {
   }
   if (temData && temDias) {
     erros.push("Informe apenas a data de reinicio OU os dias parados");
+  }
+  if (temDias && Number(form.diasParados) <= 0) {
+    erros.push("Os dias parados devem ser maiores que zero");
+  }
+  return erros;
+}
+
+/** Valida os campos obrigatorios da Empresa Contratada: nome e CNPJ. */
+export function validarEmpresa(form: { nome: string; cnpj: string }): string[] {
+  const erros: string[] = [];
+  if (!form.nome.trim()) erros.push("Informe o nome da empresa");
+  const digitos = form.cnpj.replace(/\D/g, "");
+  if (!digitos) {
+    erros.push("Informe o CNPJ");
+  } else if (digitos.length !== 14) {
+    erros.push("O CNPJ deve ter 14 digitos");
   }
   return erros;
 }

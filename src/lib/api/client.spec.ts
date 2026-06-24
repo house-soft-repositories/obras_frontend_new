@@ -12,9 +12,9 @@ describe("client da API", () => {
     }
   });
 
-  it("usa http://localhost:3001 quando NEXT_PUBLIC_API_URL nao esta definida", () => {
+  it("usa http://localhost:3000 quando NEXT_PUBLIC_API_URL nao esta definida", () => {
     delete process.env.NEXT_PUBLIC_API_URL;
-    expect(obterUrlBaseApi()).toBe("http://localhost:3001");
+    expect(obterUrlBaseApi()).toBe("http://localhost:3000");
   });
 
   it("monta a URL base a partir de NEXT_PUBLIC_API_URL (sem barra final)", () => {
