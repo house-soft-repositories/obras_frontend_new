@@ -1,0 +1,204 @@
+:root {
+  color-scheme: light;
+
+  /* Paleta base (Claude Design — "Obras Publicas") */
+  --cor-fundo: #f5f6f8;
+  --cor-superficie: #ffffff;
+  --cor-texto: #1f2933;
+  --cor-texto-fraco: #6b7280;
+  --cor-borda: #e2e5ea;
+  --cor-borda-forte: #d4d8e0;
+  --cor-acento: #2563eb;
+  --cor-acento-escuro: #1d4ed8;
+  --cor-acento-suave: #eef3fe;
+
+  /* Sidebar (escura) */
+  --cor-sidebar-fundo: #1f2937;
+  --cor-sidebar-texto: #cbd5e1;
+  --cor-sidebar-texto-forte: #f9fafb;
+  --cor-sidebar-hover: #374151;
+
+  /* Status (chips) */
+  --chip-azul-bg: #e7eefe;
+  --chip-azul-tx: #1d4ed8;
+  --chip-verde-bg: #e7f6ec;
+  --chip-verde-tx: #15803d;
+  --chip-vermelho-bg: #fdeaea;
+  --chip-vermelho-tx: #b91c1c;
+  --chip-cinza-bg: #eef0f3;
+  --chip-cinza-tx: #4b5563;
+
+  /* Semaforo de desempenho */
+  --sem-verde: #16a34a;
+  --sem-amarelo: #ca8a04;
+  --sem-laranja: #ea580c;
+  --sem-vermelho: #dc2626;
+  --sem-cinza: #9ca3af;
+
+  --raio: 12px;
+  --raio-campo: 9px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--fonte, Inter), system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+}
+
+h2 {
+  font-size: 1.25rem;
+  margin: 1.5rem 0 0.75rem;
+}
+
+h3 {
+  font-size: 1.05rem;
+  margin: 1.25rem 0 0.5rem;
+}
+
+a {
+  color: var(--cor-acento);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--cor-acento);
+  outline-offset: 2px;
+}
+
+/* Botoes neutros (o primario azul usa .btn-primario) */
+button {
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-campo);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--cor-acento);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--cor-borda-forte);
+  border-radius: var(--raio-campo);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--cor-borda);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--cor-texto-fraco);
+  background: #f7f8fa;
+}
+
+/* ---- Utilitarios reaproveitaveis (Claude Design) ---- */
+.page-titulo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--cor-texto);
+  margin: 0;
+}
+
+.page-sub {
+  font-size: 0.85rem;
+  color: var(--cor-texto-fraco);
+  margin: 0.2rem 0 0;
+}
+
+.cartao {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 1.1rem;
+}
+
+.btn-primario {
+  border: none;
+  background: var(--cor-acento);
+  color: #fff;
+  font-weight: 600;
+  border-radius: var(--raio-campo);
+  padding: 0.7rem 1rem;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.btn-primario:hover {
+  background: var(--cor-acento-escuro);
+  border-color: transparent;
+}
+
+.chip {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.chip-azul {
+  background: var(--chip-azul-bg);
+  color: var(--chip-azul-tx);
+}
+.chip-verde {
+  background: var(--chip-verde-bg);
+  color: var(--chip-verde-tx);
+}
+.chip-vermelho {
+  background: var(--chip-vermelho-bg);
+  color: var(--chip-vermelho-tx);
+}
+.chip-cinza {
+  background: var(--chip-cinza-bg);
+  color: var(--chip-cinza-tx);
+}

@@ -1,0 +1,329 @@
+/* App-shell: sidebar de navegacao + topbar + area de conteudo.
+   Layout compartilhado das rotas autenticadas (home, tenant, cadastros, admin).
+   Baseado na referencia "Obras Publicas" (Claude Design). */
+
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ---- Sidebar ---- */
+.sidebar {
+  width: 258px;
+  flex-shrink: 0;
+  background: var(--cor-sidebar-fundo);
+  color: var(--cor-sidebar-texto);
+  display: flex;
+  flex-direction: column;
+  padding: 1.1rem 0.75rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.5rem 1rem;
+}
+
+.brandLogo {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--cor-acento);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.brandTitulo {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--cor-sidebar-texto-forte);
+  margin: 0;
+}
+
+.grupo {
+  margin-bottom: 0.35rem;
+}
+
+.grupoTitulo {
+  padding: 0.5rem 0.65rem 0.25rem;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+}
+
+.nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  min-height: 42px;
+  color: var(--cor-sidebar-texto);
+  text-decoration: none;
+  font-size: 0.9rem;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.link:hover {
+  background: var(--cor-sidebar-hover);
+  color: #fff;
+  border-color: transparent;
+}
+
+.linkAtivo {
+  background: var(--cor-acento);
+  color: #fff;
+  font-weight: 600;
+}
+
+.linkAtivo:hover {
+  background: var(--cor-acento);
+  color: #fff;
+}
+
+.icone {
+  width: 1.25rem;
+  text-align: center;
+  font-size: 0.95rem;
+  opacity: 0.95;
+}
+
+/* rodape: usuario + sair */
+.usuario {
+  margin-top: auto;
+  border-top: 1px solid var(--cor-sidebar-hover);
+  padding-top: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--cor-acento);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.usuarioNome {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #f3f4f6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.usuarioPapel {
+  font-size: 0.7rem;
+  color: #9ca3af;
+}
+
+.sair {
+  margin-top: 0.6rem;
+  width: 100%;
+  background: transparent;
+  color: var(--cor-sidebar-texto);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.sair:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* ---- Coluna principal ---- */
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1.15rem;
+  background: var(--cor-superficie);
+  border-bottom: 1px solid var(--cor-borda);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.hamburguer {
+  display: none;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-campo);
+  background: var(--cor-superficie);
+}
+
+.topbarTitulo {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+}
+
+.busca {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-campo);
+  padding: 0.45rem 0.7rem;
+  width: 240px;
+  background: #f9fafb;
+}
+
+.buscaInput {
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 0.85rem;
+  width: 100%;
+  padding: 0;
+}
+
+.topbarAvatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--cor-acento);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.overlay {
+  display: none;
+}
+
+/* ---- Cartoes de atalho (home) ---- */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.9rem;
+  margin-top: 1.4rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 1rem;
+  min-height: 120px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+.card:hover {
+  border-color: #c9d3ee;
+  box-shadow: 0 10px 22px rgba(31, 41, 51, 0.1);
+  transform: translateY(-3px);
+}
+
+.cardIcone {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--cor-acento-suave);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.cardTitulo {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+}
+
+.cardDesc {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--cor-texto-fraco);
+  line-height: 1.45;
+}
+
+/* ---- Responsivo (mobile: sidebar vira drawer) ---- */
+@media (max-width: 860px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 40;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+  }
+  .sidebarAberta {
+    transform: translateX(0);
+  }
+  .hamburguer {
+    display: flex;
+  }
+  .busca {
+    display: none;
+  }
+  .overlayAtivo {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.5);
+    z-index: 35;
+  }
+}
