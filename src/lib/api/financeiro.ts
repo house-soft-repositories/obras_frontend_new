@@ -89,6 +89,51 @@ export function indicadoresVisao(
   ];
 }
 
+// --- Visao fisico-financeira em barras (RF-15) ---
+
+export interface BarraVisao {
+  rotulo: string;
+  valorFormatado: string;
+  percentual: number;
+  cor: string;
+}
+
+/**
+ * Formata um valor decimal (string da API ou number) como moeda pt-BR
+ * ("R$ 1.234.567,89"). Valores invalidos caem para zero. Funcao PURA.
+ */
+export function formatarMoedaBRL(valor: string | number): string {
+  const n = typeof valor === "number" ? valor : Number(valor);
+  const seguro = Number.isFinite(n) ? n : 0;
+  return `R$ ${seguro.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+/**
+ * Barras horizontais da visao fisico-financeira (RF-15), na ordem e nas cores
+ * da referencia visual. O percentual e a execucao acumulada de cada indicador
+ * sobre o total contratado (calculado no backend). Funcao PURA.
+ */
+export function montarBarrasVisao(v: VisaoFisicoFinanceira): BarraVisao[] {
+  const linhas: [string, IndicadorFinanceiro, string][] = [
+    ["Contratado inicial", v.contratadoInicial, "#93b0e8"],
+    ["Aditivado", v.aditivadoTotal, "#c3b5e8"],
+    ["Total contratado", v.totalContratado, "#1f2937"],
+    ["Medido", v.medidoTotal, "#2563eb"],
+    ["Empenhado", v.empenhadoTotal, "#2563eb"],
+    ["Liquidado", v.liquidadoTotal, "#16a34a"],
+    ["Pago", v.pagoTotal, "#15803d"],
+  ];
+  return linhas.map(([rotulo, indicador, cor]) => ({
+    rotulo,
+    valorFormatado: formatarMoedaBRL(indicador.valor),
+    percentual: indicador.percentual,
+    cor,
+  }));
+}
+
 /** Liquidacoes de um empenho (select encadeado do formulario de Pagamento). */
 export function filtrarLiquidacoesPorEmpenho(
   liquidacoes: Liquidacao[],

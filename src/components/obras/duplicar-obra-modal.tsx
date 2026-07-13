@@ -4,16 +4,20 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { duplicarObra, ErroApi } from "@/lib/api/obras";
 import { construirPayloadDuplicacao } from "@/lib/api/obras-listagem";
+import { SelecaoUsuario } from "@/components/comum/selecao-usuario";
+import type { UsuarioResumo } from "@/lib/ui/usuario-labels";
 
 /** Modal de duplicacao de obra (RN-OBR-19). */
 export function DuplicarObraModal({
   obraId,
   nomeOrigem,
   aoFechar,
+  usuarios,
 }: {
   obraId: string;
   nomeOrigem: string;
   aoFechar: () => void;
+  usuarios: UsuarioResumo[];
 }) {
   const router = useRouter();
   const [nome, setNome] = useState(`${nomeOrigem} (copia)`);
@@ -82,11 +86,13 @@ export function DuplicarObraModal({
           <input required value={nome} onChange={(e) => setNome(e.target.value)} />
         </label>
         <label>
-          Responsavel (usuario id) *
-          <input
+          Responsável *
+          <SelecaoUsuario
+            usuarios={usuarios}
+            valor={responsavelUsuarioId}
+            onChange={setResponsavel}
+            vazio="Selecione o responsável"
             required
-            value={responsavelUsuarioId}
-            onChange={(e) => setResponsavel(e.target.value)}
           />
         </label>
         <label>

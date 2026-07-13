@@ -27,7 +27,7 @@ export function PainelObservacoes({ obraId }: { obraId: string }) {
 
   return (
     <section style={{ display: "grid", gap: 8 }}>
-      <h3>Observacoes</h3>
+      <h3>Observações</h3>
       <ol>
         {itens.map((o) => (
           <li key={o.id}>{o.texto}</li>

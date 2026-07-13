@@ -48,11 +48,19 @@ export const TIPOS_ADITIVO: { chave: TipoAditivo; titulo: string }[] = [
 //     schemas de resposta no OpenAPI). ---
 export interface EmpresaContratada {
   id: string;
-  nome: string;
+  razaoSocial: string;
+  nomeFantasia: string | null;
   cnpj: string;
   responsavel: string | null;
   cargoResponsavel: string | null;
   email: string | null;
+  cep: string | null;
+  logradouro: string | null;
+  numero: string | null;
+  complemento: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  uf: string | null;
   telefones: string[];
 }
 
@@ -405,10 +413,13 @@ export function validarReinicio(form: FormularioReinicio): string[] {
   return erros;
 }
 
-/** Valida os campos obrigatorios da Empresa Contratada: nome e CNPJ. */
-export function validarEmpresa(form: { nome: string; cnpj: string }): string[] {
+/** Valida os campos obrigatorios da Empresa Contratada: razao social e CNPJ. */
+export function validarEmpresa(form: {
+  razaoSocial: string;
+  cnpj: string;
+}): string[] {
   const erros: string[] = [];
-  if (!form.nome.trim()) erros.push("Informe o nome da empresa");
+  if (!form.razaoSocial.trim()) erros.push("Informe a razao social da empresa");
   const digitos = form.cnpj.replace(/\D/g, "");
   if (!digitos) {
     erros.push("Informe o CNPJ");

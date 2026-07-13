@@ -1,55 +1,34 @@
-import {
-  ObrasListagem,
-  type ObraLinha,
-} from "@/components/obras/listagem/obras-listagem";
-import {
-  filtrosParaQueryString,
-  queryStringParaFiltros,
-} from "@/lib/api/obras-listagem";
+import { Suspense } from "react";
+import { ObrasListagem } from "@/components/obras/listagem/obras-listagem";
 import { carregarOpcoesObra } from "@/lib/api/obras-opcoes";
-import { apiServerFetch } from "@/lib/api/server";
+import { carregarUsuarios } from "@/lib/api/usuarios";
 
 export const dynamic = "force-dynamic";
 
-interface PaginaObras {
-  itens: ObraLinha[];
-  total: number;
-}
-
-export default async function ObrasPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const sp = await searchParams;
-  const usp = new URLSearchParams();
-  for (const [k, v] of Object.entries(sp)) {
-    if (typeof v === "string") usp.set(k, v);
-  }
-  const filtros = queryStringParaFiltros(usp);
-  const qs = filtrosParaQueryString(filtros);
-
-  let pagina: PaginaObras = { itens: [], total: 0 };
-  try {
-    pagina = await apiServerFetch<PaginaObras>(`/obras?${qs}`);
-  } catch {
-    pagina = { itens: [], total: 0 };
-  }
-  const opcoes = await carregarOpcoesObra();
+/**
+ * Listagem de Obras. As opcoes dos selects vem dos cadastros (server-side,
+ * como no restante do modulo); a lista em si e carregada no client via
+ * GET /api/proxy/relatorios/obras, com filtros sincronizados na URL.
+ */
+export default async function ObrasPage() {
+  const [opcoes, usuarios] = await Promise.all([
+    carregarOpcoesObra(),
+    carregarUsuarios(),
+  ]);
 
   return (
     <main style={{ padding: "1.5rem 1.75rem" }}>
-      <h1 className="page-titulo">Obras</h1>
-      <ObrasListagem
-        itens={pagina.itens}
-        total={pagina.total}
-        filtros={filtros}
-        opcoes={{
-          orgaos: opcoes.orgaos,
-          eixos: opcoes.eixos,
-          tipologias: opcoes.tipologias,
-        }}
-      />
+      <Suspense fallback={<p className="page-sub">Carregando…</p>}>
+        <ObrasListagem
+          opcoes={{
+            orgaos: opcoes.orgaos,
+            eixos: opcoes.eixos,
+            tipologias: opcoes.tipologias,
+            classificacoes: opcoes.classificacoes,
+          }}
+          usuarios={usuarios}
+        />
+      </Suspense>
     </main>
   );
 }

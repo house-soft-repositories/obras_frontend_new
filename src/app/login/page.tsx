@@ -26,7 +26,7 @@ function FormularioLogin() {
         }),
       });
       if (!r.ok) {
-        setErro("Credenciais invalidas");
+        setErro("Credenciais inválidas");
         return;
       }
       router.push("/home");
@@ -73,9 +73,9 @@ function FormularioLogin() {
         >
           OP
         </div>
-        <div style={{ fontSize: "1.4rem", fontWeight: 700 }}>Obras Publicas</div>
+        <div style={{ fontSize: "1.4rem", fontWeight: 700 }}>Obras Públicas</div>
         <div style={{ fontSize: "0.9rem", color: "var(--cor-texto-fraco)", marginTop: 4 }}>
-          Gestao e acompanhamento de obras
+          Gestão e acompanhamento de obras
         </div>
       </div>
 
@@ -89,7 +89,7 @@ function FormularioLogin() {
           boxShadow: "0 8px 24px rgba(31,41,51,.06)",
         }}
       >
-        <label style={rotulo}>Tenant (orgao)</label>
+        <label style={rotulo}>Tenant (órgão)</label>
         <div
           style={{
             display: "flex",
@@ -173,7 +173,7 @@ function FormularioLogin() {
           }}
         >
           Acesso institucional. Use as credenciais fornecidas pelo administrador
-          do seu orgao.
+          do seu órgão.
         </div>
       </form>
 

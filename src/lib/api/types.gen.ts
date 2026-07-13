@@ -260,6 +260,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AuthController_me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/fontes": {
         parameters: {
             query?: never;
@@ -1635,26 +1651,46 @@ export interface components {
             orgaoId?: string;
         };
         CriarLocalidadeDto: {
-            municipio: string;
+            nome: string;
             /** @example PI */
             uf: string;
             codigoIbge?: string;
+            /** @enum {string} */
+            tipo?: "BAIRRO" | "DISTRITO" | "REGIAO" | "ZONA_RURAL";
+            /** @description Municipio a que a localidade pertence */
+            municipio?: string;
+            observacoes?: string;
         };
         AtualizarLocalidadeDto: {
-            municipio?: string;
+            nome?: string;
             uf?: string;
             codigoIbge?: string;
+            /** @enum {string} */
+            tipo?: "BAIRRO" | "DISTRITO" | "REGIAO" | "ZONA_RURAL";
+            /** @description Municipio a que a localidade pertence */
+            municipio?: string;
+            observacoes?: string;
         };
         CriarOrgaoDto: {
             nome: string;
             /** @description Localidade sede (obrigatoria, RN-IDE-04) */
             localidadeId: string;
             sigla?: string;
+            /** @enum {string} */
+            tipo?: "SECRETARIA" | "AUTARQUIA" | "FUNDACAO" | "EMPRESA_PUBLICA";
+            responsavel?: string;
+            email?: string;
+            telefone?: string;
         };
         AtualizarOrgaoDto: {
             nome?: string;
             localidadeId?: string;
             sigla?: string;
+            /** @enum {string} */
+            tipo?: "SECRETARIA" | "AUTARQUIA" | "FUNDACAO" | "EMPRESA_PUBLICA";
+            responsavel?: string;
+            email?: string;
+            telefone?: string;
             ativo?: boolean;
         };
         CriarSetorDto: {
@@ -1705,13 +1741,61 @@ export interface components {
         RefreshDto: {
             refreshToken: string;
         };
+        PerfilAtribuidoDto: {
+            /**
+             * @description Perfil concedido ao usuario
+             * @enum {string}
+             */
+            perfil: "SUPER_ADMIN" | "ADMIN_TENANT" | "GESTOR_ORGAO" | "RESPONSAVEL_OBRA" | "CONSULTA";
+            /**
+             * @description Escopo da atribuicao
+             * @enum {string}
+             */
+            escopo: "PLATAFORMA" | "TENANT" | "ORGAO" | "OBRA";
+        };
+        TenantResumoDto: {
+            /** @description Id do tenant */
+            id: string;
+            /** @description Nome do tenant */
+            nome: string;
+            /** @description Slug do tenant */
+            slug: string;
+        };
+        MeRespostaDto: {
+            /** @description Id do usuario autenticado */
+            usuarioId: string;
+            /** @description Nome do usuario */
+            nome: string;
+            /** @description Email do usuario */
+            email: string;
+            /** @description Perfis atribuidos ao usuario */
+            perfis: components["schemas"]["PerfilAtribuidoDto"][];
+            /** @description Tenant do usuario (nulo para usuario de plataforma) */
+            tenant: components["schemas"]["TenantResumoDto"] | null;
+        };
         CriarFonteDto: {
             nome: string;
             descricao?: string;
+            /** @description Codigo unico por tenant */
+            codigo?: string;
+            /** @enum {string} */
+            tipo?: "FEDERAL" | "ESTADUAL" | "MUNICIPAL" | "CONVENIO";
+            /** @description Valor em reais, ex.: "1000.00" */
+            valorPrevisto?: string;
+            /** @description Texto livre, ex.: "2024 a 2027" */
+            vigencia?: string;
         };
         AtualizarFonteDto: {
             nome?: string;
             descricao?: string;
+            /** @description Codigo unico por tenant */
+            codigo?: string;
+            /** @enum {string} */
+            tipo?: "FEDERAL" | "ESTADUAL" | "MUNICIPAL" | "CONVENIO";
+            /** @description Valor em reais, ex.: "1000.00" */
+            valorPrevisto?: string;
+            /** @description Texto livre, ex.: "2024 a 2027" */
+            vigencia?: string;
             ativo?: boolean;
         };
         CriarEmpenhoDto: {
@@ -1887,7 +1971,7 @@ export interface components {
             ativo?: boolean;
         };
         CriarLocalizacaoDto: {
-            municipio: string;
+            localidade: string;
             uf: string;
             latitude?: string;
             longitude?: string;
@@ -1932,20 +2016,40 @@ export interface components {
             usuarioId: string;
         };
         CriarEmpresaContratadaDto: {
-            nome: string;
+            razaoSocial: string;
+            nomeFantasia?: string;
             cnpj: string;
             responsavel?: string;
             cargoResponsavel?: string;
             email?: string;
+            cep?: string;
+            logradouro?: string;
+            numero?: string;
+            complemento?: string;
+            bairro?: string;
+            cidade?: string;
+            uf?: string;
+            /** @description Situacao da empresa (ativa/inativa); default true */
+            ativo?: boolean;
             /** @description Telefones de contato (N por empresa) */
             telefones?: string[];
         };
         AtualizarEmpresaContratadaDto: {
-            nome?: string;
+            razaoSocial?: string;
+            nomeFantasia?: string;
             cnpj?: string;
             responsavel?: string;
             cargoResponsavel?: string;
             email?: string;
+            cep?: string;
+            logradouro?: string;
+            numero?: string;
+            complemento?: string;
+            bairro?: string;
+            cidade?: string;
+            uf?: string;
+            /** @description Situacao da empresa (ativa/inativa) */
+            ativo?: boolean;
             /** @description Substitui a lista de telefones quando informado */
             telefones?: string[];
         };
@@ -2629,6 +2733,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuthRespostaDto"];
+                };
+            };
+        };
+    };
+    AuthController_me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeRespostaDto"];
                 };
             };
         };
@@ -5100,6 +5223,7 @@ export interface operations {
                 empresaExecutora?: string;
                 numeroContrato?: string;
                 prioritaria?: string;
+                tipo?: "AQUISICAO" | "INVESTIMENTO_PRIVADO" | "OBRA" | "PROGRAMA_PROJETO" | "SERVICOS";
                 tagIds?: string[];
                 orgaoId?: string;
                 setorId?: string;
@@ -5144,6 +5268,7 @@ export interface operations {
                 empresaExecutora?: string;
                 numeroContrato?: string;
                 prioritaria?: string;
+                tipo?: "AQUISICAO" | "INVESTIMENTO_PRIVADO" | "OBRA" | "PROGRAMA_PROJETO" | "SERVICOS";
                 tagIds?: string[];
                 orgaoId?: string;
                 setorId?: string;
@@ -5188,6 +5313,7 @@ export interface operations {
                 empresaExecutora?: string;
                 numeroContrato?: string;
                 prioritaria?: string;
+                tipo?: "AQUISICAO" | "INVESTIMENTO_PRIVADO" | "OBRA" | "PROGRAMA_PROJETO" | "SERVICOS";
                 tagIds?: string[];
                 orgaoId?: string;
                 setorId?: string;
@@ -5232,6 +5358,7 @@ export interface operations {
                 empresaExecutora?: string;
                 numeroContrato?: string;
                 prioritaria?: string;
+                tipo?: "AQUISICAO" | "INVESTIMENTO_PRIVADO" | "OBRA" | "PROGRAMA_PROJETO" | "SERVICOS";
                 tagIds?: string[];
                 orgaoId?: string;
                 setorId?: string;
@@ -5276,6 +5403,7 @@ export interface operations {
                 empresaExecutora?: string;
                 numeroContrato?: string;
                 prioritaria?: string;
+                tipo?: "AQUISICAO" | "INVESTIMENTO_PRIVADO" | "OBRA" | "PROGRAMA_PROJETO" | "SERVICOS";
                 tagIds?: string[];
                 orgaoId?: string;
                 setorId?: string;
@@ -5358,6 +5486,7 @@ export interface operations {
                 empresaExecutora?: string;
                 numeroContrato?: string;
                 prioritaria?: string;
+                tipo?: "AQUISICAO" | "INVESTIMENTO_PRIVADO" | "OBRA" | "PROGRAMA_PROJETO" | "SERVICOS";
                 tagIds?: string[];
                 orgaoId?: string;
                 setorId?: string;
@@ -5402,6 +5531,7 @@ export interface operations {
                 empresaExecutora?: string;
                 numeroContrato?: string;
                 prioritaria?: string;
+                tipo?: "AQUISICAO" | "INVESTIMENTO_PRIVADO" | "OBRA" | "PROGRAMA_PROJETO" | "SERVICOS";
                 tagIds?: string[];
                 orgaoId?: string;
                 setorId?: string;

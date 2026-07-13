@@ -21,6 +21,9 @@ import {
   type FormularioObra,
   type OrcamentoPrevisto,
 } from "@/lib/api/obras";
+import { EntradaDinheiro } from "@/components/comum/entrada-dinheiro";
+import { rotuloEnum, statusObraLabel } from "@/lib/ui/obra-labels";
+import estilos from "./obra-form.module.css";
 
 export interface OpcaoSelect {
   id: string;
@@ -33,6 +36,7 @@ export interface OpcoesObra {
   eixos: OpcaoSelect[];
   classificacoes: OpcaoSelect[];
   tipologias: OpcaoSelect[];
+  responsaveis: OpcaoSelect[];
 }
 
 export interface ObraFormProps {
@@ -44,6 +48,16 @@ export interface ObraFormProps {
   /** Painel extra renderizado em cada guia de recurso (apenas no modo editar). */
   guiasRecurso?: Partial<Record<ChaveGuia, React.ReactNode>>;
 }
+
+/** Titulos de exibicao das guias com acentuacao correta (UI PT-BR). */
+const TITULOS_GUIA: Record<ChaveGuia, string> = {
+  projeto: "Projeto",
+  geral: "Geral",
+  localizacao: "Localização",
+  titularidade: "Titularidade",
+  licenciamento: "Licenciamento",
+  recebimento: "Recebimento",
+};
 
 const VAZIO: FormularioObra = {
   nome: "",
@@ -97,6 +111,21 @@ export function ObraForm({
     });
   }
 
+  function cancelar() {
+    if (modo === "criar") {
+      router.push("/obras");
+      return;
+    }
+    // Edicao: descarta as alteracoes locais e volta aos valores carregados.
+    setForm({
+      ...VAZIO,
+      ...valoresIniciais,
+      orcamentos: valoresIniciais?.orcamentos ?? VAZIO.orcamentos,
+    });
+    setTags(tagsIniciais ?? "");
+    setErro(null);
+  }
+
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
     setErro(null);
@@ -105,13 +134,13 @@ export function ObraForm({
       if (!informado) continue;
       const valorNum = Number(o.valor);
       if (!Number.isFinite(valorNum) || valorNum <= 0) {
-        setErro("Cada orcamento informado deve ter valor numerico maior que zero");
+        setErro("Cada orçamento informado deve ter valor numérico maior que zero");
         return;
       }
     }
     if (form.quantidade != null && form.quantidade.trim() !== "") {
       if (!Number.isFinite(Number(form.quantidade))) {
-        setErro("Quantidade deve ser numerica");
+        setErro("Quantidade deve ser numérica");
         return;
       }
     }
@@ -129,6 +158,8 @@ export function ObraForm({
       if (tags.trim() && idFinal) {
         await aplicarTags(idFinal, tags);
       }
+      // Avisa o layout de detalhe (RF-14) para re-buscar o cabecalho.
+      window.dispatchEvent(new Event("obra:atualizada"));
       router.push(`/obras/${idFinal}/editar`);
       router.refresh();
     } catch (e) {
@@ -147,253 +178,268 @@ export function ObraForm({
   }
 
   return (
-    <form onSubmit={enviar} style={{ maxWidth: 760 }}>
-      <nav style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-        {GUIAS_OBRA.map((g) => (
-          <button
-            type="button"
-            key={g.chave}
-            onClick={() => setGuia(g.chave)}
-            aria-current={guia === g.chave}
-            style={{
-              padding: "0.4rem 0.8rem",
-              fontWeight: guia === g.chave ? 700 : 400,
-              borderBottom: guia === g.chave ? "2px solid #06c" : "2px solid transparent",
-            }}
-          >
-            {g.titulo}
-          </button>
-        ))}
-      </nav>
-
-      {guia === "projeto" && (
-        <section style={grade}>
-          <Campo label="Nome" obrigatorio>
-            <input
-              required
-              value={form.nome}
-              onChange={(e) => set("nome", e.target.value)}
-            />
-          </Campo>
-          <Campo label="Tipo">
-            <select
-              value={form.tipo}
-              onChange={(e) => set("tipo", e.target.value)}
+    <form onSubmit={enviar} className={estilos.form}>
+      <div className={estilos.cartao}>
+        <nav className={estilos.guias}>
+          {GUIAS_OBRA.map((g) => (
+            <button
+              type="button"
+              key={g.chave}
+              onClick={() => setGuia(g.chave)}
+              aria-current={guia === g.chave}
+              className={
+                guia === g.chave
+                  ? `${estilos.guia} ${estilos.guiaAtiva}`
+                  : estilos.guia
+              }
             >
-              {TIPOS_OBRA.map((t) => (
-                <option key={t}>{t}</option>
-              ))}
-            </select>
-          </Campo>
-          <Campo label="Responsavel (usuario id)" obrigatorio>
-            <input
-              required
-              value={form.responsavelUsuarioId}
-              onChange={(e) => set("responsavelUsuarioId", e.target.value)}
-            />
-          </Campo>
-          <Campo label="Orgao" obrigatorio>
-            <Selecao
-              vazio="Selecione o orgao"
-              opcoes={opcoes.orgaos}
-              valor={form.orgaoId}
-              onChange={(v) => set("orgaoId", v)}
-              required
-            />
-          </Campo>
-          {modo === "editar" && (
-            <Campo label="Status">
+              {TITULOS_GUIA[g.chave]}
+            </button>
+          ))}
+        </nav>
+
+        {guia === "projeto" && (
+          <section className={estilos.grade}>
+            <Campo label="Nome" obrigatorio>
+              <input
+                required
+                value={form.nome}
+                onChange={(e) => set("nome", e.target.value)}
+              />
+            </Campo>
+            <Campo label="Tipo">
               <select
-                value={form.status ?? "EM_ABERTO"}
-                onChange={(e) => set("status", e.target.value)}
+                value={form.tipo}
+                onChange={(e) => set("tipo", e.target.value)}
               >
-                {STATUS_OBRA.map((s) => (
-                  <option key={s}>{s}</option>
+                {TIPOS_OBRA.map((t) => (
+                  <option key={t} value={t}>
+                    {rotuloEnum(t)}
+                  </option>
                 ))}
               </select>
             </Campo>
-          )}
-          <Campo label="Financiamento">
-            <select
-              value={form.tipoFinanciamento}
-              onChange={(e) => set("tipoFinanciamento", e.target.value)}
-            >
-              {TIPOS_FINANCIAMENTO.map((t) => (
-                <option key={t}>{t}</option>
-              ))}
-            </select>
-          </Campo>
-          <Campo label="Modo de duracao">
-            <select
-              value={form.modoDuracao}
-              onChange={(e) => set("modoDuracao", e.target.value)}
-            >
-              {MODOS_DURACAO.map((m) => (
-                <option key={m}>{m}</option>
-              ))}
-            </select>
-          </Campo>
-          <Campo label="Data inicio">
-            <input
-              type="date"
-              readOnly={datasTravadas}
-              value={form.dataInicio ?? ""}
-              onChange={(e) => set("dataInicio", e.target.value)}
-            />
-          </Campo>
-          <Campo label="Data prazo">
-            <input
-              type="date"
-              readOnly={datasTravadas}
-              value={form.dataPrazo ?? ""}
-              onChange={(e) => set("dataPrazo", e.target.value)}
-            />
-          </Campo>
-          <Campo label="Acao conveniada">
-            <select
-              value={form.acaoConveniada}
-              onChange={(e) => set("acaoConveniada", e.target.value)}
-            >
-              {ACOES_CONVENIADA.map((a) => (
-                <option key={a}>{a}</option>
-              ))}
-            </select>
-          </Campo>
-          <Campo label="Eixo">
-            <Selecao
-              vazio="(nenhum)"
-              opcoes={opcoes.eixos}
-              valor={form.eixoId ?? ""}
-              onChange={(v) => set("eixoId", v)}
-            />
-          </Campo>
-          <Campo label="Classificacao">
-            <Selecao
-              vazio="(nenhuma)"
-              opcoes={opcoes.classificacoes}
-              valor={form.classificacaoId ?? ""}
-              onChange={(v) => set("classificacaoId", v)}
-            />
-          </Campo>
-          <Campo
-            label={
-              subDesabilitada
-                ? "Subclassificacao (Nao se aplica)"
-                : "Subclassificacao (id)"
-            }
-          >
-            <input
-              disabled={subDesabilitada}
-              value={subDesabilitada ? "" : (form.subclassificacaoId ?? "")}
-              onChange={(e) => set("subclassificacaoId", e.target.value)}
-            />
-          </Campo>
-          <Campo label="Tipologia">
-            <Selecao
-              vazio="(nenhuma)"
-              opcoes={opcoes.tipologias}
-              valor={form.tipologiaId ?? ""}
-              onChange={(v) => set("tipologiaId", v)}
-            />
-          </Campo>
-          <Campo label="Prioritaria">
-            <input
-              type="checkbox"
-              checked={!!form.prioritaria}
-              onChange={(e) => set("prioritaria", e.target.checked)}
-            />
-          </Campo>
-          <Campo label="Tags (virgula/ponto-e-virgula)">
-            <input value={tags} onChange={(e) => setTags(e.target.value)} />
-          </Campo>
-        </section>
-      )}
-
-      {guia === "geral" && (
-        <section style={grade}>
-          <h3>Orcamento previsto (fonte + valor)</h3>
-          {form.orcamentos.map((o, i) => (
-            <div key={i} style={{ display: "flex", gap: 8 }}>
+            {modo === "criar" && (
+              <Campo label="Responsável" obrigatorio>
+                <Selecao
+                  vazio="Selecione o responsável"
+                  opcoes={opcoes.responsaveis}
+                  valor={form.responsavelUsuarioId}
+                  onChange={(v) => set("responsavelUsuarioId", v)}
+                  required
+                />
+              </Campo>
+            )}
+            <Campo label="Órgão" obrigatorio>
               <Selecao
-                vazio="Selecione a fonte"
-                opcoes={opcoes.fontes}
-                valor={o.fonteId}
-                onChange={(v) => setOrcamento(i, "fonteId", v)}
+                vazio="Selecione o órgão"
+                opcoes={opcoes.orgaos}
+                valor={form.orgaoId}
+                onChange={(v) => set("orgaoId", v)}
+                required
               />
+            </Campo>
+            {modo === "editar" && (
+              <Campo label="Status">
+                <select
+                  value={form.status ?? "EM_ABERTO"}
+                  onChange={(e) => set("status", e.target.value)}
+                >
+                  {STATUS_OBRA.map((s) => (
+                    <option key={s} value={s}>
+                      {statusObraLabel(s)}
+                    </option>
+                  ))}
+                </select>
+              </Campo>
+            )}
+            <Campo label="Financiamento">
+              <select
+                value={form.tipoFinanciamento}
+                onChange={(e) => set("tipoFinanciamento", e.target.value)}
+              >
+                {TIPOS_FINANCIAMENTO.map((t) => (
+                  <option key={t} value={t}>
+                    {rotuloEnum(t)}
+                  </option>
+                ))}
+              </select>
+            </Campo>
+            <Campo label="Modo de duração">
+              <select
+                value={form.modoDuracao}
+                onChange={(e) => set("modoDuracao", e.target.value)}
+              >
+                {MODOS_DURACAO.map((m) => (
+                  <option key={m} value={m}>
+                    {rotuloEnum(m)}
+                  </option>
+                ))}
+              </select>
+            </Campo>
+            <Campo label="Data início">
+              <EntradaData
+                readOnly={datasTravadas}
+                valor={form.dataInicio ?? ""}
+                onChange={(v) => set("dataInicio", v)}
+              />
+            </Campo>
+            <Campo label="Data prazo">
+              <EntradaData
+                readOnly={datasTravadas}
+                valor={form.dataPrazo ?? ""}
+                onChange={(v) => set("dataPrazo", v)}
+              />
+            </Campo>
+            <Campo label="Ação conveniada">
+              <select
+                value={form.acaoConveniada}
+                onChange={(e) => set("acaoConveniada", e.target.value)}
+              >
+                {ACOES_CONVENIADA.map((a) => (
+                  <option key={a}>{a}</option>
+                ))}
+              </select>
+            </Campo>
+            <Campo label="Eixo">
+              <Selecao
+                vazio="(nenhum)"
+                opcoes={opcoes.eixos}
+                valor={form.eixoId ?? ""}
+                onChange={(v) => set("eixoId", v)}
+              />
+            </Campo>
+            <Campo label="Classificação">
+              <Selecao
+                vazio="(nenhuma)"
+                opcoes={opcoes.classificacoes}
+                valor={form.classificacaoId ?? ""}
+                onChange={(v) => set("classificacaoId", v)}
+              />
+            </Campo>
+            <Campo
+              label={
+                subDesabilitada
+                  ? "Subclassificação (Não se aplica)"
+                  : "Subclassificação (id)"
+              }
+            >
               <input
-                placeholder="valor"
-                value={o.valor}
-                onChange={(e) => setOrcamento(i, "valor", e.target.value)}
+                disabled={subDesabilitada}
+                value={subDesabilitada ? "" : (form.subclassificacaoId ?? "")}
+                onChange={(e) => set("subclassificacaoId", e.target.value)}
               />
+            </Campo>
+            <Campo label="Tipologia">
+              <Selecao
+                vazio="(nenhuma)"
+                opcoes={opcoes.tipologias}
+                valor={form.tipologiaId ?? ""}
+                onChange={(v) => set("tipologiaId", v)}
+              />
+            </Campo>
+            <Campo label="Prioritária">
+              <input
+                type="checkbox"
+                checked={!!form.prioritaria}
+                onChange={(e) => set("prioritaria", e.target.checked)}
+              />
+            </Campo>
+            <Campo label="Tags (vírgula/ponto-e-vírgula)">
+              <input value={tags} onChange={(e) => setTags(e.target.value)} />
+            </Campo>
+          </section>
+        )}
+
+        {guia === "geral" && (
+          <section className={estilos.grade}>
+            <h3 className={estilos.tituloSecao}>
+              Orçamento previsto (fonte + valor)
+            </h3>
+            {form.orcamentos.map((o, i) => (
+              <div key={i} className={estilos.linhaOrcamento}>
+                <Selecao
+                  vazio="Selecione a fonte"
+                  opcoes={opcoes.fontes}
+                  valor={o.fonteId}
+                  onChange={(v) => setOrcamento(i, "fonteId", v)}
+                />
+                <EntradaDinheiro
+                  valor={o.valor}
+                  onChange={(v) => setOrcamento(i, "valor", v)}
+                />
+              </div>
+            ))}
+            <div className={estilos.acaoSecundaria}>
+              <button
+                type="button"
+                onClick={() =>
+                  set("orcamentos", [
+                    ...form.orcamentos,
+                    { fonteId: "", valor: "" },
+                  ])
+                }
+              >
+                + adicionar fonte
+              </button>
             </div>
+            <Campo label="Unidade de medida">
+              <input
+                value={form.unidadeMedida ?? ""}
+                onChange={(e) => set("unidadeMedida", e.target.value)}
+              />
+            </Campo>
+            <Campo label="Quantidade">
+              <input
+                value={form.quantidade ?? ""}
+                onChange={(e) => set("quantidade", e.target.value)}
+              />
+            </Campo>
+            <Campo label="Programa PPA">
+              <input
+                value={form.programaPpa ?? ""}
+                onChange={(e) => set("programaPpa", e.target.value)}
+              />
+            </Campo>
+            <Campo label="Secretário(a)">
+              <input
+                value={form.secretario ?? ""}
+                onChange={(e) => set("secretario", e.target.value)}
+              />
+            </Campo>
+            <Campo label="Data pactuada">
+              <EntradaData
+                valor={form.dataPactuada ?? ""}
+                onChange={(v) => set("dataPactuada", v)}
+              />
+            </Campo>
+          </section>
+        )}
+
+        {guia !== "projeto" &&
+          guia !== "geral" &&
+          (guiasRecurso?.[guia] ?? (
+            <p>Salve a obra para gerenciar esta guia.</p>
           ))}
-          <button
-            type="button"
-            onClick={() =>
-              set("orcamentos", [...form.orcamentos, { fonteId: "", valor: "" }])
-            }
-          >
-            + adicionar fonte
+
+        {erro && (
+          <p role="alert" className={estilos.erro}>
+            {erro}
+          </p>
+        )}
+
+        <div className={estilos.rodape}>
+          <button type="button" onClick={cancelar} disabled={enviando}>
+            Cancelar
           </button>
-          <Campo label="Unidade de medida">
-            <input
-              value={form.unidadeMedida ?? ""}
-              onChange={(e) => set("unidadeMedida", e.target.value)}
-            />
-          </Campo>
-          <Campo label="Quantidade">
-            <input
-              value={form.quantidade ?? ""}
-              onChange={(e) => set("quantidade", e.target.value)}
-            />
-          </Campo>
-          <Campo label="Programa PPA">
-            <input
-              value={form.programaPpa ?? ""}
-              onChange={(e) => set("programaPpa", e.target.value)}
-            />
-          </Campo>
-          <Campo label="Secretario(a)">
-            <input
-              value={form.secretario ?? ""}
-              onChange={(e) => set("secretario", e.target.value)}
-            />
-          </Campo>
-          <Campo label="Data pactuada">
-            <input
-              type="date"
-              value={form.dataPactuada ?? ""}
-              onChange={(e) => set("dataPactuada", e.target.value)}
-            />
-          </Campo>
-        </section>
-      )}
-
-      {guia !== "projeto" &&
-        guia !== "geral" &&
-        (guiasRecurso?.[guia] ?? (
-          <p>Salve a obra para gerenciar esta guia.</p>
-        ))}
-
-      {erro && (
-        <p role="alert" style={{ color: "crimson", marginTop: 12 }}>
-          {erro}
-        </p>
-      )}
-      <div style={{ marginTop: 16 }}>
-        <button type="submit" disabled={enviando}>
-          {enviando ? "Salvando..." : modo === "criar" ? "Criar obra" : "Salvar"}
-        </button>
+          <button type="submit" className="btn-primario" disabled={enviando}>
+            {enviando ? "Salvando..." : "Salvar"}
+          </button>
+        </div>
       </div>
     </form>
   );
 }
-
-const grade: React.CSSProperties = {
-  display: "grid",
-  gap: 12,
-  gridTemplateColumns: "1fr 1fr",
-};
 
 function Campo({
   label,
@@ -405,8 +451,8 @@ function Campo({
   children: React.ReactNode;
 }) {
   return (
-    <label style={{ display: "grid", gap: 4 }}>
-      <span>
+    <label className={estilos.campo}>
+      <span className={estilos.campoRotulo}>
         {label}
         {obrigatorio ? " *" : ""}
       </span>
@@ -441,5 +487,43 @@ function Selecao({
         </option>
       ))}
     </select>
+  );
+}
+
+/**
+ * Campo de data nativo: mantem a digitacao e, ao clicar/focar, abre o
+ * calendario do navegador (showPicker). Respeita o modo somente-leitura.
+ */
+function EntradaData({
+  valor,
+  onChange,
+  readOnly,
+}: {
+  valor: string;
+  onChange: (v: string) => void;
+  readOnly?: boolean;
+}) {
+  function abrirCalendario(
+    e: React.SyntheticEvent<HTMLInputElement>,
+  ): void {
+    if (readOnly) return;
+    const alvo = e.currentTarget as HTMLInputElement & {
+      showPicker?: () => void;
+    };
+    try {
+      alvo.showPicker?.();
+    } catch {
+      /* navegador sem suporte a showPicker: input nativo segue funcionando */
+    }
+  }
+  return (
+    <input
+      type="date"
+      readOnly={readOnly}
+      value={valor}
+      onChange={(e) => onChange(e.target.value)}
+      onClick={abrirCalendario}
+      onFocus={abrirCalendario}
+    />
   );
 }

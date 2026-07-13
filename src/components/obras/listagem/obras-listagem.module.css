@@ -1,0 +1,359 @@
+/* Listagem de Obras — referencia visual "Obras Publicas" (Claude Design).
+   Tabela em card branco no desktop; cards empilhados abaixo de 720px. */
+
+/* ---- Cabecalho ---- */
+.cabecalho {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.titulo {
+  font-size: 1.5rem; /* 24px */
+  font-weight: 700;
+  margin: 0;
+}
+
+.subtitulo {
+  font-size: 0.85rem;
+  color: var(--cor-texto-fraco);
+  margin: 0.2rem 0 0;
+}
+
+.botaoNova {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  text-decoration: none;
+}
+
+/* ---- Filtros ---- */
+.filtros {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.busca {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+}
+
+.buscaIcone {
+  position: absolute;
+  left: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8rem;
+  pointer-events: none;
+}
+
+.buscaCampo {
+  width: 100%;
+  padding-left: 2.1rem;
+}
+
+.maisFiltros {
+  white-space: nowrap;
+}
+
+.painelAvancado {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 0.75rem 0.85rem;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+}
+
+.prioritarias {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* ---- Card + tabela (desktop) ---- */
+.cartao {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio); /* 12px */
+  overflow: hidden;
+}
+
+.tabelaWrap {
+  overflow-x: auto;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.845rem; /* 13.5px */
+}
+
+.tabela th {
+  background: #f7f8fa;
+  white-space: nowrap;
+}
+
+.tabela td {
+  vertical-align: middle;
+}
+
+.linha {
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.linha:hover {
+  background: #f9fafb;
+}
+
+.linha:focus-visible {
+  outline: 2px solid var(--cor-acento);
+  outline-offset: -2px;
+}
+
+.codigo {
+  font-size: 0.72rem; /* 11.5px */
+  color: var(--cor-texto-fraco);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.nome {
+  font-weight: 600;
+}
+
+.estadoLista {
+  text-align: center;
+  color: var(--cor-texto-fraco);
+  padding: 1.5rem 0.85rem;
+}
+
+.recarregando {
+  opacity: 0.55;
+}
+
+/* ---- Barras de percentual ---- */
+.barraLinha {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.barraTrilho {
+  display: inline-block;
+  width: 62px;
+  height: 6px;
+  border-radius: 4px;
+  background: #e2e5ea;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.barraPreenchimento {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+}
+
+.barraValor {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+}
+
+/* ---- Semaforo de desempenho ---- */
+.semaforo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.semaforoBolinha {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ---- Acoes ---- */
+.thAcoes,
+.acoes {
+  text-align: right;
+}
+
+.acoes {
+  white-space: nowrap;
+}
+
+.botaoAcao {
+  height: 32px;
+  padding: 0 0.7rem;
+  font-size: 0.78rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  background: var(--cor-superficie);
+}
+
+.botaoAcao:hover:not(:disabled) {
+  border-color: var(--cor-borda-forte);
+  background: #f9fafb;
+}
+
+.acoes .botaoAcao + .botaoAcao {
+  margin-left: 6px;
+}
+
+.botaoExcluir {
+  color: #b91c1c;
+  border-color: #f1d8d8;
+}
+
+.botaoExcluir:hover:not(:disabled) {
+  border-color: #dc2626;
+  background: #fdf2f2;
+}
+
+/* ---- Cards (mobile) ---- */
+.cartoes {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cartaoObra {
+  display: grid;
+  gap: 8px;
+  padding: 0.9rem 0.95rem;
+  border-bottom: 1px solid var(--cor-borda);
+  cursor: pointer;
+}
+
+.cartaoObra:hover {
+  background: #f9fafb;
+}
+
+.cartaoTopo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.cartaoNome {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.cartaoOrgao {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--cor-texto-fraco);
+}
+
+.cartaoBarras {
+  display: grid;
+  gap: 6px;
+}
+
+.cartaoBarra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cartaoBarra .barraTrilho {
+  flex: 1;
+  width: auto;
+}
+
+.rotuloBarra {
+  width: 86px;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: var(--cor-texto-fraco);
+}
+
+.cartaoAcoes {
+  display: flex;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.cartaoAcoes .botaoAcao {
+  flex: 1;
+}
+
+.estadoCartoes {
+  padding: 1.5rem 0.95rem;
+  text-align: center;
+  color: var(--cor-texto-fraco);
+}
+
+/* ---- Paginacao ---- */
+.paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 0.8rem 0.95rem;
+  border-top: 1px solid var(--cor-borda);
+}
+
+.paginacaoResumo {
+  font-size: 0.82rem;
+  color: var(--cor-texto-fraco);
+}
+
+.paginas {
+  display: flex;
+  gap: 6px;
+}
+
+.pagina {
+  min-width: 38px;
+  height: 38px;
+  padding: 0 0.5rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  background: var(--cor-superficie);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.paginaAtiva {
+  background: var(--cor-acento);
+  border-color: var(--cor-acento);
+  color: #fff;
+  font-weight: 600;
+}
+
+.paginaAtiva:hover:not(:disabled) {
+  background: var(--cor-acento-escuro);
+  border-color: var(--cor-acento-escuro);
+}
+
+/* ---- Breakpoint mobile ---- */
+@media (max-width: 720px) {
+  .tabelaWrap {
+    display: none;
+  }
+
+  .cartoes {
+    display: block;
+  }
+}

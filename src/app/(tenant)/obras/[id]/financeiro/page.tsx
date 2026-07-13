@@ -41,8 +41,7 @@ export default async function FinanceiroPage({
     ]);
 
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
-      <h1>Financeiro da obra</h1>
+    <div>
       <FinanceiroGestao
         obraId={obraId}
         opcoesFonte={fontes}
@@ -52,6 +51,6 @@ export default async function FinanceiroPage({
         visaoInicial={visao}
         podeEditar={podeEscrever(perfil)}
       />
-    </main>
+    </div>
   );
 }

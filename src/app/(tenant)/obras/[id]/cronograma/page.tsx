@@ -2,6 +2,7 @@ import { AbasCronograma } from "@/components/cronograma/abas";
 import { CronogramaGestao } from "@/components/cronograma/cronograma-gestao";
 import type { Estagio, EstagioAtual } from "@/lib/api/cronograma";
 import { apiServerFetch } from "@/lib/api/server";
+import { carregarUsuarios } from "@/lib/api/usuarios";
 
 export const dynamic = "force-dynamic";
 
@@ -19,20 +20,21 @@ export default async function CronogramaPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [estagios, atual] = await Promise.all([
+  const [estagios, atual, usuarios] = await Promise.all([
     carregar<Estagio[]>(`/obras/${id}/estagios?filtro=todos`, []),
     carregar<EstagioAtual | null>(`/obras/${id}/estagios/atual`, null),
+    carregarUsuarios(),
   ]);
 
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
-      <h1>Cronograma da obra</h1>
+    <div>
       <AbasCronograma obraId={id} ativa="lista" />
       <CronogramaGestao
         obraId={id}
         estagiosIniciais={estagios}
         atualId={atual?.id ?? null}
+        usuarios={usuarios}
       />
-    </main>
+    </div>
   );
 }

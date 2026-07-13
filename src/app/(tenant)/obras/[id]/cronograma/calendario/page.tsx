@@ -40,14 +40,13 @@ export default async function CalendarioPage({
   const inicial = mesInicial(datas);
 
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
-      <h1>Cronograma da obra</h1>
+    <div>
       <AbasCronograma obraId={id} ativa="calendario" />
       <Calendario
         estagios={estagios}
         anoInicial={inicial.ano}
         mesInicial={inicial.mes}
       />
-    </main>
+    </div>
   );
 }

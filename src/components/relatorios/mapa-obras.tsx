@@ -5,7 +5,7 @@ import { corSemaforo, type ItemListaObras } from "@/lib/api/relatorios";
 
 /**
  * Modo MAPA (RN-REL-13): um marcador por localizacao com coordenadas (uma obra
- * com N municipios gera N pontos; obras sem coordenadas nao aparecem). Leaflet
+ * com N localidades gera N pontos; obras sem coordenadas nao aparecem). Leaflet
  * carregado por dynamic import (sem SSR) dentro do efeito.
  */
 export function MapaObras({ obras }: { obras: ItemListaObras[] }) {
@@ -37,7 +37,7 @@ export function MapaObras({ obras }: { obras: ItemListaObras[] }) {
             .addTo(mapa)
             .bindPopup(
               `<b>${o.nome}</b><br/>${o.statusObra} · ${o.percentualRealizado}%<br/>` +
-                `${loc.municipio}/${loc.uf}<br/>` +
+                `${loc.localidade}/${loc.uf}<br/>` +
                 `<a href="/obras/${o.obraId}/editar">abrir obra</a>`,
             );
         }

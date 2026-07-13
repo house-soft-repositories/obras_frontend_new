@@ -17,6 +17,7 @@ import {
   type Estagio,
   type FiltroEstagio,
 } from "@/lib/api/cronograma";
+import type { UsuarioResumo } from "@/lib/ui/usuario-labels";
 import { EstagioForm } from "./estagio-form";
 import { PainelAcompanhamento } from "./painel-acompanhamento";
 
@@ -40,10 +41,12 @@ export function CronogramaGestao({
   obraId,
   estagiosIniciais,
   atualId,
+  usuarios,
 }: {
   obraId: string;
   estagiosIniciais: Estagio[];
   atualId: string | null;
+  usuarios: UsuarioResumo[];
 }) {
   const [estagios, setEstagios] = useState<Estagio[]>(estagiosIniciais);
   const [filtro, setFiltro] = useState<FiltroEstagio>("todos");
@@ -163,6 +166,7 @@ export function CronogramaGestao({
         <div style={{ marginBottom: 12 }}>
           <EstagioForm
             obraId={obraId}
+            usuarios={usuarios}
             modo={form.tipo}
             estagio={form.tipo === "editar" ? form.estagio : undefined}
             estagioPaiId={form.tipo === "criar" ? form.paiId : undefined}

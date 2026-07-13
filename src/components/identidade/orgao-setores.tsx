@@ -11,11 +11,21 @@ interface Setor {
 /**
  * Gestao de setores aninhada na tela do orgao (E1-06 / RN-IDE-03): lista,
  * cria e ativa/desativa setores do orgao via /api/proxy/orgaos/:id/setores.
+ *
+ * `embutido`: quando o painel ja e aberto/fechado por fora (linha expansivel
+ * da tabela de orgaos), renderiza o conteudo direto, sem o proprio toggle.
  */
-export function OrgaoSetores({ orgaoId }: { orgaoId: string }) {
+export function OrgaoSetores({
+  orgaoId,
+  embutido = false,
+}: {
+  orgaoId: string;
+  embutido?: boolean;
+}) {
   const [setores, setSetores] = useState<Setor[]>([]);
   const [nome, setNome] = useState("");
-  const [aberto, setAberto] = useState(false);
+  const [abertoEstado, setAberto] = useState(false);
+  const aberto = embutido || abertoEstado;
   const [erro, setErro] = useState<string | null>(null);
   const [v, setV] = useState(0);
 
@@ -68,16 +78,18 @@ export function OrgaoSetores({ orgaoId }: { orgaoId: string }) {
   }
 
   return (
-    <div style={{ marginTop: 6 }}>
-      <button type="button" onClick={() => setAberto((a) => !a)}>
-        {aberto ? "▾ Setores" : "▸ Setores"}
-      </button>
+    <div style={embutido ? undefined : { marginTop: 6 }}>
+      {!embutido && (
+        <button type="button" onClick={() => setAberto((a) => !a)}>
+          {aberto ? "▾ Setores" : "▸ Setores"}
+        </button>
+      )}
       {aberto && (
         <div
           style={{
-            marginTop: 6,
-            paddingLeft: 12,
-            borderLeft: "2px solid #eee",
+            marginTop: embutido ? 0 : 6,
+            paddingLeft: embutido ? 0 : 12,
+            borderLeft: embutido ? undefined : "2px solid #eee",
             display: "grid",
             gap: 6,
           }}

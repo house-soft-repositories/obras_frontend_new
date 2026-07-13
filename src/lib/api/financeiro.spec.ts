@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   filtrarLiquidacoesPorEmpenho,
+  formatarMoedaBRL,
   indicadoresVisao,
+  montarBarrasVisao,
   validarEmpenho,
   validarPagamento,
   type FormularioEmpenho,
@@ -78,6 +80,55 @@ describe("indicadoresVisao (RN-FIN-08)", () => {
       "Medido", "Empenhado", "Liquidado", "Pago",
     ]);
     expect(ind[4].indicador.percentual).toBe(40);
+  });
+});
+
+describe("formatarMoedaBRL", () => {
+  it("formata decimais da API em R$ pt-BR", () => {
+    expect(formatarMoedaBRL("1234567.89")).toBe("R$ 1.234.567,89");
+    expect(formatarMoedaBRL("200000.00")).toBe("R$ 200.000,00");
+    expect(formatarMoedaBRL(0)).toBe("R$ 0,00");
+  });
+
+  it("cai para zero em valores invalidos", () => {
+    expect(formatarMoedaBRL("abc")).toBe("R$ 0,00");
+  });
+});
+
+describe("montarBarrasVisao (RF-15)", () => {
+  const v: VisaoFisicoFinanceira = {
+    obraId: "o1",
+    contratadoInicial: { valor: "180000.00", percentual: 90 },
+    aditivadoTotal: { valor: "20000.00", percentual: 10 },
+    totalContratado: { valor: "200000.00", percentual: 100 },
+    medidoTotal: { valor: "60000.00", percentual: 30 },
+    empenhadoTotal: { valor: "80000.00", percentual: 40 },
+    liquidadoTotal: { valor: "50000.00", percentual: 25 },
+    pagoTotal: { valor: "30000.00", percentual: 15 },
+  };
+
+  it("monta as 7 barras na ordem e nas cores da referencia", () => {
+    const barras = montarBarrasVisao(v);
+    expect(barras.map((b) => b.rotulo)).toEqual([
+      "Contratado inicial", "Aditivado", "Total contratado",
+      "Medido", "Empenhado", "Liquidado", "Pago",
+    ]);
+    expect(barras.map((b) => b.cor)).toEqual([
+      "#93b0e8", "#c3b5e8", "#1f2937",
+      "#2563eb", "#2563eb", "#16a34a", "#15803d",
+    ]);
+  });
+
+  it("formata o valor em R$ pt-BR e repassa o percentual", () => {
+    const barras = montarBarrasVisao(v);
+    expect(barras[2]).toEqual({
+      rotulo: "Total contratado",
+      valorFormatado: "R$ 200.000,00",
+      percentual: 100,
+      cor: "#1f2937",
+    });
+    expect(barras[6].valorFormatado).toBe("R$ 30.000,00");
+    expect(barras[6].percentual).toBe(15);
   });
 });
 

@@ -2,6 +2,8 @@
 
 import { somarFontes, type ParFonteValor } from "@/lib/api/contratos";
 import type { OpcaoSelect } from "@/components/obras/obra-form";
+import { EntradaDinheiro } from "@/components/comum/entrada-dinheiro";
+import { formatarBRLEntrada } from "@/lib/ui/dinheiro";
 
 /**
  * Editor de N pares fonte+valor com a soma exibida (RN-CON-04/13). Reutilizado
@@ -45,12 +47,9 @@ export function FontesEditor({
               </option>
             ))}
           </select>
-          <input
-            type="number"
-            step="0.01"
-            placeholder="valor"
-            value={p.valor}
-            onChange={(e) => setPar(i, { valor: e.target.value })}
+          <EntradaDinheiro
+            valor={p.valor}
+            onChange={(v) => setPar(i, { valor: v })}
             style={{ width: 140 }}
           />
           <button type="button" onClick={() => remover(i)}>
@@ -62,7 +61,7 @@ export function FontesEditor({
         + adicionar
       </button>
       <p style={{ marginTop: 8, fontWeight: 700 }}>
-        Soma das fontes: R$ {soma}
+        Soma das fontes: {formatarBRLEntrada(soma)}
       </p>
     </fieldset>
   );

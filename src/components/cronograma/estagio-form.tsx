@@ -10,6 +10,8 @@ import {
   type Estagio,
   type FormularioEstagio,
 } from "@/lib/api/cronograma";
+import { SelecaoUsuario } from "@/components/comum/selecao-usuario";
+import type { UsuarioResumo } from "@/lib/ui/usuario-labels";
 
 function mensagemErro(e: unknown): string {
   if (e instanceof ErroApi) {
@@ -30,6 +32,7 @@ export function EstagioForm({
   estagio,
   estagioPaiId,
   precedentesDisponiveis,
+  usuarios,
   onSalvo,
   onCancelar,
 }: {
@@ -38,6 +41,7 @@ export function EstagioForm({
   estagio?: Estagio;
   estagioPaiId?: string | null;
   precedentesDisponiveis: Estagio[];
+  usuarios: UsuarioResumo[];
   onSalvo: () => void;
   onCancelar: () => void;
 }) {
@@ -209,11 +213,12 @@ export function EstagioForm({
       </label>
 
       <label style={campo}>
-        Responsavel (usuario id) — vazio = voce
-        <input
-          value={form.responsavelUsuarioId}
-          onChange={(e) => set("responsavelUsuarioId", e.target.value)}
-          placeholder="uuid do responsavel"
+        Responsável — vazio = você
+        <SelecaoUsuario
+          usuarios={usuarios}
+          valor={form.responsavelUsuarioId ?? ""}
+          onChange={(v) => set("responsavelUsuarioId", v)}
+          vazio="(você)"
         />
       </label>
 

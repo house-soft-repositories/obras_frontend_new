@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { rotuloEnum } from "@/lib/ui/obra-labels";
 
 /** Helpers de proxy autenticado usados pelos paineis de guia (modo editar). */
 async function get<T>(caminho: string): Promise<T> {
@@ -36,27 +37,27 @@ interface PainelProps {
 
 export function PainelLocalizacao({ obraId }: PainelProps) {
   const [v, setV] = useState(0);
-  const itens = useLista<{ id: string; municipio: string; uf: string }>(
+  const itens = useLista<{ id: string; localidade: string; uf: string }>(
     `obras/${obraId}/localizacoes`,
     v,
   );
-  const [municipio, setMunicipio] = useState("");
+  const [localidade, setLocalidade] = useState("");
   const [uf, setUf] = useState("");
   return (
     <section style={{ display: "grid", gap: 8 }}>
-      <h3>Localizacao</h3>
+      <h3>Localização</h3>
       <ul>
         {itens.map((l) => (
           <li key={l.id}>
-            {l.municipio} / {l.uf}
+            {l.localidade} / {l.uf}
           </li>
         ))}
       </ul>
       <div style={{ display: "flex", gap: 8 }}>
         <input
-          placeholder="Municipio"
-          value={municipio}
-          onChange={(e) => setMunicipio(e.target.value)}
+          placeholder="Localidade"
+          value={localidade}
+          onChange={(e) => setLocalidade(e.target.value)}
         />
         <input
           placeholder="UF"
@@ -67,8 +68,8 @@ export function PainelLocalizacao({ obraId }: PainelProps) {
         <button
           type="button"
           onClick={async () => {
-            await post(`obras/${obraId}/localizacoes`, { municipio, uf });
-            setMunicipio("");
+            await post(`obras/${obraId}/localizacoes`, { localidade, uf });
+            setLocalidade("");
             setUf("");
             setV((n) => n + 1);
           }}
@@ -89,7 +90,7 @@ export function PainelTitularidade({ obraId }: PainelProps) {
       <h3>Titularidade</h3>
       <select value={situacao} onChange={(e) => setSituacao(e.target.value)}>
         <option value="EXISTENTE">EXISTENTE</option>
-        <option value="NAO_EXISTENTE">NAO_EXISTENTE</option>
+        <option value="NAO_EXISTENTE">{rotuloEnum("NAO_EXISTENTE")}</option>
       </select>
       <input
         placeholder="Tipo (obrigatorio se EXISTENTE)"
@@ -130,13 +131,13 @@ export function PainelLicenciamento({ obraId }: PainelProps) {
       <ul>
         {itens.map((l) => (
           <li key={l.id}>
-            {l.situacao} {l.numero ?? ""}
+            {rotuloEnum(l.situacao)} {l.numero ?? ""}
           </li>
         ))}
       </ul>
       <select value={situacao} onChange={(e) => setSituacao(e.target.value)}>
         <option value="EXISTENTE">EXISTENTE</option>
-        <option value="NAO_EXISTENTE">NAO_EXISTENTE</option>
+        <option value="NAO_EXISTENTE">{rotuloEnum("NAO_EXISTENTE")}</option>
       </select>
       <input placeholder="Tipo" value={tipo} onChange={(e) => setTipo(e.target.value)} />
       <input

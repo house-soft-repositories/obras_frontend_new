@@ -35,8 +35,7 @@ export default async function MedicoesPage({
   }));
 
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
-      <h1>Medicoes da obra</h1>
+    <div>
       <MedicoesGestao
         obraId={obraId}
         medicoesIniciais={medicoes}
@@ -44,6 +43,6 @@ export default async function MedicoesPage({
         opcoesOrgao={opcoesOrgao}
         podeEditar={podeEscrever(perfil)}
       />
-    </main>
+    </div>
   );
 }

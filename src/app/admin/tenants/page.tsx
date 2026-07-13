@@ -1,44 +1,195 @@
-import { FormularioCriar } from "@/components/formulario-criar";
-import { Tabela } from "@/components/tabela";
-import { apiServerFetch } from "@/lib/api/server";
+"use client";
 
-type Tenant = {
+import { useEffect, useMemo, useState } from "react";
+import {
+  AvisoCadastro,
+  CadastroBusca,
+  CadastroCabecalho,
+  CadastroForm,
+  CadastroPagina,
+  CadastroTabela,
+  CadastroTrilha,
+  Campo,
+  CarregandoCadastro,
+  CelulaForte,
+  ChipSituacao,
+  Tabular,
+  type ColunaCadastro,
+} from "@/components/cadastros/cadastro-ui";
+import {
+  mensagemErro,
+  proxyJson,
+} from "@/components/cadastros/proxy-cadastros";
+import { filtrarCadastro, resumoRegistros } from "@/lib/ui/cadastro-labels";
+
+interface Tenant {
   id: string;
   nome: string;
   slug: string;
   ativo: boolean;
-};
+}
 
-export default async function TenantsPage() {
-  let tenants: Tenant[] = [];
-  let erro: string | null = null;
-  try {
-    tenants = await apiServerFetch<Tenant[]>("/admin/tenants");
-  } catch {
-    erro = "Acesso restrito a SUPER_ADMIN ou API indisponivel.";
+interface FormTenant {
+  nome: string;
+  slug: string;
+  cnpj: string;
+}
+
+const FORM_VAZIO: FormTenant = { nome: "", slug: "", cnpj: "" };
+
+export default function TenantsPage() {
+  const [itens, setItens] = useState<Tenant[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erroLista, setErroLista] = useState<string | null>(null);
+  const [busca, setBusca] = useState("");
+  const [versao, setVersao] = useState(0);
+
+  const [criando, setCriando] = useState(false);
+  const [form, setForm] = useState<FormTenant>(FORM_VAZIO);
+  const [salvando, setSalvando] = useState(false);
+  const [erroForm, setErroForm] = useState<string | null>(null);
+
+  useEffect(() => {
+    let vivo = true;
+    proxyJson<Tenant[]>("admin/tenants")
+      .then((d) => {
+        if (!vivo) return;
+        setItens(d);
+        setErroLista(null);
+      })
+      .catch(() => {
+        if (!vivo) return;
+        setItens([]);
+        setErroLista("Acesso restrito a SUPER_ADMIN ou API indisponível.");
+      })
+      .finally(() => vivo && setCarregando(false));
+    return () => {
+      vivo = false;
+    };
+  }, [versao]);
+
+  const filtrados = useMemo(
+    () => filtrarCadastro(itens, busca, (t) => [t.nome, t.slug]),
+    [itens, busca],
+  );
+
+  function abrirCriar() {
+    setForm(FORM_VAZIO);
+    setCriando(true);
+    setErroForm(null);
+  }
+
+  function fecharForm() {
+    setCriando(false);
+    setErroForm(null);
+  }
+
+  async function salvar(e: React.FormEvent) {
+    e.preventDefault();
+    setErroForm(null);
+    setSalvando(true);
+    try {
+      await proxyJson("admin/tenants", {
+        method: "POST",
+        body: JSON.stringify({
+          nome: form.nome.trim(),
+          slug: form.slug.trim(),
+          ...(form.cnpj.trim() ? { cnpj: form.cnpj.trim() } : {}),
+        }),
+      });
+      fecharForm();
+      setVersao((n) => n + 1);
+    } catch (err) {
+      setErroForm(mensagemErro(err));
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  const colunas: ColunaCadastro<Tenant>[] = [
+    {
+      titulo: "Nome",
+      ocultaNoCartao: true,
+      render: (t) => <CelulaForte>{t.nome}</CelulaForte>,
+    },
+    { titulo: "Slug", render: (t) => <Tabular mudo>{t.slug}</Tabular> },
+    { titulo: "Situação", render: (t) => <ChipSituacao ativo={t.ativo} /> },
+  ];
+
+  if (criando) {
+    return (
+      <CadastroPagina>
+        <CadastroCabecalho
+          titulo={<CadastroTrilha base="Tenants" atual="Novo tenant" />}
+        />
+        <CadastroForm
+          aoEnviar={salvar}
+          aoCancelar={fecharForm}
+          salvando={salvando}
+          erro={erroForm}
+        >
+          <Campo rotulo="Nome" obrigatorio>
+            <input
+              required
+              value={form.nome}
+              onChange={(e) => setForm((f) => ({ ...f, nome: e.target.value }))}
+            />
+          </Campo>
+          <Campo
+            rotulo="Slug"
+            obrigatorio
+            dica="kebab-case, ex.: prefeitura-demo."
+          >
+            <input
+              required
+              value={form.slug}
+              onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+            />
+          </Campo>
+          <Campo rotulo="CNPJ">
+            <input
+              value={form.cnpj}
+              placeholder="00.000.000/0000-00"
+              onChange={(e) => setForm((f) => ({ ...f, cnpj: e.target.value }))}
+            />
+          </Campo>
+        </CadastroForm>
+      </CadastroPagina>
+    );
   }
 
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
-      <h1>Tenants (super-admin)</h1>
-      {erro && <p style={{ color: "crimson" }}>{erro}</p>}
-      <Tabela
-        colunas={[
-          { chave: "nome", titulo: "Nome" },
-          { chave: "slug", titulo: "Slug" },
-          { chave: "ativo", titulo: "Ativo" },
-        ]}
-        linhas={tenants}
+    <CadastroPagina>
+      <CadastroCabecalho
+        titulo="Tenants"
+        sub={carregando ? "Carregando…" : resumoRegistros(itens.length)}
+        acao={
+          <button type="button" className="btn-primario" onClick={abrirCriar}>
+            + Novo tenant
+          </button>
+        }
       />
-      <FormularioCriar
-        endpoint="admin/tenants"
-        titulo="Novo tenant"
-        campos={[
-          { nome: "nome", label: "Nome", obrigatorio: true },
-          { nome: "slug", label: "Slug (kebab-case)", obrigatorio: true },
-          { nome: "cnpj", label: "CNPJ" },
-        ]}
+      <CadastroBusca
+        valor={busca}
+        aoMudar={setBusca}
+        placeholder="Buscar por nome ou slug"
       />
-    </main>
+      {erroLista && <AvisoCadastro tipo="erro">{erroLista}</AvisoCadastro>}
+      {carregando ? (
+        <CarregandoCadastro />
+      ) : (
+        <CadastroTabela
+          colunas={colunas}
+          itens={filtrados}
+          obterId={(t) => t.id}
+          tituloCartao={(t) => t.nome}
+          vazio={
+            busca
+              ? "Nenhum tenant encontrado para a busca."
+              : "Nenhum tenant cadastrado."
+          }
+        />
+      )}
+    </CadastroPagina>
   );
 }

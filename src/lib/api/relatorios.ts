@@ -23,7 +23,7 @@ export interface QuantificadoresObras {
 }
 
 export interface LocalizacaoObra {
-  municipio: string;
+  localidade: string;
   uf: string;
   latitude: number | null;
   longitude: number | null;
@@ -31,13 +31,17 @@ export interface LocalizacaoObra {
 
 export interface ItemListaObras {
   obraId: string;
+  codigo: string;
   nome: string;
+  tipo: string;
   statusObra: string;
   estagioAtualNome: string | null;
   prazoConclusaoEstagio: string | null;
   percentualRealizado: number;
+  percentualFinanceiro: number;
   semaforo: SemaforoDesempenho | null;
   orgaoId: string | null;
+  orgaoNome: string | null;
   localidadeNome: string | null;
   responsavelNome: string | null;
   tags: string[];
@@ -79,9 +83,26 @@ export interface FluxoFisicoFinanceiro {
   dataReferencia: string;
 }
 
+export interface ContagemPorStatus {
+  total: number;
+  emAberto: number;
+  emDesenvolvimento: number;
+  concluidas: number;
+  paralisadas: number;
+  canceladas: number;
+}
+
+export interface ObrasPorOrgaoItem {
+  orgaoId: string;
+  orgaoNome: string;
+  total: number;
+}
+
 export interface Dashboard {
   quantificadoresPorOrgao: QuantificadoresObras[];
   fluxoAgregado: FluxoFisicoFinanceiro;
+  contagemPorStatus: ContagemPorStatus;
+  obrasPorOrgao: ObrasPorOrgaoItem[];
 }
 
 export interface PaginaObras {
@@ -91,6 +112,7 @@ export interface PaginaObras {
 
 /** Filtro como estado no front (todos string/array, vindos da URL). */
 export interface FiltroObras {
+  tipo?: string;
   acaoConveniada?: string;
   eixoId?: string;
   tipologiaId?: string;

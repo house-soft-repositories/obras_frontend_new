@@ -1,7 +1,9 @@
-import Link from "next/link";
-import styles from "@/components/layout/app-shell.module.css";
+"use client";
 
-export const dynamic = "force-dynamic";
+import Link from "next/link";
+import { useMe } from "@/components/layout/app-shell";
+import styles from "@/components/layout/app-shell.module.css";
+import { saudacaoPorHora } from "@/lib/ui/obra-labels";
 
 const ATALHOS = [
   { href: "/obras", icone: "📁", titulo: "Obras", desc: "Acompanhe e gerencie todas as obras." },
@@ -17,14 +19,22 @@ const ATALHOS = [
 ];
 
 export default function HomePage() {
+  const me = useMe();
+
+  const primeiroNome = me ? me.nome.trim().split(/\s+/)[0] : "";
+  const titulo = primeiroNome
+    ? `${saudacaoPorHora(new Date().getHours())}, ${primeiroNome}`
+    : "Bem-vindo";
+  const subtitulo = me
+    ? `${me.tenant?.nome ?? "Plataforma"} · Painel inicial`
+    : "Painel inicial";
+
   return (
     <main style={{ padding: "1.5rem 1.75rem" }}>
       <h1 className={styles.cardTitulo} style={{ fontSize: "1.5rem" }}>
-        Bem-vindo
+        {titulo}
       </h1>
-      <p className="page-sub">
-        Selecione uma funcionalidade no menu lateral ou em um dos atalhos abaixo.
-      </p>
+      <p className="page-sub">{subtitulo}</p>
 
       <div className={styles.cards}>
         {ATALHOS.map((a) => (

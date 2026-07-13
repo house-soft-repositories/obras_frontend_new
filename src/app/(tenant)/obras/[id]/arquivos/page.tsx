@@ -19,13 +19,12 @@ export default async function ArquivosPage({
   ]);
 
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
-      <h1>Arquivos da obra</h1>
+    <div>
       <NavegadorArquivos
         obraId={obraId}
         raiz={raiz}
         podeEditar={podeEscrever(perfil)}
       />
-    </main>
+    </div>
   );
 }

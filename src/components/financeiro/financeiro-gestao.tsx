@@ -10,10 +10,10 @@ import {
   excluirLiquidacao,
   excluirPagamento,
   filtrarLiquidacoesPorEmpenho,
-  indicadoresVisao,
   listarEmpenhos,
   listarLiquidacoes,
   listarPagamentos,
+  montarBarrasVisao,
   obterVisaoFisicoFinanceira,
   TIPOS_EMPENHO,
   validarEmpenho,
@@ -27,6 +27,7 @@ import {
   type Pagamento,
   type VisaoFisicoFinanceira,
 } from "@/lib/api/financeiro";
+import estilos from "./financeiro.module.css";
 
 function fonteNome(opcoes: OpcaoSelect[], id: string): string {
   return opcoes.find((o) => o.id === id)?.nome ?? id;
@@ -44,9 +45,9 @@ const pagamentoVazio = (): FormularioPagamento => ({
 });
 
 /**
- * Pagina Financeiro da obra (E6-05): visao fisico-financeira (cards + grafico),
- * e secoes de Empenhos, Liquidacoes e Pagamentos (selects encadeados). Acoes de
- * escrita ocultas para CONSULTA.
+ * Aba Financeiro da obra (E6-05/RF-15): visao fisico-financeira em 7 barras
+ * horizontais, e secoes de Empenhos, Liquidacoes e Pagamentos (selects
+ * encadeados). Acoes de escrita ocultas para CONSULTA.
  */
 export function FinanceiroGestao({
   obraId,
@@ -137,27 +138,31 @@ export function FinanceiroGestao({
 
   return (
     <section style={{ display: "grid", gap: 32 }}>
-      {/* Visao fisico-financeira */}
+      {/* Visao fisico-financeira em barras horizontais (RF-15) */}
       {visao && (
-        <div>
-          <h2 style={{ margin: "0 0 8px" }}>Visao Fisico-Financeira</h2>
-          <div style={{ display: "grid", gap: 6, maxWidth: 640 }}>
-            {indicadoresVisao(visao).map(({ chave, titulo, indicador }) => (
-              <div key={chave} style={{ display: "grid", gridTemplateColumns: "160px 1fr 120px", alignItems: "center", gap: 8 }}>
-                <span>{titulo}</span>
-                <div style={{ background: "#eee", borderRadius: 4, height: 16 }}>
+        <div className={estilos.visao}>
+          <h2 className={estilos.titulo}>Visão físico-financeira</h2>
+          <p className={estilos.sub}>
+            Execução acumulada sobre o total contratado
+          </p>
+          <div className={estilos.linhas}>
+            {montarBarrasVisao(visao).map((b) => (
+              <div key={b.rotulo}>
+                <div className={estilos.cabecalhoLinha}>
+                  <span className={estilos.rotulo}>{b.rotulo}</span>
+                  <span className={estilos.valor}>
+                    {b.valorFormatado} · {b.percentual}%
+                  </span>
+                </div>
+                <div className={estilos.trilha}>
                   <div
+                    className={estilos.preenchimento}
                     style={{
-                      width: `${Math.min(indicador.percentual, 100)}%`,
-                      background: "#2563eb",
-                      height: 16,
-                      borderRadius: 4,
+                      width: `${Math.min(b.percentual, 100)}%`,
+                      background: b.cor,
                     }}
                   />
                 </div>
-                <span style={{ textAlign: "right" }}>
-                  R$ {indicador.valor} ({indicador.percentual}%)
-                </span>
               </div>
             ))}
           </div>

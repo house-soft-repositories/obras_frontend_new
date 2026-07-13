@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { limparCacheMe, papelPrincipal, type MeResposta } from "@/lib/api/me";
+import { iniciais } from "@/lib/ui/obra-labels";
 import styles from "./app-shell.module.css";
 
 export interface ItemMenu {
@@ -10,59 +12,51 @@ export interface ItemMenu {
   icone: string;
 }
 
-export interface GrupoMenu {
-  titulo: string;
-  itens: ItemMenu[];
-}
-
-/** Menu de navegacao com todas as funcionalidades globais do sistema. */
-export const MENU: GrupoMenu[] = [
-  {
-    titulo: "Geral",
-    itens: [
-      { href: "/home", rotulo: "Inicio", icone: "⌂" },
-      { href: "/obras", rotulo: "Obras", icone: "▤" },
-      { href: "/obras/nova", rotulo: "Nova obra", icone: "＋" },
-      { href: "/dashboard", rotulo: "Dashboard", icone: "◧" },
-      { href: "/relatorios/obras", rotulo: "Relatorios", icone: "▦" },
-    ],
-  },
-  {
-    titulo: "Cadastros",
-    itens: [
-      { href: "/cadastros/orgaos", rotulo: "Orgaos e setores", icone: "◈" },
-      { href: "/cadastros/localidades", rotulo: "Localidades", icone: "⌖" },
-      { href: "/cadastros/usuarios", rotulo: "Usuarios", icone: "⚇" },
-      { href: "/cadastros/fontes", rotulo: "Fontes de recurso", icone: "＄" },
-      {
-        href: "/cadastros/empresas-contratadas",
-        rotulo: "Empresas contratadas",
-        icone: "▣",
-      },
-    ],
-  },
-  {
-    titulo: "Administracao",
-    itens: [{ href: "/admin/tenants", rotulo: "Tenants", icone: "⬚" }],
-  },
+/**
+ * Menu de navegacao plano (sem grupos), na ordem da referencia visual
+ * "Obras Publicas" (Claude Design), com todas as funcionalidades globais.
+ */
+export const MENU: ItemMenu[] = [
+  { href: "/home", rotulo: "Home", icone: "⌂" },
+  { href: "/obras", rotulo: "Obras", icone: "▤" },
+  { href: "/obras/nova", rotulo: "Nova obra", icone: "＋" },
+  { href: "/dashboard", rotulo: "Dashboard", icone: "◧" },
+  { href: "/relatorios/obras", rotulo: "Relatórios", icone: "▦" },
+  { href: "/cadastros/orgaos", rotulo: "Órgãos", icone: "◈" },
+  { href: "/cadastros/localidades", rotulo: "Localidades", icone: "⌖" },
+  { href: "/cadastros/usuarios", rotulo: "Usuários", icone: "⚇" },
+  { href: "/cadastros/fontes", rotulo: "Fontes", icone: "＄" },
+  { href: "/cadastros/empresas-contratadas", rotulo: "Empresas", icone: "▣" },
+  { href: "/admin/tenants", rotulo: "Tenants", icone: "⬚" },
 ];
 
-function ehAtivo(pathname: string, href: string): boolean {
-  if (href === "/home") return pathname === "/home";
+/**
+ * Item ativo: "Nova obra" apenas na rota exata; "Obras" cobre a listagem e o
+ * detalhe (/obras/[id]/*) mas nao /obras/nova; os demais casam por prefixo.
+ */
+export function ehAtivo(pathname: string, href: string): boolean {
+  if (href === "/obras/nova") return pathname === "/obras/nova";
+  if (href === "/obras") {
+    if (pathname === "/obras/nova") return false;
+    return pathname === "/obras" || pathname.startsWith("/obras/");
+  }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 interface Props {
   mobileAberto?: boolean;
   aoNavegar?: () => void;
+  /** Dados do /auth/me carregados pelo AppShell (null enquanto carrega). */
+  me?: MeResposta | null;
 }
 
-export function Sidebar({ mobileAberto, aoNavegar }: Props) {
+export function Sidebar({ mobileAberto, aoNavegar, me }: Props) {
   const pathname = usePathname() ?? "";
   const router = useRouter();
 
   async function sair() {
     await fetch("/api/auth/logout", { method: "POST" });
+    limparCacheMe();
     router.push("/login");
     router.refresh();
   }
@@ -73,41 +67,38 @@ export function Sidebar({ mobileAberto, aoNavegar }: Props) {
     >
       <div className={styles.brand}>
         <span className={styles.brandLogo}>OP</span>
-        <p className={styles.brandTitulo}>Obras Publicas</p>
+        <p className={styles.brandTitulo}>Obras Públicas</p>
       </div>
 
-      {MENU.map((grupo) => (
-        <div key={grupo.titulo} className={styles.grupo}>
-          <p className={styles.grupoTitulo}>{grupo.titulo}</p>
-          <ul className={styles.nav}>
-            {grupo.itens.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  onClick={aoNavegar}
-                  className={`${styles.link} ${
-                    ehAtivo(pathname, item.href) ? styles.linkAtivo : ""
-                  }`}
-                >
-                  <span className={styles.icone} aria-hidden>
-                    {item.icone}
-                  </span>
-                  {item.rotulo}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+      <ul className={styles.nav}>
+        {MENU.map((item) => (
+          <li key={item.href}>
+            <Link
+              href={item.href}
+              onClick={aoNavegar}
+              className={`${styles.link} ${
+                ehAtivo(pathname, item.href) ? styles.linkAtivo : ""
+              }`}
+            >
+              <span className={styles.icone} aria-hidden>
+                {item.icone}
+              </span>
+              {item.rotulo}
+            </Link>
+          </li>
+        ))}
+      </ul>
 
-      <div>
+      <div className={styles.rodape}>
         <div className={styles.usuario}>
           <span className={styles.avatar} aria-hidden>
-            OP
+            {me ? iniciais(me.nome) : ""}
           </span>
           <div style={{ minWidth: 0 }}>
-            <div className={styles.usuarioNome}>Usuario</div>
-            <div className={styles.usuarioPapel}>Acesso institucional</div>
+            <div className={styles.usuarioNome}>{me ? me.nome : "…"}</div>
+            <div className={styles.usuarioPapel}>
+              {me ? papelPrincipal(me.perfis) : "…"}
+            </div>
           </div>
         </div>
         <button type="button" className={styles.sair} onClick={sair}>

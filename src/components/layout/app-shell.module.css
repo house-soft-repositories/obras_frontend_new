@@ -50,22 +50,14 @@
   margin: 0;
 }
 
-.grupo {
-  margin-bottom: 0.35rem;
-}
-
-.grupoTitulo {
-  padding: 0.5rem 0.65rem 0.25rem;
-  font-size: 0.66rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #9ca3af;
-}
-
+/* lista plana de navegacao (sem grupos, referencia do design) */
 .nav {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .link {
@@ -109,9 +101,13 @@
   opacity: 0.95;
 }
 
-/* rodape: usuario + sair */
-.usuario {
+/* rodape: usuario + sair (empurrado para o fim da sidebar) */
+.rodape {
   margin-top: auto;
+  padding-top: 0.85rem;
+}
+
+.usuario {
   border-top: 1px solid var(--cor-sidebar-hover);
   padding-top: 0.85rem;
   display: flex;
@@ -196,10 +192,29 @@
   background: var(--cor-superficie);
 }
 
-.topbarTitulo {
+/* bloco do tenant na topbar: label pequena + nome */
+.tenantBloco {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.tenantLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cor-texto-fraco);
+}
+
+.tenantNome {
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--cor-texto);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .busca {

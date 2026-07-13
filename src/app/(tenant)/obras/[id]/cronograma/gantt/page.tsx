@@ -33,10 +33,9 @@ export default async function GanttPage({
   ]);
 
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
-      <h1>Cronograma da obra</h1>
+    <div>
       <AbasCronograma obraId={id} ativa="gantt" />
       <Gantt estagios={estagios} intervalo={datas} atualId={atual?.id ?? null} />
-    </main>
+    </div>
   );
 }

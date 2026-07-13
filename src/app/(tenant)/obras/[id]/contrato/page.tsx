@@ -60,12 +60,11 @@ export default async function ContratoPage({
 
   const empresasOpcoes: OpcaoSelect[] = empresas.map((e) => ({
     id: e.id,
-    nome: e.nome,
+    nome: e.razaoSocial,
   }));
 
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
-      <h1>Contrato da obra</h1>
+    <div>
       <ContratoGestao
         obraId={obraId}
         empresas={empresasOpcoes}
@@ -77,6 +76,6 @@ export default async function ContratoPage({
         valoresIniciais={valores}
         podeEditar={podeEscrever(perfil)}
       />
-    </main>
+    </div>
   );
 }
