@@ -1,9 +1,11 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { buscarMe, type MeResposta } from "@/lib/api/me";
 import { iniciais } from "@/lib/ui/obra-labels";
 import styles from "./app-shell.module.css";
+import { ehRotaPrivada } from "@/lib/ui/navegacao";
 import { Sidebar } from "./sidebar";
 
 /**
@@ -24,6 +26,8 @@ export function useMe(): MeResposta | null {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [drawer, setDrawer] = useState(false);
   const [me, setMe] = useState<MeResposta | null>(null);
+  const pathname = usePathname() ?? "";
+  const privado = ehRotaPrivada(pathname);
 
   useEffect(() => {
     let ativo = true;
@@ -43,7 +47,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <MeContext.Provider value={me}>
-      <div className={styles.shell}>
+      {/* data-modulo troca o acento para teal em todo o modulo privado. */}
+      <div className={styles.shell} data-modulo={privado ? "privadas" : undefined}>
         <Sidebar
           mobileAberto={drawer}
           aoNavegar={() => setDrawer(false)}
@@ -76,10 +81,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <span aria-hidden>🔍</span>
               <input
                 className={styles.buscaInput}
-                placeholder="Buscar obra, código…"
+                placeholder={
+                  privado
+                    ? "Buscar obra privada, endereço…"
+                    : "Buscar obra, código…"
+                }
                 aria-label="Buscar"
               />
             </div>
+            {privado ? (
+              <span className={styles.selo}>Lado privado</span>
+            ) : null}
             <span className={styles.topbarAvatar} aria-hidden>
               {me ? iniciais(me.nome) : ""}
             </span>

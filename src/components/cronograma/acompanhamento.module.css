@@ -1,0 +1,175 @@
+/* Painel "Acompanhamento · Meta × Realizado" do estagio, no padrao do design:
+   card branco com cabecalho, formulario de lancamento, tabela do historico e
+   lista de comentarios. */
+
+.painel {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 1.1rem;
+  margin-top: 0.9rem;
+}
+
+.cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--cor-texto);
+}
+
+.sub {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: var(--cor-texto-fraco);
+}
+
+.formulario {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-top: 0.9rem;
+}
+
+.campo {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  color: var(--cor-texto-fraco);
+}
+
+.tabelaEnvolucro {
+  margin-top: 1rem;
+  border: 1px solid var(--cor-borda-sutil);
+  border-radius: 10px;
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.tabela th {
+  background: var(--cor-cabecalho-tabela);
+  color: var(--cor-texto-fraco);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  border-bottom: none;
+  white-space: nowrap;
+}
+
+.tabela td {
+  padding: 0.6rem 0.8rem;
+  border-bottom: none;
+  border-top: 1px solid var(--cor-borda-sutil);
+  color: var(--cor-texto-medio);
+  vertical-align: middle;
+}
+
+.tabela tbody tr:first-child td {
+  border-top: none;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.acaoIcone {
+  width: 30px;
+  height: 30px;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid var(--cor-perigo-borda);
+  background: var(--cor-superficie);
+  color: var(--cor-perigo);
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.acaoIcone:hover {
+  background: var(--cor-perigo-suave);
+  border-color: var(--cor-perigo-borda);
+}
+
+.secao {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+  margin: 1.1rem 0 0.6rem;
+}
+
+.comentarios {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.comentario {
+  border: 1px solid var(--cor-borda-sutil);
+  border-radius: 10px;
+  padding: 0.75rem;
+  background: var(--cor-superficie-sutil);
+}
+
+.comentarioTopo {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.comentarioAutor {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+}
+
+.comentarioData {
+  font-size: 0.72rem;
+  color: var(--cor-texto-apagado);
+  font-variant-numeric: tabular-nums;
+}
+
+.comentarioTexto {
+  font-size: 0.82rem;
+  color: var(--cor-texto-medio);
+  margin: 0.3rem 0 0;
+  line-height: 1.5;
+}
+
+.novoComentario {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.novoComentario input {
+  flex: 1;
+  min-width: 180px;
+}
+
+.erro {
+  color: var(--cor-perigo);
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0;
+}
+
+.vazio {
+  font-size: 0.82rem;
+  color: var(--cor-texto-fraco);
+  margin: 0;
+}

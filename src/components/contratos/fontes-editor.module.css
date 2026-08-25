@@ -1,0 +1,89 @@
+/* Editor de N pares fonte+valor no padrao do design: bloco sutil com titulo,
+   linhas com select + valor + remover, e a soma destacada no rodape. */
+
+.bloco {
+  border: 1px solid var(--cor-borda-sutil);
+  border-radius: 10px;
+  padding: 0.85rem;
+  background: var(--cor-superficie-sutil);
+  margin: 0;
+}
+
+.titulo {
+  padding: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+}
+
+.linhas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.6rem;
+}
+
+.linha {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.fonte {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.remover {
+  border: 1px solid var(--cor-perigo-borda);
+  background: var(--cor-superficie);
+  color: var(--cor-perigo);
+  border-radius: 7px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0 0.7rem;
+  cursor: pointer;
+}
+
+.remover:hover {
+  background: var(--cor-perigo-suave);
+  border-color: var(--cor-perigo-borda);
+}
+
+.adicionar {
+  margin-top: 0.55rem;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-superficie);
+  color: var(--cor-acento);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 7px;
+  padding: 0.4rem 0.7rem;
+  cursor: pointer;
+}
+
+.adicionar:hover {
+  background: var(--cor-acento-suave);
+  border-color: var(--cor-borda);
+}
+
+.soma {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0.75rem 0 0;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--cor-borda-sutil);
+  font-size: 0.84rem;
+}
+
+.somaRotulo {
+  color: var(--cor-texto-fraco);
+  font-weight: 600;
+}
+
+.somaValor {
+  color: var(--cor-texto);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}

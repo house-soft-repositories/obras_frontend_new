@@ -1,6 +1,7 @@
 import { MedicoesGestao } from "@/components/medicoes/medicoes-gestao";
 import type { OpcaoSelect } from "@/components/obras/obra-form";
 import { podeEscrever } from "@/lib/api/contratos";
+import type { VisaoFisicoFinanceira } from "@/lib/api/financeiro";
 import type { Medicao } from "@/lib/api/medicoes";
 import { apiServerFetch } from "@/lib/api/server";
 import { obterPerfilAtual } from "@/lib/auth/perfil";
@@ -22,10 +23,16 @@ export default async function MedicoesPage({
 }) {
   const { id: obraId } = await params;
 
-  const [medicoes, orgaos, fontes, perfil] = await Promise.all([
+  const [medicoes, orgaos, fontes, visao, perfil] = await Promise.all([
     carregar<Medicao[]>(`/obras/${obraId}/medicoes`, []),
     carregar<OpcaoSelect[]>("/orgaos", []),
     carregar<OpcaoSelect[]>("/fontes?ativo=true", []),
+    // Percentual do medido sobre o total contratado (RN-FIN-08), exibido no
+    // card "Valor medido total".
+    carregar<VisaoFisicoFinanceira | null>(
+      `/obras/${obraId}/visao-fisico-financeira`,
+      null,
+    ),
     obterPerfilAtual(),
   ]);
 
@@ -41,6 +48,7 @@ export default async function MedicoesPage({
         medicoesIniciais={medicoes}
         opcoesFonte={fontes}
         opcoesOrgao={opcoesOrgao}
+        percentualMedido={visao?.medidoTotal.percentual ?? null}
         podeEditar={podeEscrever(perfil)}
       />
     </div>

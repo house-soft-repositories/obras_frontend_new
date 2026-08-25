@@ -50,6 +50,13 @@
   margin: 0;
 }
 
+/* Subtitulo da marca; so o modulo privado usa (referencia Claude Design). */
+.brandSub {
+  font-size: 0.7rem;
+  color: var(--cor-texto-apagado);
+  margin: 2px 0 0;
+}
+
 /* lista plana de navegacao (sem grupos, referencia do design) */
 .nav {
   list-style: none;
@@ -249,6 +256,30 @@
   justify-content: center;
   font-size: 0.78rem;
   font-weight: 600;
+}
+
+/*
+ * Selo "Lado privado" na topbar (referencia Claude Design). Existe para que o
+ * operador saiba, sem ler a URL, que esta no modulo de obras de terceiros —
+ * as duas areas tem telas parecidas e consequencias juridicas diferentes.
+ */
+.selo {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--cor-acento-suave);
+  color: var(--cor-acento);
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .selo {
+    display: none;
+  }
 }
 
 .content {

@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import type { OpcaoSelect } from "@/components/obras/obra-form";
+import formulario from "@/components/comum/formulario.module.css";
 import { FontesEditor } from "@/components/contratos/fontes-editor";
+import secoes from "@/components/obras/detalhe/secoes.module.css";
+import type { OpcaoSelect } from "@/components/obras/obra-form";
 import {
   construirPayloadMedicao,
   criarMedicao,
@@ -14,32 +16,35 @@ import {
   type FormularioMedicao,
   type Medicao,
 } from "@/lib/api/medicoes";
-
-function rotuloTipo(tipo: string): string {
-  return TIPOS_MEDICAO.find((t) => t.chave === tipo)?.titulo ?? tipo;
-}
+import { formatarData } from "@/lib/ui/datas";
+import { formatarMoeda } from "@/lib/ui/dinheiro";
+import { chipTipoMedicao, resumoMedido } from "@/lib/ui/medicao-aba";
 
 function nomeOrgao(opcoes: OpcaoSelect[], id: string): string {
   return opcoes.find((o) => o.id === id)?.nome ?? id;
 }
 
 /**
- * Gestao de Medicoes da obra (E5-04): card "Valor Medido Total", tabela de
- * boletins (numero, data, tipo, orgao, valor total, observacoes), formulario de
- * criacao com N fontes (RN-CRO-20, total recalculado em tela) e exclusao com
- * confirmacao. Acoes de escrita ocultas para o perfil CONSULTA.
+ * Gestao de Medicoes da obra (E5-04): card "Valor medido total" com percentual
+ * sobre o total contratado, tabela de boletins (numero, data, tipo, orgao,
+ * valor total, observacoes) com cards no mobile, formulario de criacao com N
+ * fontes (RN-CRO-20, total recalculado em tela) e exclusao com confirmacao.
+ * Acoes de escrita ocultas para o perfil CONSULTA.
  */
 export function MedicoesGestao({
   obraId,
   medicoesIniciais,
   opcoesFonte,
   opcoesOrgao,
+  percentualMedido,
   podeEditar,
 }: {
   obraId: string;
   medicoesIniciais: Medicao[];
   opcoesFonte: OpcaoSelect[];
   opcoesOrgao: OpcaoSelect[];
+  /** Percentual do medido sobre o total contratado (RN-FIN-08); null se ausente. */
+  percentualMedido?: number | null;
   podeEditar: boolean;
 }) {
   const [medicoes, setMedicoes] = useState<Medicao[]>(medicoesIniciais);
@@ -75,91 +80,167 @@ export function MedicoesGestao({
       setCriando(false);
       await recarregar();
     } catch {
-      setErros(["Falha ao salvar a medicao (numero NORMAL duplicado?)"]);
+      setErros(["Falha ao salvar a medição (número NORMAL duplicado?)"]);
     } finally {
       setSalvando(false);
     }
   }
 
   async function remover(id: string) {
-    if (!window.confirm("Excluir esta medicao?")) return;
+    if (!window.confirm("Excluir esta medição?")) return;
     try {
       await excluirMedicao(obraId, id);
       await recarregar();
     } catch {
-      setErros(["Falha ao excluir a medicao"]);
+      setErros(["Falha ao excluir a medição"]);
     }
   }
 
   return (
-    <section style={{ display: "grid", gap: 24 }}>
-      <div
-        style={{
-          border: "1px solid #ddd",
-          borderRadius: 8,
-          padding: 16,
-          maxWidth: 320,
-        }}
-      >
-        <div style={{ fontSize: 12, color: "#666" }}>Valor Medido Total</div>
-        <div style={{ fontSize: 24, fontWeight: 600 }}>R$ {medidoTotal}</div>
+    <section className={secoes.pilha}>
+      {/* Valor medido total (RN-CRO-19/20) */}
+      <div className={secoes.destaque}>
+        <div className={secoes.destaqueRotulo}>Valor medido total</div>
+        <div className={secoes.destaqueValor}>
+          {formatarMoeda(medidoTotal, { vazio: "R$ 0,00" })}
+        </div>
+        <div className={secoes.destaqueSub}>
+          {resumoMedido(medicoes.length, percentualMedido ?? null)}
+        </div>
       </div>
 
-      <div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <h2 style={{ margin: 0 }}>Boletins de medicao</h2>
+      {erros.length > 0 && (
+        <ul className={secoes.erros}>
+          {erros.map((e) => (
+            <li key={e}>{e}</li>
+          ))}
+        </ul>
+      )}
+
+      <div className={secoes.secao}>
+        <div className={secoes.secaoCabecalho}>
+          <h2 className={secoes.secaoTitulo}>Boletins de medição</h2>
           {podeEditar && !criando && (
-            <button type="button" onClick={() => setCriando(true)}>
-              + Nova medicao
+            <button
+              type="button"
+              className={`btn-primario ${secoes.secaoAcao}`}
+              onClick={() => setCriando(true)}
+            >
+              ＋ Nova medição
             </button>
           )}
         </div>
 
-        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 12 }}>
-          <thead>
-            <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
-              <th>Numero</th>
-              <th>Data</th>
-              <th>Tipo</th>
-              <th>Orgao</th>
-              <th>Valor total</th>
-              <th>Observacoes</th>
-              {podeEditar && <th></th>}
-            </tr>
-          </thead>
-          <tbody>
-            {medicoes.length === 0 && (
-              <tr>
-                <td colSpan={podeEditar ? 7 : 6} style={{ color: "#888", padding: 8 }}>
-                  Nenhuma medicao cadastrada.
-                </td>
-              </tr>
-            )}
-            {medicoes.map((m) => (
-              <tr key={m.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
-                <td>{m.numero}</td>
-                <td>{m.dataMedicao}</td>
-                <td>{rotuloTipo(m.tipo)}</td>
-                <td>{nomeOrgao(opcoesOrgao, m.orgaoId)}</td>
-                <td>R$ {m.valorTotal}</td>
-                <td>{m.observacoes ?? ""}</td>
-                {podeEditar && (
-                  <td>
-                    <button type="button" onClick={() => remover(m.id)}>
-                      excluir
-                    </button>
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {medicoes.length === 0 ? (
+          <p className={secoes.vazio}>Nenhuma medição cadastrada.</p>
+        ) : (
+          <>
+            <div className={`${secoes.soDesktop} ${secoes.tabelaEnvolucro}`}>
+              <table className={secoes.tabela}>
+                <thead>
+                  <tr>
+                    <th>Nº</th>
+                    <th>Data</th>
+                    <th>Tipo</th>
+                    <th>Órgão</th>
+                    <th>Valor total</th>
+                    <th>Observações</th>
+                    {podeEditar && <th />}
+                  </tr>
+                </thead>
+                <tbody>
+                  {medicoes.map((m) => {
+                    const chip = chipTipoMedicao(m.tipo);
+                    return (
+                      <tr key={m.id}>
+                        <td className={`${secoes.forte} ${secoes.num}`}>
+                          {m.numero}
+                        </td>
+                        <td className={secoes.num}>
+                          {formatarData(m.dataMedicao)}
+                        </td>
+                        <td>
+                          <span className={`chip ${chip.classe}`}>
+                            {chip.titulo}
+                          </span>
+                        </td>
+                        <td>{nomeOrgao(opcoesOrgao, m.orgaoId)}</td>
+                        <td className={`${secoes.forte} ${secoes.num}`}>
+                          {formatarMoeda(m.valorTotal)}
+                        </td>
+                        <td>{m.observacoes ?? "—"}</td>
+                        {podeEditar && (
+                          <td className={secoes.direita}>
+                            <button
+                              type="button"
+                              title="Excluir medição"
+                              className={`${secoes.acaoIcone} ${secoes.acaoIconePerigo}`}
+                              onClick={() => remover(m.id)}
+                            >
+                              ✕
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className={secoes.soMobile}>
+              {medicoes.map((m) => {
+                const chip = chipTipoMedicao(m.tipo);
+                return (
+                  <div key={m.id} className={secoes.bloco}>
+                    <div className={secoes.blocoTopo}>
+                      <span className={secoes.blocoData}>
+                        Boletim nº {m.numero}
+                      </span>
+                      <span className={`chip ${chip.classe}`}>
+                        {chip.titulo}
+                      </span>
+                    </div>
+                    <div className={secoes.cartaoLinha}>
+                      <span className={secoes.cartaoChave}>Valor total</span>
+                      <span className={secoes.cartaoValor}>
+                        {formatarMoeda(m.valorTotal)}
+                      </span>
+                    </div>
+                    <div className={secoes.cartaoLinha}>
+                      <span className={secoes.cartaoChave}>Data</span>
+                      <span className={secoes.cartaoValor}>
+                        {formatarData(m.dataMedicao)}
+                      </span>
+                    </div>
+                    <div className={secoes.cartaoLinha}>
+                      <span className={secoes.cartaoChave}>Órgão</span>
+                      <span className={secoes.cartaoValor}>
+                        {nomeOrgao(opcoesOrgao, m.orgaoId)}
+                      </span>
+                    </div>
+                    <div className={secoes.cartaoLinha}>
+                      <span className={secoes.cartaoChave}>Observações</span>
+                      <span className={secoes.cartaoValor}>
+                        {m.observacoes ?? "—"}
+                      </span>
+                    </div>
+                    {podeEditar && (
+                      <button
+                        type="button"
+                        className="btn-perigo"
+                        style={{ width: "100%", marginTop: "0.5rem" }}
+                        onClick={() => remover(m.id)}
+                      >
+                        Excluir
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
 
       {podeEditar && criando && (
@@ -168,83 +249,98 @@ export function MedicoesGestao({
             e.preventDefault();
             void salvar();
           }}
-          style={{ display: "grid", gap: 10, maxWidth: 560 }}
+          className={formulario.cartao}
         >
-          <h3 style={{ margin: 0 }}>Nova medicao</h3>
+          <h3 className={formulario.titulo}>Nova medição</h3>
+
+          <div className={formulario.grade}>
+            <label className={formulario.campo}>
+              <span className={formulario.campoRotulo}>Número *</span>
+              <input
+                type="number"
+                min={1}
+                value={form.numero}
+                onChange={(e) => set("numero", e.target.value)}
+              />
+            </label>
+
+            <label className={formulario.campo}>
+              <span className={formulario.campoRotulo}>Data *</span>
+              <input
+                type="date"
+                value={form.dataMedicao}
+                onChange={(e) => set("dataMedicao", e.target.value)}
+              />
+            </label>
+
+            <label className={formulario.campo}>
+              <span className={formulario.campoRotulo}>Tipo *</span>
+              <select
+                value={form.tipo}
+                onChange={(e) =>
+                  set("tipo", e.target.value as FormularioMedicao["tipo"])
+                }
+              >
+                {TIPOS_MEDICAO.map((t) => (
+                  <option key={t.chave} value={t.chave}>
+                    {t.titulo}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className={formulario.campo}>
+              <span className={formulario.campoRotulo}>Órgão *</span>
+              <select
+                value={form.orgaoId}
+                onChange={(e) => set("orgaoId", e.target.value)}
+              >
+                <option value="">— órgão —</option>
+                {opcoesOrgao.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.nome}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className={formulario.campoLargo}>
+              <FontesEditor
+                fontes={form.fontes}
+                opcoesFonte={opcoesFonte}
+                onChange={(fontes) => set("fontes", fontes)}
+              />
+            </div>
+
+            <label className={`${formulario.campo} ${formulario.campoLargo}`}>
+              <span className={formulario.campoRotulo}>Observações</span>
+              <textarea
+                rows={2}
+                value={form.observacoes ?? ""}
+                onChange={(e) => set("observacoes", e.target.value)}
+              />
+            </label>
+          </div>
+
+          <p className={secoes.parte} style={{ marginTop: "0.9rem" }}>
+            <span className={secoes.parteChave}>Total da medição</span>
+            <span className={secoes.parteValor}>
+              {formatarMoeda(somarFontes(form.fontes), { vazio: "R$ 0,00" })}
+            </span>
+          </p>
+
           {erros.length > 0 && (
-            <ul style={{ color: "#b00", margin: 0 }}>
+            <ul className={formulario.erros}>
               {erros.map((e) => (
                 <li key={e}>{e}</li>
               ))}
             </ul>
           )}
-          <label style={{ display: "grid", gap: 4 }}>
-            Numero
-            <input
-              type="number"
-              min={1}
-              value={form.numero}
-              onChange={(e) => set("numero", e.target.value)}
-            />
-          </label>
-          <label style={{ display: "grid", gap: 4 }}>
-            Data
-            <input
-              type="date"
-              value={form.dataMedicao}
-              onChange={(e) => set("dataMedicao", e.target.value)}
-            />
-          </label>
-          <label style={{ display: "grid", gap: 4 }}>
-            Tipo
-            <select
-              value={form.tipo}
-              onChange={(e) =>
-                set("tipo", e.target.value as FormularioMedicao["tipo"])
-              }
-            >
-              {TIPOS_MEDICAO.map((t) => (
-                <option key={t.chave} value={t.chave}>
-                  {t.titulo}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label style={{ display: "grid", gap: 4 }}>
-            Orgao
-            <select
-              value={form.orgaoId}
-              onChange={(e) => set("orgaoId", e.target.value)}
-            >
-              <option value="">— orgao —</option>
-              {opcoesOrgao.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.nome}
-                </option>
-              ))}
-            </select>
-          </label>
-          <FontesEditor
-            fontes={form.fontes}
-            opcoesFonte={opcoesFonte}
-            onChange={(fontes) => set("fontes", fontes)}
-          />
-          <div style={{ fontWeight: 600 }}>
-            Total: R$ {somarFontes(form.fontes)}
-          </div>
-          <label style={{ display: "grid", gap: 4 }}>
-            Observacoes
-            <textarea
-              value={form.observacoes ?? ""}
-              onChange={(e) => set("observacoes", e.target.value)}
-            />
-          </label>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button type="submit" disabled={salvando}>
-              {salvando ? "Salvando..." : "Salvar"}
-            </button>
+
+          <div className={formulario.rodape}>
             <button
               type="button"
+              className="btn-secundario"
               onClick={() => {
                 setCriando(false);
                 setErros([]);
@@ -252,6 +348,9 @@ export function MedicoesGestao({
               }}
             >
               Cancelar
+            </button>
+            <button type="submit" className="btn-primario" disabled={salvando}>
+              {salvando ? "Salvando..." : "Salvar"}
             </button>
           </div>
         </form>

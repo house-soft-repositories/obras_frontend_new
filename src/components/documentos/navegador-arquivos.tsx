@@ -18,9 +18,11 @@ import {
   moverArquivo,
   obterUrlDownload,
   removerArquivo,
+  siglaTipoArquivo,
   validarNomePasta,
   validarUpload,
 } from "@/lib/api/documentos";
+import estilos from "./arquivos.module.css";
 
 interface Props {
   obraId: string;
@@ -29,8 +31,10 @@ interface Props {
 }
 
 /**
- * Navegador de pastas/arquivos da obra (RN-DOC-02/03/04/05/06/09/13). Consome a
- * API do E8-03 via proxy; o binario sobe direto para a URL pre-assinada.
+ * Navegador de pastas/arquivos da obra (RN-DOC-02/03/04/05/06/09/13), no padrao
+ * da referencia Claude Design: card branco, trilha com "›", pastas em cards e
+ * arquivos em lista com selo de tipo e acoes em icone. Consome a API do E8-03
+ * via proxy; o binario sobe direto para a URL pre-assinada.
  */
 export function NavegadorArquivos({ obraId, raiz, podeEditar }: Props) {
   const [pastaId, setPastaId] = useState(raiz.id);
@@ -46,7 +50,7 @@ export function NavegadorArquivos({ obraId, raiz, podeEditar }: Props) {
     try {
       setConteudo(await listarConteudo(id));
     } catch {
-      setErro("Falha ao carregar o conteudo da pasta");
+      setErro("Falha ao carregar o conteúdo da pasta");
     } finally {
       setCarregando(false);
     }
@@ -59,7 +63,7 @@ export function NavegadorArquivos({ obraId, raiz, podeEditar }: Props) {
         if (vivo) setConteudo(c);
       })
       .catch(() => {
-        if (vivo) setErro("Falha ao carregar o conteudo da pasta");
+        if (vivo) setErro("Falha ao carregar o conteúdo da pasta");
       });
     return () => {
       vivo = false;
@@ -79,7 +83,7 @@ export function NavegadorArquivos({ obraId, raiz, podeEditar }: Props) {
       setNovaPastaAberta(false);
       await recarregar(pastaId);
     } catch {
-      setErro("Nao foi possivel criar a pasta (nome ja existe?)");
+      setErro("Não foi possível criar a pasta (nome já existe?)");
     }
   }
 
@@ -99,7 +103,11 @@ export function NavegadorArquivos({ obraId, raiz, podeEditar }: Props) {
       await Promise.all(
         ups.map(async (up, i) => {
           const f = arquivos[i];
-          await enviarBinario(up.urlUpload, f, f.type || "application/octet-stream");
+          await enviarBinario(
+            up.urlUpload,
+            f,
+            f.type || "application/octet-stream",
+          );
           await confirmarUpload(up.arquivoId, {
             tamanhoBytes: f.size,
             mimeType: f.type || undefined,
@@ -158,51 +166,65 @@ export function NavegadorArquivos({ obraId, raiz, podeEditar }: Props) {
   }
 
   if (!conteudo) {
-    return <p>{erro ?? "Carregando arquivos..."}</p>;
+    return (
+      <div className={estilos.painel}>
+        <p className={estilos.vazio}>{erro ?? "Carregando arquivos…"}</p>
+      </div>
+    );
   }
 
   const naRaiz = ehPastaRaiz(conteudo.pasta);
 
   return (
-    <section>
+    <section className={estilos.painel}>
       {/* Trilha de navegacao (breadcrumb) — RN-DOC-02 */}
-      <nav style={{ marginBottom: "1rem" }} aria-label="Trilha de navegacao">
-        {conteudo.trilha.map((t, i) => (
-          <span key={t.id}>
-            {i > 0 && " / "}
-            <button
-              type="button"
-              onClick={() => setPastaId(t.id)}
-              style={{
-                background: "none",
-                border: "none",
-                color: "#0366d6",
-                cursor: "pointer",
-                padding: 0,
-                fontWeight: t.id === pastaId ? "bold" : "normal",
-              }}
-            >
-              {t.nome}
-            </button>
-          </span>
-        ))}
+      <nav className={estilos.trilha} aria-label="Trilha de navegação">
+        {conteudo.trilha.map((t, i) => {
+          const atual = t.id === pastaId;
+          return (
+            <span key={t.id} style={{ display: "contents" }}>
+              {i > 0 && (
+                <span className={estilos.trilhaSep} aria-hidden>
+                  ›
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => !atual && setPastaId(t.id)}
+                className={
+                  atual
+                    ? `${estilos.trilhaItem} ${estilos.trilhaAtual}`
+                    : estilos.trilhaItem
+                }
+                aria-current={atual ? "page" : undefined}
+              >
+                {t.nome}
+              </button>
+            </span>
+          );
+        })}
       </nav>
 
-      {erro && <p style={{ color: "crimson" }}>{erro}</p>}
+      {erro && <p className={estilos.erro}>{erro}</p>}
 
       {podeEditar && (
-        <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
-          <button type="button" onClick={() => setNovaPastaAberta((v) => !v)}>
-            Nova pasta
+        <div className={estilos.acoes}>
+          <button
+            type="button"
+            className="btn-primario"
+            onClick={() => setNovaPastaAberta((v) => !v)}
+          >
+            ＋ Nova pasta
           </button>
-          <label style={{ cursor: "pointer", border: "1px solid #ccc", padding: "0.25rem 0.5rem" }}>
+          <label className={estilos.envio}>
             Enviar arquivos
             <input
               type="file"
               multiple
               style={{ display: "none" }}
               onChange={(e) => {
-                if (e.target.files?.length) void aoEnviarArquivos(e.target.files);
+                if (e.target.files?.length)
+                  void aoEnviarArquivos(e.target.files);
               }}
             />
           </label>
@@ -210,81 +232,105 @@ export function NavegadorArquivos({ obraId, raiz, podeEditar }: Props) {
       )}
 
       {novaPastaAberta && podeEditar && (
-        <FormularioNovaPasta onCriar={aoCriarPasta} onCancelar={() => setNovaPastaAberta(false)} />
+        <FormularioNovaPasta
+          onCriar={aoCriarPasta}
+          onCancelar={() => setNovaPastaAberta(false)}
+        />
       )}
 
       {/* Subpastas */}
-      <h3>Pastas</h3>
-      {conteudo.subpastas.length === 0 ? (
-        <p>Nenhuma subpasta.</p>
-      ) : (
-        <ul>
+      {conteudo.subpastas.length > 0 && (
+        <div className={estilos.pastas}>
           {conteudo.subpastas.map((p) => (
-            <li key={p.id}>
-              <button
-                type="button"
-                onClick={() => setPastaId(p.id)}
-                style={{ background: "none", border: "none", color: "#0366d6", cursor: "pointer" }}
-              >
-                📁 {p.nome}
-              </button>
-            </li>
+            <button
+              key={p.id}
+              type="button"
+              className={estilos.pasta}
+              onClick={() => setPastaId(p.id)}
+            >
+              <span className={estilos.pastaIcone} aria-hidden>
+                📁
+              </span>
+              <span className={estilos.pastaNome}>{p.nome}</span>
+            </button>
           ))}
-        </ul>
+        </div>
       )}
 
       {/* Arquivos */}
-      <h3>Arquivos ({conteudo.arquivos.total})</h3>
+      <p className={estilos.subtitulo}>Arquivos ({conteudo.arquivos.total})</p>
       {conteudo.arquivos.itens.length === 0 ? (
-        <p>Nenhum arquivo nesta pasta.</p>
+        <p className={estilos.vazio}>Nenhum arquivo nesta pasta.</p>
       ) : (
-        <table style={{ borderCollapse: "collapse", width: "100%" }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign: "left" }}>Nome</th>
-              <th style={{ textAlign: "left" }}>Arquivo original</th>
-              <th style={{ textAlign: "left" }}>Tamanho</th>
-              <th style={{ textAlign: "left" }}>Acoes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {conteudo.arquivos.itens.map((a) => (
-              <tr key={a.id}>
-                <td>{a.nome}</td>
-                <td>{a.nomeOriginal}</td>
-                <td>{formatarTamanho(a.tamanhoBytes)}</td>
-                <td style={{ display: "flex", gap: "0.5rem" }}>
-                  {acoes.baixar && (
-                    <button type="button" onClick={() => void aoBaixar(a)}>
-                      Baixar
-                    </button>
-                  )}
-                  {acoes.editar && (
-                    <button type="button" onClick={() => void aoEditar(a)}>
-                      Editar
-                    </button>
-                  )}
-                  {acoes.mover && (
-                    <button type="button" onClick={() => setMoverArquivoId(a.id)}>
-                      Mover
-                    </button>
-                  )}
-                  {acoes.remover && (
-                    <button type="button" onClick={() => void aoRemover(a)}>
-                      Remover
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className={estilos.lista}>
+          {conteudo.arquivos.itens.map((a) => (
+            <div key={a.id} className={estilos.arquivo}>
+              <span className={estilos.selo} aria-hidden>
+                {siglaTipoArquivo(a.nomeOriginal)}
+              </span>
+              <span className={estilos.arquivoTexto}>
+                <span className={estilos.arquivoNome}>{a.nome}</span>
+                <span className={estilos.arquivoMeta}>
+                  {formatarTamanho(a.tamanhoBytes)} · {a.nomeOriginal}
+                </span>
+              </span>
+              <span className={estilos.arquivoAcoes}>
+                {acoes.baixar && (
+                  <button
+                    type="button"
+                    title="Baixar"
+                    aria-label={`Baixar ${a.nome}`}
+                    className={estilos.icone}
+                    onClick={() => void aoBaixar(a)}
+                  >
+                    ⤓
+                  </button>
+                )}
+                {acoes.editar && (
+                  <button
+                    type="button"
+                    title="Editar"
+                    aria-label={`Editar ${a.nome}`}
+                    className={estilos.icone}
+                    onClick={() => void aoEditar(a)}
+                  >
+                    ✎
+                  </button>
+                )}
+                {acoes.mover && (
+                  <button
+                    type="button"
+                    title="Mover"
+                    aria-label={`Mover ${a.nome}`}
+                    className={estilos.icone}
+                    onClick={() => setMoverArquivoId(a.id)}
+                  >
+                    ⇄
+                  </button>
+                )}
+                {acoes.remover && (
+                  <button
+                    type="button"
+                    title="Remover"
+                    aria-label={`Remover ${a.nome}`}
+                    className={`${estilos.icone} ${estilos.iconePerigo}`}
+                    onClick={() => void aoRemover(a)}
+                  >
+                    🗑
+                  </button>
+                )}
+              </span>
+            </div>
+          ))}
+        </div>
       )}
 
       {/* Modal mover: destino = ancestrais (trilha) + subpastas, mesma obra (RN-DOC-12) */}
       {moverArquivoId && (
-        <div style={{ marginTop: "1rem", border: "1px solid #ccc", padding: "1rem" }}>
-          <p>Mover para qual pasta?</p>
+        <div className={estilos.caixa} style={{ marginTop: "1rem" }}>
+          <span className={estilos.subtitulo} style={{ margin: 0 }}>
+            Mover para
+          </span>
           {destinosMover(
             [
               ...conteudo.trilha.map((t) => ({
@@ -298,18 +344,31 @@ export function NavegadorArquivos({ obraId, raiz, podeEditar }: Props) {
             ],
             pastaId,
           ).map((p) => (
-            <button key={p.id} type="button" onClick={() => void aoMover(p.id)} style={{ marginRight: "0.5rem" }}>
-              {p.nome}
+            <button
+              key={p.id}
+              type="button"
+              className="btn-secundario"
+              onClick={() => void aoMover(p.id)}
+            >
+              📁 {p.nome}
             </button>
           ))}
-          <button type="button" onClick={() => setMoverArquivoId(null)}>
+          <button
+            type="button"
+            className="btn-secundario"
+            onClick={() => setMoverArquivoId(null)}
+          >
             Cancelar
           </button>
         </div>
       )}
 
-      {carregando && <p>Atualizando...</p>}
-      {naRaiz && <p style={{ color: "#888", fontSize: "0.85rem" }}>Voce esta na pasta raiz.</p>}
+      {carregando && <p className={estilos.vazio}>Atualizando…</p>}
+      {naRaiz && conteudo.arquivos.itens.length === 0 && (
+        <p className={estilos.vazio} style={{ marginTop: "0.5rem" }}>
+          Você está na pasta raiz.
+        </p>
+      )}
     </section>
   );
 }
@@ -323,17 +382,22 @@ function FormularioNovaPasta({
 }) {
   const [nome, setNome] = useState("");
   return (
-    <div style={{ marginBottom: "1rem", border: "1px solid #ccc", padding: "1rem" }}>
+    <div className={estilos.caixa}>
       <input
         type="text"
         placeholder="Nome da pasta"
         value={nome}
         onChange={(e) => setNome(e.target.value)}
+        aria-label="Nome da nova pasta"
       />
-      <button type="button" onClick={() => onCriar(nome)} style={{ marginLeft: "0.5rem" }}>
+      <button
+        type="button"
+        className="btn-primario"
+        onClick={() => onCriar(nome)}
+      >
         Criar
       </button>
-      <button type="button" onClick={onCancelar} style={{ marginLeft: "0.5rem" }}>
+      <button type="button" className="btn-secundario" onClick={onCancelar}>
         Cancelar
       </button>
     </div>

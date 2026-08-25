@@ -62,6 +62,10 @@ export interface Estagio {
   dataConclusao: string | null;
   latitude: string | null;
   longitude: string | null;
+  /** Ultimo acumulado de Meta lancado no estagio (derivado — RN-CRO-14). */
+  valorMeta: string | null;
+  /** Ultimo acumulado de Realizado lancado no estagio (derivado). */
+  valorRealizado: string | null;
 }
 
 export interface Acompanhamento {

@@ -26,6 +26,8 @@ function estagio(over: Partial<Estagio> & { id: string }): Estagio {
     dataConclusao: null,
     latitude: null,
     longitude: null,
+    valorMeta: null,
+    valorRealizado: null,
     ...over,
   };
 }

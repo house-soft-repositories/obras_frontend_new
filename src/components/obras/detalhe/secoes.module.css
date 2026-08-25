@@ -1,0 +1,354 @@
+/* Padroes de secao compartilhados pelas abas do detalhe da obra (Contrato,
+   Medicoes, Financeiro), conforme a referencia Claude Design: card branco com
+   cabecalho + acao, cards de destaque com decomposicao, grade de campos,
+   tabela no desktop e cards no mobile. */
+
+.pilha {
+  display: grid;
+  gap: 0.9rem;
+}
+
+/* ---- Card de secao ---- */
+.secao {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 1.1rem;
+}
+
+.secaoCabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  margin-bottom: 0.9rem;
+}
+
+.secaoTitulo {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--cor-texto);
+}
+
+.secaoSub {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: var(--cor-texto-fraco);
+}
+
+.secaoAcao {
+  margin-left: auto;
+}
+
+/* ---- Cards de destaque com decomposicao ---- */
+.destaques {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0.9rem;
+}
+
+.destaque {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 1.1rem;
+}
+
+.destaqueRotulo {
+  font-size: 0.78rem;
+  color: var(--cor-texto-fraco);
+  font-weight: 600;
+}
+
+.destaqueValor {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--cor-texto);
+  margin-top: 0.35rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.destaqueSub {
+  font-size: 0.78rem;
+  color: var(--cor-texto-fraco);
+  margin-top: 0.2rem;
+}
+
+.partes {
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--cor-borda-sutil);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.parte {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+}
+
+.parteChave {
+  color: var(--cor-texto-fraco);
+}
+
+.parteValor {
+  color: var(--cor-texto);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---- Grade de campos (rotulo em caixa alta + valor) ---- */
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+/* ---- Tabela (desktop) ---- */
+.tabelaEnvolucro {
+  border: 1px solid var(--cor-borda-sutil);
+  border-radius: 10px;
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.tabela th {
+  background: var(--cor-cabecalho-tabela);
+  color: var(--cor-texto-fraco);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  border-bottom: none;
+  white-space: nowrap;
+}
+
+.tabela td {
+  padding: 0.6rem 0.8rem;
+  border-bottom: none;
+  border-top: 1px solid var(--cor-borda-sutil);
+  color: var(--cor-texto-medio);
+  vertical-align: middle;
+}
+
+.tabela tbody tr:first-child td {
+  border-top: none;
+}
+
+.forte {
+  font-weight: 600;
+  color: var(--cor-texto);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.direita {
+  text-align: right;
+}
+
+/* ---- Lista embutida (fontes de recurso, itens simples) ---- */
+.listaEmbutida {
+  border: 1px solid var(--cor-borda-sutil);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.itemLista {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.8rem;
+  border-top: 1px solid var(--cor-borda-sutil);
+}
+
+.itemLista:first-child {
+  border-top: none;
+}
+
+.itemCodigo {
+  font-size: 0.72rem;
+  color: var(--cor-texto-apagado);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.itemNome {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+  flex: 1;
+  min-width: 0;
+}
+
+.itemValor {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---- Blocos (paralisacoes) e cards do mobile ---- */
+.blocos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.bloco {
+  border: 1px solid var(--cor-borda-sutil);
+  border-radius: 10px;
+  padding: 0.85rem;
+  background: var(--cor-superficie-sutil);
+}
+
+.blocoTopo {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.blocoData {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+  font-variant-numeric: tabular-nums;
+}
+
+.blocoDireita {
+  margin-left: auto;
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.blocoTexto {
+  font-size: 0.82rem;
+  color: var(--cor-texto-medio);
+  margin: 0.45rem 0 0;
+  line-height: 1.5;
+}
+
+.blocoGrade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--cor-borda-sutil);
+}
+
+.cartaoLinha {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.35rem 0;
+  border-top: 1px solid #f4f5f7;
+  font-size: 0.78rem;
+}
+
+.cartaoLinha:first-of-type {
+  border-top-color: var(--cor-borda-sutil);
+}
+
+.cartaoChave {
+  color: var(--cor-texto-fraco);
+}
+
+.cartaoValor {
+  color: var(--cor-texto);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* ---- Acoes em icone ---- */
+.acaoIcone {
+  width: 32px;
+  height: 32px;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-superficie);
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+
+.acaoIcone:hover {
+  background: var(--cor-fundo);
+  border-color: var(--cor-borda);
+}
+
+.acaoIconePerigo {
+  border-color: var(--cor-perigo-borda);
+  color: var(--cor-perigo);
+}
+
+.acaoIconePerigo:hover {
+  background: var(--cor-perigo-suave);
+  border-color: var(--cor-perigo-borda);
+}
+
+/* ---- Aviso ambar (pre-condicoes de negocio) ---- */
+.aviso {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  margin-top: 0.8rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: var(--raio-campo);
+  background: var(--chip-ambar-bg);
+  border: 1px solid var(--chip-ambar-borda);
+  font-size: 0.78rem;
+  color: var(--chip-ambar-tx);
+  line-height: 1.5;
+}
+
+.erros {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--cor-perigo);
+  font-size: 0.84rem;
+}
+
+.vazio {
+  font-size: 0.84rem;
+  color: var(--cor-texto-fraco);
+  margin: 0;
+}
+
+/* ---- Alternancia tabela (desktop) x cards (mobile) ---- */
+.soDesktop {
+  display: block;
+}
+
+.soMobile {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .soDesktop {
+    display: none;
+  }
+  .soMobile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+}

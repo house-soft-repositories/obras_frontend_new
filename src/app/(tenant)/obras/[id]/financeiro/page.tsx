@@ -27,7 +27,7 @@ export default async function FinanceiroPage({
 }) {
   const { id: obraId } = await params;
 
-  const [empenhos, liquidacoes, pagamentos, visao, fontes, perfil] =
+  const [empenhos, liquidacoes, pagamentos, visao, fontes, obra, perfil] =
     await Promise.all([
       carregar<Empenho[]>(`/obras/${obraId}/empenhos`, []),
       carregar<Liquidacao[]>(`/obras/${obraId}/liquidacoes`, []),
@@ -37,6 +37,12 @@ export default async function FinanceiroPage({
         null,
       ),
       carregar<OpcaoSelect[]>("/fontes?ativo=true", []),
+      // RN-FIN-07: com `vincularPagamentoPercentual` ativa, a medicao vira
+      // pre-condicao bloqueante do pagamento — avisada na propria aba.
+      carregar<{ vincularPagamentoPercentual: boolean } | null>(
+        `/obras/${obraId}`,
+        null,
+      ),
       obterPerfilAtual(),
     ]);
 
@@ -49,6 +55,7 @@ export default async function FinanceiroPage({
         liquidacoesIniciais={liquidacoes}
         pagamentosIniciais={pagamentos}
         visaoInicial={visao}
+        exigeMedicao={obra?.vincularPagamentoPercentual ?? false}
         podeEditar={podeEscrever(perfil)}
       />
     </div>

@@ -230,3 +230,11 @@ export function obterDashboard(f: FiltroObras, orgaoId?: string) {
 export function urlExportar(f: FiltroObras, formato: "PDF" | "CSV"): string {
   return `/api/proxy/relatorios/obras/exportar${qs(f, { formato })}`;
 }
+
+/**
+ * Dossie completo da obra em PDF: ficha, equipe, contrato, aditivos,
+ * paralisacoes, cronograma, medicoes, execucao financeira e anexo fotografico.
+ * Espelha `urlDossie` do modulo de obras privadas.
+ */
+export const urlDossieObra = (obraId: string) =>
+  `/api/proxy/relatorios/obras/${obraId}/dossie.pdf`;

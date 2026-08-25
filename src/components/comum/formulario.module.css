@@ -1,0 +1,107 @@
+/* Padrao de formulario da referencia Claude Design, compartilhado pelos forms
+   das guias da obra (contrato, aditivo, paralisacao, reinicio, medicao): card
+   branco, grade de 2 colunas (1 no mobile) e rodape com acoes a direita. */
+
+.cartao {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 1.15rem;
+  max-width: 820px;
+}
+
+.titulo {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--cor-texto);
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem 1.1rem;
+}
+
+@media (max-width: 720px) {
+  .grade {
+    grid-template-columns: 1fr;
+  }
+}
+
+.campo {
+  display: grid;
+  gap: 0.3rem;
+  align-content: start;
+  min-width: 0;
+}
+
+.campoRotulo {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+  width: 100%;
+}
+
+.campoLargo {
+  grid-column: 1 / -1;
+}
+
+/* Bloco condicional (prazo de execucao, vigencia aditivada) */
+.bloco {
+  grid-column: 1 / -1;
+  border: 1px solid var(--cor-borda-sutil);
+  border-radius: 10px;
+  padding: 0.85rem;
+  background: var(--cor-superficie-sutil);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem 1.1rem;
+}
+
+@media (max-width: 720px) {
+  .bloco {
+    grid-template-columns: 1fr;
+  }
+}
+
+.blocoTitulo {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cor-texto);
+}
+
+.erros {
+  margin: 1rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--cor-perigo);
+  font-size: 0.84rem;
+}
+
+.alerta {
+  margin: 1rem 0 0;
+  padding: 0.7rem 0.8rem;
+  border-radius: var(--raio-campo);
+  background: var(--chip-ambar-bg);
+  border: 1px solid var(--chip-ambar-borda);
+  color: var(--chip-ambar-tx);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.rodape {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  border-top: 1px solid var(--cor-borda-sutil);
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  flex-wrap: wrap;
+}

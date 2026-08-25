@@ -8,6 +8,7 @@ import { saudacaoPorHora } from "@/lib/ui/obra-labels";
 const ATALHOS = [
   { href: "/obras", icone: "📁", titulo: "Obras", desc: "Acompanhe e gerencie todas as obras." },
   { href: "/obras/nova", icone: "➕", titulo: "Nova obra", desc: "Cadastrar uma nova obra ou acao." },
+  { href: "/obras-privadas", icone: "🏗️", titulo: "Obras privadas", desc: "Fiscalizacao de obras de terceiros." },
   { href: "/dashboard", icone: "📊", titulo: "Dashboard", desc: "Indicadores fisico-financeiros." },
   { href: "/relatorios/obras", icone: "📄", titulo: "Relatorios", desc: "Gere relatorios e exportacoes." },
   { href: "/cadastros/orgaos", icone: "🏛️", titulo: "Orgaos", desc: "Secretarias e orgaos executores." },

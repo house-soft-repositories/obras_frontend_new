@@ -4,6 +4,7 @@ import {
   destinosMover,
   ehPastaRaiz,
   formatarTamanho,
+  siglaTipoArquivo,
   trilhaTexto,
   validarNomePasta,
   validarUpload,
@@ -71,5 +72,28 @@ describe("documentos — regras de UI (E8-04)", () => {
         { id: "c", nome: "Contrato" },
       ]),
     ).toBe("Raiz > Contrato");
+  });
+});
+
+describe("siglaTipoArquivo — selo da lista de arquivos", () => {
+  it("usa a extensao em caixa alta", () => {
+    expect(siglaTipoArquivo("Contrato_Original.pdf")).toBe("PDF");
+    expect(siglaTipoArquivo("planilha.CSV")).toBe("CSV");
+  });
+
+  it("agrupa variantes conhecidas", () => {
+    expect(siglaTipoArquivo("cronograma.xlsx")).toBe("XLS");
+    expect(siglaTipoArquivo("oficio.docx")).toBe("DOC");
+    expect(siglaTipoArquivo("foto.jpeg")).toBe("IMG");
+  });
+
+  it("sem extensao reconhecivel cai em ARQ", () => {
+    expect(siglaTipoArquivo("arquivo_sem_extensao")).toBe("ARQ");
+    expect(siglaTipoArquivo("termina_com_ponto.")).toBe("ARQ");
+    expect(siglaTipoArquivo(null)).toBe("ARQ");
+  });
+
+  it("extensao muito longa e truncada para caber no selo", () => {
+    expect(siglaTipoArquivo("backup.database")).toBe("DATA");
   });
 });

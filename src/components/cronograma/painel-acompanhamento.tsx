@@ -16,7 +16,11 @@ import {
   type Estagio,
   type TipoValorAcompanhamento,
 } from "@/lib/api/cronograma";
-import { serieHistorico, unidadeEixo } from "@/lib/api/cronograma-visoes";
+import { formatarValorAcompanhamento } from "@/lib/api/cronograma-visoes";
+import { desvioEstagio } from "@/lib/ui/cronograma-estagio";
+import { formatarData, formatarDataHora } from "@/lib/ui/datas";
+import type { UsuarioResumo } from "@/lib/ui/usuario-labels";
+import estilos from "./acompanhamento.module.css";
 
 function mensagemErro(e: unknown): string {
   if (e instanceof ErroApi) {
@@ -29,12 +33,26 @@ function mensagemErro(e: unknown): string {
   return "Falha de rede";
 }
 
+/** Chip do Realizado: tom pelo desvio contra a meta do mesmo lancamento. */
+function classeChipRealizado(
+  meta: string | null,
+  realizado: string | null,
+): string {
+  if (realizado === null) return "chip-cinza";
+  const { tom } = desvioEstagio(meta, realizado);
+  if (tom === "critico") return "chip-vermelho";
+  if (tom === "atencao") return "chip-ambar";
+  return "chip-verde";
+}
+
 export function PainelAcompanhamento({
   obraId,
   estagio,
+  usuarios = [],
 }: {
   obraId: string;
   estagio: Estagio;
+  usuarios?: UsuarioResumo[];
 }) {
   const [acomps, setAcomps] = useState<Acompanhamento[]>([]);
   const [comentarios, setComentarios] = useState<Comentario[]>([]);
@@ -77,7 +95,7 @@ export function PainelAcompanhamento({
 
   // O tipo de valor fica travado apos o primeiro lancamento (RN-CRO-14).
   const tipoTravado = estagio.tipoValor != null || acomps.length > 0;
-  const tipoEfetivo = estagio.tipoValor ?? (acomps.length > 0 ? tipoValor : tipoValor);
+  const tipoEfetivo = estagio.tipoValor ?? tipoValor;
 
   async function lancar(e: React.FormEvent) {
     e.preventDefault();
@@ -129,41 +147,31 @@ export function PainelAcompanhamento({
     }
   }
 
-  const serie = serieHistorico(acomps);
-  const unidade = unidadeEixo(estagio.tipoValor ?? tipoEfetivo);
-  const maxValor = Math.max(
-    1,
-    ...serie.flatMap((p) => [p.meta ?? 0, p.realizado ?? 0]),
+  const lancamentos = [...acomps].sort((a, b) =>
+    a.dataReferencia.localeCompare(b.dataReferencia),
   );
+  const nomeAutor = (id: string) =>
+    usuarios.find((u) => u.id === id)?.nome ?? "Usuário";
 
   return (
-    <div
-      style={{
-        marginTop: 12,
-        padding: 12,
-        border: "1px solid #ccd",
-        borderRadius: 6,
-        background: "#f6f8ff",
-      }}
-    >
-      <h3 style={{ marginTop: 0 }}>
-        Acompanhamento — {estagio.descricao}
-        {estagio.tipoValor && (
-          <span style={{ fontWeight: 400, fontSize: 13 }}>
-            {" "}
-            (tipo: {estagio.tipoValor})
-          </span>
-        )}
-      </h3>
+    <div className={estilos.painel}>
+      <div className={estilos.cabecalho}>
+        <div>
+          <h3 className={estilos.titulo}>Acompanhamento · Meta × Realizado</h3>
+          <p className={estilos.sub}>
+            {estagio.descricao}
+            {estagio.tipoValor
+              ? ` · tipo de valor: ${estagio.tipoValor} (travado)`
+              : " · tipo de valor definido no primeiro lançamento"}
+          </p>
+        </div>
+      </div>
 
-      {erro && <p style={{ color: "crimson" }}>{erro}</p>}
+      {erro && <p className={estilos.erro}>{erro}</p>}
 
-      <form
-        onSubmit={lancar}
-        style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "end" }}
-      >
-        <label style={{ display: "grid", fontSize: 13 }}>
-          Data
+      <form onSubmit={lancar} className={estilos.formulario}>
+        <label className={estilos.campo}>
+          Data de referência
           <input
             type="date"
             value={dataReferencia}
@@ -171,7 +179,7 @@ export function PainelAcompanhamento({
             required
           />
         </label>
-        <label style={{ display: "grid", fontSize: 13 }}>
+        <label className={estilos.campo}>
           Tipo
           <select
             value={tipoEfetivo}
@@ -187,7 +195,7 @@ export function PainelAcompanhamento({
             ))}
           </select>
         </label>
-        <label style={{ display: "grid", fontSize: 13 }}>
+        <label className={estilos.campo}>
           Meta
           <input
             type="number"
@@ -196,106 +204,107 @@ export function PainelAcompanhamento({
             placeholder="acumulado"
           />
         </label>
-        <label style={{ display: "grid", fontSize: 13 }}>
+        <label className={estilos.campo}>
           Realizado
           <input
             type="number"
             value={valorRealizado}
             onChange={(e) => setValorRealizado(e.target.value)}
-            placeholder="so EM_DESENVOLVIMENTO"
+            placeholder="só EM_DESENVOLVIMENTO"
           />
         </label>
-        <button type="submit" disabled={enviando}>
-          {enviando ? "Lancando..." : "Lancar"}
+        <button type="submit" className="btn-primario" disabled={enviando}>
+          {enviando ? "Lançando..." : "＋ Lançar acompanhamento"}
         </button>
       </form>
 
       {/* Historico Meta x Realizado (RN-CRO-17) */}
-      {serie.length > 0 && (
-        <div style={{ marginTop: 12 }}>
-          <strong style={{ fontSize: 13 }}>Historico ({unidade})</strong>
-          <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>
-            <thead>
+      <div className={estilos.tabelaEnvolucro}>
+        <table className={estilos.tabela}>
+          <thead>
+            <tr>
+              <th>Data de referência</th>
+              <th>Meta</th>
+              <th>Realizado</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {lancamentos.length === 0 && (
               <tr>
-                <th style={{ textAlign: "left" }}>Data</th>
-                <th style={{ textAlign: "left" }}>Meta</th>
-                <th style={{ textAlign: "left" }}>Realizado</th>
-                <th>Evolucao</th>
-                <th></th>
+                <td colSpan={4}>Nenhum lançamento registrado.</td>
               </tr>
-            </thead>
-            <tbody>
-              {acomps
-                .slice()
-                .sort((a, b) => a.dataReferencia.localeCompare(b.dataReferencia))
-                .map((a) => {
-                  const meta = a.valorMeta != null ? Number(a.valorMeta) : 0;
-                  const real =
-                    a.valorRealizado != null ? Number(a.valorRealizado) : 0;
-                  return (
-                    <tr key={a.id}>
-                      <td>{a.dataReferencia}</td>
-                      <td>{a.valorMeta ?? "—"}</td>
-                      <td>{a.valorRealizado ?? "—"}</td>
-                      <td style={{ width: 160 }}>
-                        <div style={{ background: "#eee", height: 6 }}>
-                          <div
-                            style={{
-                              width: `${(meta / maxValor) * 100}%`,
-                              height: 3,
-                              background: "#06c",
-                            }}
-                          />
-                          <div
-                            style={{
-                              width: `${(real / maxValor) * 100}%`,
-                              height: 3,
-                              background: "#2a8",
-                            }}
-                          />
-                        </div>
-                      </td>
-                      <td>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            excluirAcompanhamento(obraId, estagio.id, a.id)
-                              .then(recarregar)
-                              .catch((e) => setErro(mensagemErro(e)))
-                          }
-                        >
-                          x
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-            </tbody>
-          </table>
-        </div>
-      )}
+            )}
+            {lancamentos.map((a) => (
+              <tr key={a.id}>
+                <td className={estilos.num}>
+                  {formatarData(a.dataReferencia)}
+                </td>
+                <td className={estilos.num} style={{ fontWeight: 600 }}>
+                  {formatarValorAcompanhamento(a.valorMeta, tipoEfetivo)}
+                </td>
+                <td>
+                  <span
+                    className={`chip ${classeChipRealizado(
+                      a.valorMeta,
+                      a.valorRealizado,
+                    )}`}
+                  >
+                    {formatarValorAcompanhamento(a.valorRealizado, tipoEfetivo)}
+                  </span>
+                </td>
+                <td style={{ textAlign: "right" }}>
+                  <button
+                    type="button"
+                    className={estilos.acaoIcone}
+                    title="Excluir lançamento"
+                    onClick={() =>
+                      excluirAcompanhamento(obraId, estagio.id, a.id)
+                        .then(recarregar)
+                        .catch((e) => setErro(mensagemErro(e)))
+                    }
+                  >
+                    ✕
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Comentarios (RN-CRO-17) */}
-      <div style={{ marginTop: 12 }}>
-        <strong style={{ fontSize: 13 }}>Comentarios</strong>
-        <ul style={{ margin: "4px 0", paddingLeft: 18, fontSize: 13 }}>
-          {comentarios.map((c) => (
-            <li key={c.id}>{c.texto}</li>
-          ))}
-        </ul>
-        <form onSubmit={comentar} style={{ display: "flex", gap: 6 }}>
-          <input
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-            placeholder="Comentar..."
-            style={{ flex: 1 }}
-            required
-          />
-          <button type="submit" disabled={enviando}>
-            Comentar
-          </button>
-        </form>
+      <div className={estilos.secao}>Comentários</div>
+      <div className={estilos.comentarios}>
+        {comentarios.length === 0 && (
+          <p className={estilos.vazio}>Nenhum comentário neste estágio.</p>
+        )}
+        {comentarios.map((c) => (
+          <div key={c.id} className={estilos.comentario}>
+            <div className={estilos.comentarioTopo}>
+              <span className={estilos.comentarioAutor}>
+                {nomeAutor(c.autorUsuarioId)}
+              </span>
+              <span className={estilos.comentarioData}>
+                {formatarDataHora(c.criadoEm)}
+              </span>
+            </div>
+            <p className={estilos.comentarioTexto}>{c.texto}</p>
+          </div>
+        ))}
       </div>
+      <form onSubmit={comentar} className={estilos.novoComentario}>
+        <input
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+          placeholder="Escreva um comentário…"
+          aria-label="Novo comentário"
+          required
+        />
+        <button type="submit" className="btn-primario" disabled={enviando}>
+          Enviar
+        </button>
+      </form>
     </div>
   );
 }

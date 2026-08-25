@@ -25,6 +25,7 @@ import {
   mensagemErro,
   proxyJson,
 } from "@/components/cadastros/proxy-cadastros";
+import { EntradaDinheiro } from "@/components/comum/entrada-dinheiro";
 import {
   filtrarCadastro,
   moedaBRL,
@@ -281,14 +282,11 @@ export default function FontesPage() {
               }
             />
           </Campo>
-          <Campo rotulo="Valor previsto" dica="Em reais, ex.: 1000.00.">
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={form.valorPrevisto}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, valorPrevisto: e.target.value }))
+          <Campo rotulo="Valor previsto" dica="Em reais, ex.: R$ 1.000,00.">
+            <EntradaDinheiro
+              valor={form.valorPrevisto}
+              onChange={(valorPrevisto) =>
+                setForm((f) => ({ ...f, valorPrevisto }))
               }
             />
           </Campo>

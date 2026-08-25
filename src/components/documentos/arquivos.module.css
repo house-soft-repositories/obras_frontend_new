@@ -1,0 +1,236 @@
+/* Navegador de arquivos da obra no padrao da referencia Claude Design: card
+   branco, trilha com "›", pastas em cards e arquivos em lista com selo de tipo
+   e acoes em icone. */
+
+.painel {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 1.1rem;
+}
+
+/* ---- Trilha (breadcrumb) ---- */
+.trilha {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  font-size: 0.84rem;
+  margin-bottom: 1rem;
+}
+
+.trilhaItem {
+  border: none;
+  background: none;
+  padding: 0;
+  min-height: 0;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--cor-acento);
+  cursor: pointer;
+}
+
+.trilhaItem:hover {
+  text-decoration: underline;
+  border-color: transparent;
+}
+
+.trilhaAtual,
+.trilhaAtual:hover {
+  color: var(--cor-texto);
+  cursor: default;
+  text-decoration: none;
+}
+
+.trilhaSep {
+  color: #cbd1da;
+}
+
+/* ---- Barra de acoes ---- */
+.acoes {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+/* Rotulo estilizado como botao secundario para o input[type=file] escondido */
+.envio {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: var(--raio-campo);
+  padding: 0.7rem 1rem;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.envio:hover {
+  background: var(--cor-fundo);
+}
+
+/* ---- Pastas ---- */
+.pastas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 1.1rem;
+}
+
+.pasta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: left;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-superficie-sutil);
+  border-radius: 10px;
+  padding: 0.75rem;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.pasta:hover {
+  background: var(--cor-acento-suave);
+  border-color: #c9d3ee;
+}
+
+.pastaIcone {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.pastaNome {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* ---- Arquivos ---- */
+.lista {
+  border: 1px solid var(--cor-borda-sutil);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.arquivo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.8rem;
+  border-top: 1px solid var(--cor-borda-sutil);
+}
+
+.arquivo:first-child {
+  border-top: none;
+}
+
+.selo {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: var(--cor-acento-suave);
+  color: var(--cor-acento);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.62rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.arquivoTexto {
+  min-width: 0;
+  flex: 1;
+}
+
+.arquivoNome {
+  display: block;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.arquivoMeta {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--cor-texto-apagado);
+}
+
+.arquivoAcoes {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.icone {
+  width: 32px;
+  height: 32px;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-superficie);
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.icone:hover {
+  background: var(--cor-fundo);
+  border-color: var(--cor-borda);
+}
+
+.iconePerigo {
+  border-color: var(--cor-perigo-borda);
+  color: var(--cor-perigo);
+}
+
+.iconePerigo:hover {
+  background: var(--cor-perigo-suave);
+  border-color: var(--cor-perigo-borda);
+}
+
+/* ---- Blocos auxiliares ---- */
+.subtitulo {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--cor-texto-apagado);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.5rem;
+}
+
+.caixa {
+  border: 1px solid var(--cor-borda-sutil);
+  border-radius: 10px;
+  padding: 0.85rem;
+  background: var(--cor-superficie-sutil);
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.erro {
+  color: var(--cor-perigo);
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+}
+
+.vazio {
+  font-size: 0.84rem;
+  color: var(--cor-texto-fraco);
+  margin: 0;
+}

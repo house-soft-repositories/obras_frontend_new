@@ -3,6 +3,7 @@
  * RN-CRO-17): Gantt (barras por data), calendario mensal (prazos por dia) e
  * historico Meta x Realizado por estagio. Testaveis sem renderizar.
  */
+import { formatarMoeda } from "../ui/dinheiro";
 import type { Acompanhamento, Estagio } from "./cronograma";
 
 function diaUTC(data: string): number {
@@ -116,4 +117,20 @@ export function unidadeEixo(tipoValor: string | null): string {
   if (tipoValor === "FINANCEIRO") return "R$";
   if (tipoValor === "NUMERICO") return "un";
   return "";
+}
+
+/**
+ * Texto de um valor de acompanhamento conforme o tipo do estagio (RN-CRO-17):
+ * FINANCEIRO sai como moeda ("R$ 1.234,56"), PERCENTUAL como "50%" e NUMERICO
+ * com a unidade. Ausente -> "—".
+ */
+export function formatarValorAcompanhamento(
+  valor: string | number | null | undefined,
+  tipoValor: string | null,
+): string {
+  if (valor === null || valor === undefined || valor === "") return "—";
+  if (tipoValor === "FINANCEIRO") return formatarMoeda(valor);
+  const unidade = unidadeEixo(tipoValor);
+  if (unidade === "%") return `${valor}%`;
+  return unidade ? `${valor} ${unidade}` : String(valor);
 }

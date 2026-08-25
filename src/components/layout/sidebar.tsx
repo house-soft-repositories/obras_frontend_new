@@ -4,44 +4,14 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { limparCacheMe, papelPrincipal, type MeResposta } from "@/lib/api/me";
 import { iniciais } from "@/lib/ui/obra-labels";
+import { ehAtivo, marcaDaRota, menuDaRota } from "@/lib/ui/navegacao";
 import styles from "./app-shell.module.css";
 
-export interface ItemMenu {
-  href: string;
-  rotulo: string;
-  icone: string;
-}
-
-/**
- * Menu de navegacao plano (sem grupos), na ordem da referencia visual
- * "Obras Publicas" (Claude Design), com todas as funcionalidades globais.
+/*
+ * Toda a logica pura de navegacao (menus, marca e item ativo) vive em
+ * `lib/ui/navegacao.ts` para ser testavel no vitest, que roda em ambiente node
+ * sem DOM. Aqui fica apenas o componente.
  */
-export const MENU: ItemMenu[] = [
-  { href: "/home", rotulo: "Home", icone: "⌂" },
-  { href: "/obras", rotulo: "Obras", icone: "▤" },
-  { href: "/obras/nova", rotulo: "Nova obra", icone: "＋" },
-  { href: "/dashboard", rotulo: "Dashboard", icone: "◧" },
-  { href: "/relatorios/obras", rotulo: "Relatórios", icone: "▦" },
-  { href: "/cadastros/orgaos", rotulo: "Órgãos", icone: "◈" },
-  { href: "/cadastros/localidades", rotulo: "Localidades", icone: "⌖" },
-  { href: "/cadastros/usuarios", rotulo: "Usuários", icone: "⚇" },
-  { href: "/cadastros/fontes", rotulo: "Fontes", icone: "＄" },
-  { href: "/cadastros/empresas-contratadas", rotulo: "Empresas", icone: "▣" },
-  { href: "/admin/tenants", rotulo: "Tenants", icone: "⬚" },
-];
-
-/**
- * Item ativo: "Nova obra" apenas na rota exata; "Obras" cobre a listagem e o
- * detalhe (/obras/[id]/*) mas nao /obras/nova; os demais casam por prefixo.
- */
-export function ehAtivo(pathname: string, href: string): boolean {
-  if (href === "/obras/nova") return pathname === "/obras/nova";
-  if (href === "/obras") {
-    if (pathname === "/obras/nova") return false;
-    return pathname === "/obras" || pathname.startsWith("/obras/");
-  }
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
 
 interface Props {
   mobileAberto?: boolean;
@@ -53,6 +23,8 @@ interface Props {
 export function Sidebar({ mobileAberto, aoNavegar, me }: Props) {
   const pathname = usePathname() ?? "";
   const router = useRouter();
+  const menu = menuDaRota(pathname);
+  const marca = marcaDaRota(pathname);
 
   async function sair() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -67,11 +39,16 @@ export function Sidebar({ mobileAberto, aoNavegar, me }: Props) {
     >
       <div className={styles.brand}>
         <span className={styles.brandLogo}>OP</span>
-        <p className={styles.brandTitulo}>Obras Públicas</p>
+        <div style={{ minWidth: 0 }}>
+          <p className={styles.brandTitulo}>{marca.titulo}</p>
+          {marca.subtitulo ? (
+            <p className={styles.brandSub}>{marca.subtitulo}</p>
+          ) : null}
+        </div>
       </div>
 
       <ul className={styles.nav}>
-        {MENU.map((item) => (
+        {menu.map((item) => (
           <li key={item.href}>
             <Link
               href={item.href}

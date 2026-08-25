@@ -11,6 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import type { FluxoFisicoFinanceiro } from "@/lib/api/relatorios";
+import { formatarMoeda, formatarMoedaCompacta } from "@/lib/ui/dinheiro";
 import { BotoesDownloadGrafico } from "./botoes-download-grafico";
 
 /** Graficos do FluxoFisicoFinanceiro (RN-REL-17): valores e fisico x financeiro. */
@@ -46,9 +47,13 @@ export function GraficoFluxoFisicoFinanceiro({
             <BarChart data={valores}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="nome" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="valor" fill="#2563eb" />
+              {/* Eixo compacto ("R$ 1,5 mi") para nao estourar a largura. */}
+              <YAxis
+                width={90}
+                tickFormatter={(v: number) => formatarMoedaCompacta(v)}
+              />
+              <Tooltip formatter={(v) => formatarMoeda(v as number)} />
+              <Bar dataKey="valor" fill="#2563eb" name="Valor" />
             </BarChart>
           </ResponsiveContainer>
         </div>

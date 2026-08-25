@@ -70,6 +70,16 @@ export interface ContratoFonte {
   valor: string;
 }
 
+/**
+ * Fonte como exibida nas guias da obra: nome para os selects e o codigo
+ * orcamentario opcional (RN-FIN-12) para a lista de fontes do contrato.
+ */
+export interface FonteResumo {
+  id: string;
+  nome: string;
+  codigo?: string | null;
+}
+
 export interface Contrato {
   id: string;
   obraId: string;

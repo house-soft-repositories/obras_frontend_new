@@ -3,6 +3,7 @@
  * contrato OpenAPI (types.gen.ts); regras de dominio (RN-FIN-04/10, encadeamento
  * empenho->liquidacao->pagamento) em funcoes PURAS testaveis sem render.
  */
+import { formatarMoeda } from "../ui/dinheiro";
 import { ErroApi } from "./obras";
 import type { components } from "./types.gen";
 
@@ -100,15 +101,11 @@ export interface BarraVisao {
 
 /**
  * Formata um valor decimal (string da API ou number) como moeda pt-BR
- * ("R$ 1.234.567,89"). Valores invalidos caem para zero. Funcao PURA.
+ * ("R$ 1.234.567,89"). Valores invalidos caem para zero — indicadores
+ * financeiros nunca ficam sem numero. Funcao PURA (delega a `ui/dinheiro`).
  */
 export function formatarMoedaBRL(valor: string | number): string {
-  const n = typeof valor === "number" ? valor : Number(valor);
-  const seguro = Number.isFinite(n) ? n : 0;
-  return `R$ ${seguro.toLocaleString("pt-BR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+  return formatarMoeda(valor, { vazio: "R$ 0,00" });
 }
 
 /**

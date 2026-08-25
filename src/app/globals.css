@@ -4,13 +4,26 @@
   /* Paleta base (Claude Design — "Obras Publicas") */
   --cor-fundo: #f5f6f8;
   --cor-superficie: #ffffff;
+  --cor-superficie-sutil: #f9fafb;
+  --cor-cabecalho-tabela: #f7f8fa;
   --cor-texto: #1f2933;
   --cor-texto-fraco: #6b7280;
+  --cor-texto-medio: #4b5563;
+  --cor-texto-apagado: #9ca3af;
   --cor-borda: #e2e5ea;
+  --cor-borda-sutil: #eef0f3;
   --cor-borda-forte: #d4d8e0;
   --cor-acento: #2563eb;
   --cor-acento-escuro: #1d4ed8;
   --cor-acento-suave: #eef3fe;
+
+  /* Perigo / sucesso (acoes destrutivas e de conclusao) */
+  --cor-perigo: #dc2626;
+  --cor-perigo-borda: #f3d6d6;
+  --cor-perigo-suave: #fdeaea;
+  --cor-sucesso: #15803d;
+  --cor-sucesso-borda: #cfe6d7;
+  --cor-sucesso-suave: #e7f6ec;
 
   /* Sidebar (escura) */
   --cor-sidebar-fundo: #1f2937;
@@ -27,6 +40,11 @@
   --chip-vermelho-tx: #b91c1c;
   --chip-cinza-bg: #eef0f3;
   --chip-cinza-tx: #4b5563;
+  --chip-ambar-bg: #fdf4e3;
+  --chip-ambar-tx: #92620a;
+  --chip-ambar-borda: #f2e3bf;
+  --chip-roxo-bg: #f0ebfb;
+  --chip-roxo-tx: #6d28d9;
 
   /* Semaforo de desempenho */
   --sem-verde: #16a34a;
@@ -37,6 +55,43 @@
 
   --raio: 12px;
   --raio-campo: 9px;
+}
+
+/*
+ * Modulo Obras Privadas (referencia Claude Design — "Obras Privadas").
+ * Escopado por [data-modulo="privadas"], que o AppShell aplica quando a rota
+ * comeca em /obras-privadas. Como .btn-primario, .chip-azul, links, foco e
+ * bordas ja leem var(--cor-acento), TODO o modulo vira teal sem tocar em
+ * nenhum CSS Module — e a area publica fica intocada.
+ *
+ * As cores semanticas (verde=sucesso, vermelho=perigo, ambar=aviso) NAO mudam:
+ * so o acento identifica o lado privado.
+ */
+[data-modulo="privadas"] {
+  --cor-acento: #0f766e;
+  --cor-acento-escuro: #115e59;
+  --cor-acento-suave: #e6f4f2;
+  --cor-acento-borda: #cfe4e1;
+  --cor-acento-fundo: #f5fbfa;
+  --cor-acento-anel: #b9ded8;
+
+  --chip-teal-bg: #e6f4f2;
+  --chip-teal-tx: #0f766e;
+
+  --cor-perigo-forte: #7f1d1d;
+  --cor-perigo-forte-suave: #f9dada;
+  --cor-perigo-borda-forte: #f3c9c9;
+  --cor-aviso-badge: #f7e6c0;
+
+  --cor-linha-sutil: #f4f5f7;
+  --cor-linha-tabela: #f1f3f6;
+  --cor-separador: #cbd1da;
+}
+
+/* Chip teal: exclusivo do modulo privado (documento, registro, PDF). */
+.chip-teal {
+  background: var(--chip-teal-bg, #e6f4f2);
+  color: var(--chip-teal-tx, #0f766e);
 }
 
 * {
@@ -50,7 +105,12 @@ body {
 }
 
 body {
-  font-family: var(--fonte, Inter), system-ui, -apple-system, "Segoe UI", Roboto,
+  font-family:
+    var(--fonte, Inter),
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
     sans-serif;
   background: var(--cor-fundo);
   color: var(--cor-texto);
@@ -97,7 +157,9 @@ button {
   background: var(--cor-superficie);
   color: var(--cor-texto);
   cursor: pointer;
-  transition: background 0.12s ease, border-color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
 }
 
 button:hover:not(:disabled) {
@@ -178,6 +240,59 @@ th {
   border-color: transparent;
 }
 
+.btn-secundario {
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  font-weight: 600;
+  border-radius: var(--raio-campo);
+  padding: 0.7rem 1rem;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.btn-secundario:hover {
+  background: var(--cor-fundo);
+  border-color: var(--cor-borda);
+}
+
+.btn-perigo {
+  border: 1px solid var(--cor-perigo-borda);
+  background: var(--cor-superficie);
+  color: var(--cor-perigo);
+  font-weight: 600;
+  border-radius: var(--raio-campo);
+  padding: 0.7rem 1rem;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.btn-perigo:hover {
+  background: var(--cor-perigo-suave);
+  border-color: var(--cor-perigo-borda);
+}
+
+/* Rotulo micro em caixa alta usado nas grades de campos (Dados, Contrato). */
+.rotulo-campo {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--cor-texto-apagado);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.valor-campo {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--cor-texto);
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
 .chip {
   display: inline-block;
   font-size: 0.75rem;
@@ -201,4 +316,12 @@ th {
 .chip-cinza {
   background: var(--chip-cinza-bg);
   color: var(--chip-cinza-tx);
+}
+.chip-ambar {
+  background: var(--chip-ambar-bg);
+  color: var(--chip-ambar-tx);
+}
+.chip-roxo {
+  background: var(--chip-roxo-bg);
+  color: var(--chip-roxo-tx);
 }

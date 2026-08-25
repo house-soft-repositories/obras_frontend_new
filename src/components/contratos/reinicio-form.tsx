@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import formulario from "@/components/comum/formulario.module.css";
 import {
   campoReinicioDesabilitado,
   ErroApi,
@@ -78,60 +79,60 @@ export function ReinicioForm({
     <form
       onSubmit={enviar}
       aria-label="formulario-reinicio"
-      style={{
-        display: "grid",
-        gap: 8,
-        maxWidth: 420,
-        padding: 12,
-        border: "1px solid #ddd",
-        borderRadius: 6,
-        marginTop: 8,
-      }}
+      className={formulario.cartao}
+      style={{ marginTop: "0.8rem" }}
     >
-      <h4>Registrar reinicio</h4>
-      <label style={lbl}>
-        Data de reinicio
-        <input
-          type="date"
-          value={form.dataReinicio}
-          disabled={desabilitado.dataReinicio}
-          onChange={(e) => set("dataReinicio", e.target.value)}
-        />
-      </label>
-      <label style={lbl}>
-        ou Dias parados
-        <input
-          type="number"
-          min={1}
-          value={form.diasParados}
-          disabled={desabilitado.diasParados}
-          onChange={(e) => set("diasParados", e.target.value)}
-        />
-      </label>
-      <label style={lbl}>
-        Termo de retomada (id do arquivo) *
-        <input
-          value={form.termoRetomadaArquivoId}
-          onChange={(e) => set("termoRetomadaArquivoId", e.target.value)}
-        />
-      </label>
+      <h4 className={formulario.titulo}>Registrar reinício</h4>
+
+      <div className={formulario.grade}>
+        <label className={formulario.campo}>
+          <span className={formulario.campoRotulo}>Data de reinício</span>
+          <input
+            type="date"
+            value={form.dataReinicio}
+            disabled={desabilitado.dataReinicio}
+            onChange={(e) => set("dataReinicio", e.target.value)}
+          />
+        </label>
+
+        <label className={formulario.campo}>
+          <span className={formulario.campoRotulo}>ou Dias parados</span>
+          <input
+            type="number"
+            min={1}
+            value={form.diasParados}
+            disabled={desabilitado.diasParados}
+            onChange={(e) => set("diasParados", e.target.value)}
+          />
+        </label>
+
+        <label className={`${formulario.campo} ${formulario.campoLargo}`}>
+          <span className={formulario.campoRotulo}>
+            Termo de retomada (id do arquivo) *
+          </span>
+          <input
+            value={form.termoRetomadaArquivoId}
+            onChange={(e) => set("termoRetomadaArquivoId", e.target.value)}
+          />
+        </label>
+      </div>
+
       {erros.length > 0 && (
-        <ul role="alert" style={{ color: "crimson", margin: 0 }}>
+        <ul role="alert" className={formulario.erros}>
           {erros.map((er) => (
             <li key={er}>{er}</li>
           ))}
         </ul>
       )}
-      <div style={{ display: "flex", gap: 8 }}>
-        <button type="submit" disabled={salvando}>
-          {salvando ? "Salvando..." : "Registrar reinicio"}
-        </button>
-        <button type="button" onClick={onCancelar}>
+
+      <div className={formulario.rodape}>
+        <button type="button" className="btn-secundario" onClick={onCancelar}>
           Cancelar
+        </button>
+        <button type="submit" className="btn-primario" disabled={salvando}>
+          {salvando ? "Salvando..." : "Registrar reinício"}
         </button>
       </div>
     </form>
   );
 }
-
-const lbl: React.CSSProperties = { display: "grid", gap: 4 };

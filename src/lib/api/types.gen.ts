@@ -1460,6 +1460,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/relatorios/obras/{obraId}/dossie.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RelatoriosController_dossie"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/relatorios/dashboard": {
         parameters: {
             query?: never;
@@ -1618,6 +1634,550 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["ArquivosController_mover"];
+        trace?: never;
+    };
+    "/pessoas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PessoasController_listar"];
+        put?: never;
+        post: operations["PessoasController_criar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pessoas/busca": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PessoasController_buscar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pessoas/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PessoasController_detalhar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["PessoasController_editar"];
+        trace?: never;
+    };
+    "/profissionais-tecnicos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ProfissionaisTecnicosController_listar"];
+        put?: never;
+        post: operations["ProfissionaisTecnicosController_criar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profissionais-tecnicos/busca": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ProfissionaisTecnicosController_buscar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profissionais-tecnicos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["ProfissionaisTecnicosController_editar"];
+        trace?: never;
+    };
+    "/obras-privadas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ObrasPrivadasController_listar"];
+        put?: never;
+        post: operations["ObrasPrivadasController_criar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas/fiscalizacoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ObrasPrivadasController_listarFiscalizacoes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas/autos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ObrasPrivadasController_listarAutos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas/autos/resumo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ObrasPrivadasController_resumoAutos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas/licenciamento": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ObrasPrivadasController_listarLicenciamento"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ObrasPrivadasController_detalhar"];
+        put?: never;
+        post?: never;
+        delete: operations["ObrasPrivadasController_excluir"];
+        options?: never;
+        head?: never;
+        patch: operations["ObrasPrivadasController_editar"];
+        trace?: never;
+    };
+    "/obras-privadas/{id}/timeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ObrasPrivadasController_timeline"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas/{id}/etapas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ObrasPrivadasController_etapas"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas/{id}/no-mesmo-imovel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ObrasPrivadasController_noMesmoImovel"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas/{obraPrivadaId}/alvaras": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AlvarasController_listar"];
+        put?: never;
+        post: operations["AlvarasController_criar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas/{obraPrivadaId}/alvaras/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["AlvarasController_excluir"];
+        options?: never;
+        head?: never;
+        patch: operations["AlvarasController_editar"];
+        trace?: never;
+    };
+    "/obras-privadas/{obraPrivadaId}/habite-se": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["HabiteSeController_listar"];
+        put?: never;
+        post: operations["HabiteSeController_criar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas/{obraPrivadaId}/habite-se/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["HabiteSeController_excluir"];
+        options?: never;
+        head?: never;
+        patch: operations["HabiteSeController_editar"];
+        trace?: never;
+    };
+    "/obras-privadas/{obraPrivadaId}/fiscalizacoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FiscalizacoesController_listar"];
+        put?: never;
+        post: operations["FiscalizacoesController_criar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas/{obraPrivadaId}/fiscalizacoes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FiscalizacoesController_detalhar"];
+        put?: never;
+        post?: never;
+        delete: operations["FiscalizacoesController_excluir"];
+        options?: never;
+        head?: never;
+        patch: operations["FiscalizacoesController_editar"];
+        trace?: never;
+    };
+    "/obras-privadas/{obraPrivadaId}/autos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AutosInfracaoController_listar"];
+        put?: never;
+        post: operations["AutosInfracaoController_criar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas/{obraPrivadaId}/autos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AutosInfracaoController_editar"];
+        trace?: never;
+    };
+    "/obras-privadas/{obraPrivadaId}/responsaveis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ResponsaveisController_criar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas/{obraPrivadaId}/responsaveis/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["ResponsaveisController_excluir"];
+        options?: never;
+        head?: never;
+        patch: operations["ResponsaveisController_editar"];
+        trace?: never;
+    };
+    "/obras-privadas/{obraPrivadaId}/observacoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ObservacoesPrivadasController_listar"];
+        put?: never;
+        post: operations["ObservacoesPrivadasController_criar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas/{obraPrivadaId}/observacoes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["ObservacoesPrivadasController_excluir"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas/{obraPrivadaId}/arquivos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ArquivosObraPrivadaController_listar"];
+        put?: never;
+        post: operations["ArquivosObraPrivadaController_iniciarUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas-arquivos/{id}/confirmar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ArquivoPrivadoController_confirmar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas-arquivos/{id}/url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ArquivoPrivadoController_url"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/obras-privadas-arquivos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["ArquivoPrivadoController_excluir"];
+        options?: never;
+        head?: never;
+        patch: operations["ArquivoPrivadoController_editar"];
+        trace?: never;
+    };
+    "/relatorios/obras-privadas/exportar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RelatoriosPrivadasController_exportar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relatorios/obras-privadas/{obraPrivadaId}/dossie.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RelatoriosPrivadasController_dossie"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relatorios/obras-privadas/fiscalizacoes/{fiscalizacaoId}/relatorio.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RelatoriosPrivadasController_relatorioFiscalizacao"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
 }
@@ -2280,6 +2840,333 @@ export interface components {
         MoverArquivoDto: {
             /** @description Pasta de destino (mesma obra) */
             pastaId: string;
+        };
+        CriarPessoaDto: {
+            /** @enum {string} */
+            tipo: "FISICA" | "JURIDICA";
+            /** @description CPF (PF) ou CNPJ (PJ), com ou sem mascara */
+            documento: string;
+            /** @description Nome completo (PF) ou razao social (PJ) */
+            nome: string;
+            nomeFantasia?: string;
+            rg?: string;
+            orgaoExpedidor?: string;
+            email?: string;
+            telefone?: string;
+            cep?: string;
+            logradouro?: string;
+            numero?: string;
+            complemento?: string;
+            bairro?: string;
+            cidade?: string;
+            uf?: string;
+            ativo?: boolean;
+        };
+        AtualizarPessoaDto: {
+            /** @enum {string} */
+            tipo?: "FISICA" | "JURIDICA";
+            documento?: string;
+            nome?: string;
+            nomeFantasia?: Record<string, never>;
+            rg?: Record<string, never>;
+            orgaoExpedidor?: Record<string, never>;
+            email?: Record<string, never>;
+            telefone?: Record<string, never>;
+            cep?: Record<string, never>;
+            logradouro?: Record<string, never>;
+            numero?: Record<string, never>;
+            complemento?: Record<string, never>;
+            bairro?: Record<string, never>;
+            cidade?: Record<string, never>;
+            uf?: Record<string, never>;
+            ativo?: boolean;
+        };
+        CriarProfissionalTecnicoDto: {
+            pessoaId: string;
+            /** @enum {string} */
+            conselho: "CREA" | "CAU" | "CFT";
+            numeroRegistro: string;
+            ufRegistro?: string;
+            /** @description Ex.: "Eng. Civil" */
+            titulo?: string;
+            ativo?: boolean;
+        };
+        AtualizarProfissionalTecnicoDto: {
+            /** @enum {string} */
+            conselho?: "CREA" | "CAU" | "CFT";
+            numeroRegistro?: string;
+            ufRegistro?: Record<string, never>;
+            titulo?: Record<string, never>;
+            ativo?: boolean;
+        };
+        CriarObraPrivadaDto: {
+            descricao: string;
+            observacoes?: string;
+            proprietarioPessoaId: string;
+            orgaoId?: string;
+            inscricaoImobiliaria?: string;
+            matriculaRgi?: string;
+            cartorio?: string;
+            cep?: string;
+            logradouro: string;
+            numero?: string;
+            complemento?: string;
+            bairro?: string;
+            localidadeId?: string;
+            uf: string;
+            /** @description Decimal, ex.: "-23.5505200" */
+            latitude?: string;
+            longitude?: string;
+            /** @enum {string} */
+            geoOrigem?: "MANUAL" | "GPS_DISPOSITIVO" | "CEP";
+            /** @enum {string} */
+            situacaoAlvara?: "SEM_ALVARA" | "COM_ALVARA_VIGENTE" | "COM_ALVARA_VENCIDO" | "DISPENSADA";
+            /** @enum {string} */
+            andamento?: "NAO_INICIADA" | "EM_ANDAMENTO" | "PARALISADA" | "CONCLUIDA" | "DEMOLIDA" | "CANCELADA";
+            /** @enum {string} */
+            habiteSe?: "NAO_SOLICITADO" | "SOLICITADO" | "APROVADO" | "REPROVADO";
+            dataInicio?: string;
+            dataPrevistaConclusao?: string;
+        };
+        AtualizarObraPrivadaDto: {
+            descricao?: string;
+            observacoes?: Record<string, never>;
+            proprietarioPessoaId?: string;
+            orgaoId?: Record<string, never>;
+            inscricaoImobiliaria?: Record<string, never>;
+            matriculaRgi?: Record<string, never>;
+            cartorio?: Record<string, never>;
+            cep?: Record<string, never>;
+            logradouro?: string;
+            numero?: Record<string, never>;
+            complemento?: Record<string, never>;
+            bairro?: Record<string, never>;
+            localidadeId?: Record<string, never>;
+            uf?: string;
+            latitude?: Record<string, never>;
+            longitude?: Record<string, never>;
+            /** @enum {string} */
+            geoOrigem?: "MANUAL" | "GPS_DISPOSITIVO" | "CEP";
+            /** @enum {string} */
+            situacaoAlvara?: "SEM_ALVARA" | "COM_ALVARA_VIGENTE" | "COM_ALVARA_VENCIDO" | "DISPENSADA";
+            /** @enum {string} */
+            andamento?: "NAO_INICIADA" | "EM_ANDAMENTO" | "PARALISADA" | "CONCLUIDA" | "DEMOLIDA" | "CANCELADA";
+            /** @enum {string} */
+            habiteSe?: "NAO_SOLICITADO" | "SOLICITADO" | "APROVADO" | "REPROVADO";
+            dataInicio?: Record<string, never>;
+            dataPrevistaConclusao?: Record<string, never>;
+        };
+        CriarAlvaraDto: {
+            /** @description Ausente quando indeferido */
+            numero?: string;
+            ano: number;
+            /** @enum {string} */
+            tipo: "CONSTRUCAO" | "REFORMA" | "AMPLIACAO" | "DEMOLICAO" | "REGULARIZACAO" | "MURO_TAPUME";
+            /** @enum {string} */
+            motivo?: "ORIGINAL" | "REVALIDACAO" | "PRORROGACAO" | "SEGUNDA_VIA";
+            /** @enum {string} */
+            situacao?: "VIGENTE" | "SUBSTITUIDO" | "VENCIDO" | "INDEFERIDO";
+            dataEmissao?: string;
+            dataValidade?: string;
+            /** @description Obrigatorio em revalidacao, prorrogacao e 2a via (RN-PRV-04) */
+            alvaraAnteriorId?: string;
+            areaTerrenoM2?: string;
+            areaConstruidaAprovadaM2?: string;
+            /** @enum {string} */
+            uso?: "RESIDENCIAL_UNIFAMILIAR" | "RESIDENCIAL_MULTIFAMILIAR" | "COMERCIAL" | "INDUSTRIAL" | "MISTO" | "OUTRO";
+            pavimentos?: number;
+            unidades?: number;
+            processoAdministrativo?: string;
+            arquivoId?: string;
+            observacoes?: string;
+        };
+        AtualizarAlvaraDto: {
+            numero?: Record<string, never>;
+            ano?: number;
+            /** @enum {string} */
+            tipo?: "CONSTRUCAO" | "REFORMA" | "AMPLIACAO" | "DEMOLICAO" | "REGULARIZACAO" | "MURO_TAPUME";
+            /** @enum {string} */
+            motivo?: "ORIGINAL" | "REVALIDACAO" | "PRORROGACAO" | "SEGUNDA_VIA";
+            /** @enum {string} */
+            situacao?: "VIGENTE" | "SUBSTITUIDO" | "VENCIDO" | "INDEFERIDO";
+            dataEmissao?: Record<string, never>;
+            dataValidade?: Record<string, never>;
+            areaTerrenoM2?: Record<string, never>;
+            areaConstruidaAprovadaM2?: Record<string, never>;
+            /** @enum {string} */
+            uso?: "RESIDENCIAL_UNIFAMILIAR" | "RESIDENCIAL_MULTIFAMILIAR" | "COMERCIAL" | "INDUSTRIAL" | "MISTO" | "OUTRO";
+            pavimentos?: Record<string, never>;
+            unidades?: Record<string, never>;
+            processoAdministrativo?: Record<string, never>;
+            arquivoId?: Record<string, never>;
+            observacoes?: Record<string, never>;
+        };
+        CriarHabiteSeDto: {
+            numero: string;
+            /** @description Ausente enquanto so solicitado */
+            dataEmissao?: string;
+            parcial?: boolean;
+            descricaoParcial?: string;
+            dataVistoria?: string;
+            vistoriadorUsuarioId?: string;
+            /** @description Visita que originou o parecer */
+            fiscalizacaoId?: string;
+            /** @enum {string} */
+            resultado: "APROVADO" | "REPROVADO";
+            areaConstruidaExecutadaM2?: string;
+            divergenciaDescricao?: string;
+            parecer?: string;
+            arquivoId?: string;
+        };
+        AtualizarHabiteSeDto: {
+            numero?: string;
+            dataEmissao?: Record<string, never>;
+            parcial?: boolean;
+            descricaoParcial?: Record<string, never>;
+            dataVistoria?: Record<string, never>;
+            vistoriadorUsuarioId?: Record<string, never>;
+            fiscalizacaoId?: Record<string, never>;
+            /** @enum {string} */
+            resultado?: "APROVADO" | "REPROVADO";
+            areaConstruidaExecutadaM2?: Record<string, never>;
+            divergenciaDescricao?: Record<string, never>;
+            parecer?: Record<string, never>;
+            arquivoId?: Record<string, never>;
+        };
+        CriarFiscalizacaoDto: {
+            /** @enum {string} */
+            tipo: "ROTINA" | "DENUNCIA" | "ENTULHO" | "VERIFICACAO_ALVARA" | "VISTORIA_HABITE_SE" | "REINCIDENCIA";
+            dataFiscalizacao: string;
+            /** @description Default: usuario autenticado */
+            fiscalUsuarioId?: string;
+            /** @enum {string} */
+            resultado: "REGULAR" | "IRREGULAR" | "NAO_LOCALIZADA" | "SEM_ACESSO";
+            /** @enum {string} */
+            etapaConstatada?: "NAO_INICIADA" | "FUNDACAO" | "ESTRUTURA" | "ALVENARIA" | "COBERTURA" | "INSTALACOES" | "ACABAMENTO" | "CONCLUIDA";
+            /** @description Obrigatorio quando o resultado e IRREGULAR (RN-PRV-10) */
+            constatacoes?: string;
+            providencias?: string;
+            latitude?: string;
+            longitude?: string;
+            entulhoHaIrregularidade?: boolean;
+            entulhoVolumeEstimadoM3?: string;
+            /** @enum {string} */
+            entulhoLocal?: "VIA_PUBLICA" | "PASSEIO" | "TERRENO_VIZINHO" | "CANTEIRO" | "AREA_PROTEGIDA";
+            entulhoPossuiCacamba?: boolean;
+            /** @description Plano de gerenciamento de residuos */
+            entulhoPossuiPgrcc?: boolean;
+            entulhoDestinacao?: string;
+        };
+        AtualizarFiscalizacaoDto: {
+            /** @enum {string} */
+            tipo?: "ROTINA" | "DENUNCIA" | "ENTULHO" | "VERIFICACAO_ALVARA" | "VISTORIA_HABITE_SE" | "REINCIDENCIA";
+            dataFiscalizacao?: string;
+            fiscalUsuarioId?: string;
+            /** @enum {string} */
+            resultado?: "REGULAR" | "IRREGULAR" | "NAO_LOCALIZADA" | "SEM_ACESSO";
+            /** @enum {string} */
+            etapaConstatada?: "NAO_INICIADA" | "FUNDACAO" | "ESTRUTURA" | "ALVENARIA" | "COBERTURA" | "INSTALACOES" | "ACABAMENTO" | "CONCLUIDA";
+            constatacoes?: Record<string, never>;
+            providencias?: Record<string, never>;
+            latitude?: Record<string, never>;
+            longitude?: Record<string, never>;
+            entulhoHaIrregularidade?: Record<string, never>;
+            entulhoVolumeEstimadoM3?: Record<string, never>;
+            /** @enum {string} */
+            entulhoLocal?: "VIA_PUBLICA" | "PASSEIO" | "TERRENO_VIZINHO" | "CANTEIRO" | "AREA_PROTEGIDA";
+            entulhoPossuiCacamba?: Record<string, never>;
+            entulhoPossuiPgrcc?: Record<string, never>;
+            entulhoDestinacao?: Record<string, never>;
+        };
+        CriarAutoInfracaoDto: {
+            /** @description Visita que originou o auto */
+            fiscalizacaoId?: string;
+            /** @enum {string} */
+            tipo: "NOTIFICACAO" | "AUTO_INFRACAO" | "EMBARGO" | "INTERDICAO" | "MULTA";
+            dataEmissao: string;
+            /** @description Dias corridos */
+            prazoDias?: number;
+            baseLegal?: string;
+            descricao: string;
+            /** @description Obrigatorio e maior que zero quando tipo = MULTA (RN-PRV-14) */
+            valorMulta?: string;
+            /** @enum {string} */
+            situacao?: "ABERTO" | "CUMPRIDO" | "EM_RECURSO" | "CANCELADO" | "QUITADO";
+            observacoes?: string;
+        };
+        AtualizarAutoInfracaoDto: {
+            /** @enum {string} */
+            tipo?: "NOTIFICACAO" | "AUTO_INFRACAO" | "EMBARGO" | "INTERDICAO" | "MULTA";
+            dataEmissao?: string;
+            prazoDias?: Record<string, never>;
+            baseLegal?: Record<string, never>;
+            descricao?: string;
+            valorMulta?: Record<string, never>;
+            /** @enum {string} */
+            situacao?: "ABERTO" | "CUMPRIDO" | "EM_RECURSO" | "CANCELADO" | "QUITADO";
+            dataEncerramento?: Record<string, never>;
+            /** @description Obrigatorio ao cancelar o auto (RN-PRV-13) */
+            observacoes?: Record<string, never>;
+        };
+        CriarResponsavelDto: {
+            profissionalTecnicoId: string;
+            /** @enum {string} */
+            papel: "PROJETO_ARQUITETONICO" | "PROJETO_ESTRUTURAL" | "PROJETO_COMPLEMENTAR" | "EXECUCAO";
+            /** @enum {string} */
+            tipoDocumento: "ART" | "RRT" | "TRT";
+            numeroDocumento: string;
+            dataDocumento?: string;
+            arquivoId?: string;
+            dataInicio?: string;
+        };
+        AtualizarResponsavelDto: {
+            /** @enum {string} */
+            papel?: "PROJETO_ARQUITETONICO" | "PROJETO_ESTRUTURAL" | "PROJETO_COMPLEMENTAR" | "EXECUCAO";
+            /** @enum {string} */
+            tipoDocumento?: "ART" | "RRT" | "TRT";
+            numeroDocumento?: string;
+            dataDocumento?: Record<string, never>;
+            arquivoId?: Record<string, never>;
+            dataInicio?: Record<string, never>;
+            /** @description Baixa do RT; exige motivoBaixa */
+            dataBaixa?: Record<string, never>;
+            motivoBaixa?: Record<string, never>;
+        };
+        CriarObservacaoDto: {
+            texto: string;
+        };
+        ArquivoUploadItemPrivadoDto: {
+            /** @description Nome original enviado pelo cliente */
+            nomeOriginal: string;
+            /** @description Default: nomeOriginal */
+            nome?: string;
+            /** @description Legenda da foto no relatorio */
+            descricao?: string;
+            /** @enum {string} */
+            categoria?: "FOTO" | "DOCUMENTO" | "PROJETO";
+            mimeType?: string;
+            latitude?: string;
+            longitude?: string;
+            capturadoEm?: string;
+            ordem?: number;
+        };
+        IniciarUploadPrivadaDto: {
+            /** @enum {string} */
+            vinculo: "OBRA" | "FISCALIZACAO" | "ALVARA" | "HABITE_SE" | "AUTO_INFRACAO" | "ART_RRT";
+            /** @description Id do registro vinculado */
+            vinculoId?: string;
+            arquivos: components["schemas"]["ArquivoUploadItemPrivadoDto"][];
+        };
+        ConfirmarUploadPrivadaDto: {
+            tamanhoBytes?: number;
+            mimeType?: string;
+        };
+        AtualizarArquivoPrivadoDto: {
+            nome?: string;
+            descricao?: Record<string, never>;
+            ordem?: number;
+            /** @enum {string} */
+            categoria?: "FOTO" | "DOCUMENTO" | "PROJETO";
         };
     };
     responses: never;
@@ -5476,6 +6363,25 @@ export interface operations {
             };
         };
     };
+    RelatoriosController_dossie: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     RelatoriosController_obterDashboard: {
         parameters: {
             query?: {
@@ -5750,6 +6656,1144 @@ export interface operations {
                 "application/json": components["schemas"]["MoverArquivoDto"];
             };
         };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PessoasController_listar: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                busca?: string;
+                tipo?: "FISICA" | "JURIDICA";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PessoasController_criar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarPessoaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PessoasController_buscar: {
+        parameters: {
+            query: {
+                /** @description Nome, CPF ou CNPJ; minimo de 3 caracteres */
+                q: string;
+                limit?: number;
+                tipo?: "FISICA" | "JURIDICA";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PessoasController_detalhar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PessoasController_editar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarPessoaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProfissionaisTecnicosController_listar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProfissionaisTecnicosController_criar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarProfissionalTecnicoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProfissionaisTecnicosController_buscar: {
+        parameters: {
+            query: {
+                /** @description Nome, CPF ou CNPJ; minimo de 3 caracteres */
+                q: string;
+                limit?: number;
+                tipo?: "FISICA" | "JURIDICA";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProfissionaisTecnicosController_editar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarProfissionalTecnicoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ObrasPrivadasController_listar: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                /** @description Codigo, endereco, nome ou documento do proprietario */
+                busca?: string;
+                situacaoAlvara?: "SEM_ALVARA" | "COM_ALVARA_VIGENTE" | "COM_ALVARA_VENCIDO" | "DISPENSADA";
+                andamento?: "NAO_INICIADA" | "EM_ANDAMENTO" | "PARALISADA" | "CONCLUIDA" | "DEMOLIDA" | "CANCELADA";
+                habiteSe?: "NAO_SOLICITADO" | "SOLICITADO" | "APROVADO" | "REPROVADO";
+                bairro?: string;
+                orgaoId?: string;
+                localidadeId?: string;
+                /** @description Chip rapido: possui auto pendente */
+                autuada?: boolean;
+                /** @description Chip rapido: embargo aberto */
+                embargada?: boolean;
+                /** @description Chip rapido: possui visita */
+                fiscalizada?: boolean;
+                /** @description Chip rapido: sem visita ha N dias (inclui nunca visitada) */
+                semVisitaHaDias?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ObrasPrivadasController_criar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarObraPrivadaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ObrasPrivadasController_listarFiscalizacoes: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                busca?: string;
+                fiscalUsuarioId?: string;
+                tipo?: "ROTINA" | "DENUNCIA" | "ENTULHO" | "VERIFICACAO_ALVARA" | "VISTORIA_HABITE_SE" | "REINCIDENCIA";
+                resultado?: "REGULAR" | "IRREGULAR" | "NAO_LOCALIZADA" | "SEM_ACESSO";
+                dataInicio?: string;
+                dataFim?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ObrasPrivadasController_listarAutos: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                busca?: string;
+                tipo?: "NOTIFICACAO" | "AUTO_INFRACAO" | "EMBARGO" | "INTERDICAO" | "MULTA";
+                situacao?: "ABERTO" | "CUMPRIDO" | "EM_RECURSO" | "CANCELADO" | "QUITADO";
+                /** @description Apenas autos pendentes com data limite ja vencida */
+                vencidos?: boolean;
+                dataInicio?: string;
+                dataFim?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ObrasPrivadasController_resumoAutos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ObrasPrivadasController_listarLicenciamento: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                busca?: string;
+                situacaoAlvara?: "SEM_ALVARA" | "COM_ALVARA_VIGENTE" | "COM_ALVARA_VENCIDO" | "DISPENSADA";
+                habiteSe?: "NAO_SOLICITADO" | "SOLICITADO" | "APROVADO" | "REPROVADO";
+                /** @description Alvaras vigentes que vencem nos proximos N dias */
+                vencendoEmDias?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ObrasPrivadasController_detalhar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ObrasPrivadasController_excluir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ObrasPrivadasController_editar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarObraPrivadaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ObrasPrivadasController_timeline: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ObrasPrivadasController_etapas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ObrasPrivadasController_noMesmoImovel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AlvarasController_listar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AlvarasController_criar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarAlvaraDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AlvarasController_excluir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AlvarasController_editar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarAlvaraDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    HabiteSeController_listar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    HabiteSeController_criar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarHabiteSeDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    HabiteSeController_excluir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    HabiteSeController_editar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarHabiteSeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FiscalizacoesController_listar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FiscalizacoesController_criar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarFiscalizacaoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FiscalizacoesController_detalhar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FiscalizacoesController_excluir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FiscalizacoesController_editar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarFiscalizacaoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AutosInfracaoController_listar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AutosInfracaoController_criar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarAutoInfracaoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AutosInfracaoController_editar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarAutoInfracaoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ResponsaveisController_criar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarResponsavelDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ResponsaveisController_excluir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ResponsaveisController_editar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarResponsavelDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ObservacoesPrivadasController_listar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ObservacoesPrivadasController_criar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarObservacaoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ObservacoesPrivadasController_excluir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArquivosObraPrivadaController_listar: {
+        parameters: {
+            query?: {
+                vinculo?: "OBRA" | "FISCALIZACAO" | "ALVARA" | "HABITE_SE" | "AUTO_INFRACAO" | "ART_RRT";
+                vinculoId?: string;
+                categoria?: "FOTO" | "DOCUMENTO" | "PROJETO";
+            };
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArquivosObraPrivadaController_iniciarUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IniciarUploadPrivadaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArquivoPrivadoController_confirmar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmarUploadPrivadaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArquivoPrivadoController_url: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArquivoPrivadoController_excluir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArquivoPrivadoController_editar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarArquivoPrivadoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RelatoriosPrivadasController_exportar: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                /** @description Codigo, endereco, nome ou documento do proprietario */
+                busca?: string;
+                situacaoAlvara?: "SEM_ALVARA" | "COM_ALVARA_VIGENTE" | "COM_ALVARA_VENCIDO" | "DISPENSADA";
+                andamento?: "NAO_INICIADA" | "EM_ANDAMENTO" | "PARALISADA" | "CONCLUIDA" | "DEMOLIDA" | "CANCELADA";
+                habiteSe?: "NAO_SOLICITADO" | "SOLICITADO" | "APROVADO" | "REPROVADO";
+                bairro?: string;
+                orgaoId?: string;
+                localidadeId?: string;
+                /** @description Chip rapido: possui auto pendente */
+                autuada?: boolean;
+                /** @description Chip rapido: embargo aberto */
+                embargada?: boolean;
+                /** @description Chip rapido: possui visita */
+                fiscalizada?: boolean;
+                /** @description Chip rapido: sem visita ha N dias (inclui nunca visitada) */
+                semVisitaHaDias?: number;
+                formato?: "PDF" | "CSV";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RelatoriosPrivadasController_dossie: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                obraPrivadaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RelatoriosPrivadasController_relatorioFiscalizacao: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                fiscalizacaoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {

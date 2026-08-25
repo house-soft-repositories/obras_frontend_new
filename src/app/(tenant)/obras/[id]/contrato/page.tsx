@@ -5,6 +5,7 @@ import {
   type Aditivo,
   type Contrato,
   type EmpresaContratada,
+  type FonteResumo,
   type Paralisacao,
   type PrazoFinalExecucao,
   type ValoresContrato,
@@ -32,7 +33,7 @@ export default async function ContratoPage({
   const [contratos, empresas, fontes, perfil] = await Promise.all([
     carregar<Contrato[]>("/contratos", []),
     carregar<EmpresaContratada[]>("/empresas-contratadas", []),
-    carregar<OpcaoSelect[]>("/fontes?ativo=true", []),
+    carregar<FonteResumo[]>("/fontes?ativo=true", []),
     obterPerfilAtual(),
   ]);
 

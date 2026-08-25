@@ -64,10 +64,10 @@ describe("ouTraco", () => {
 
 describe("moedaBRL", () => {
   it("formata strings numericas da API em reais pt-BR", () => {
-    // Intl pt-BR separa "R$" do numero com espaco nao separavel (U+00A0).
-    expect(moedaBRL("1000.00")).toBe("R$\u00a01.000,00");
-    expect(moedaBRL("1234567.89")).toBe("R$\u00a01.234.567,89");
-    expect(moedaBRL(0)).toBe("R$\u00a00,00");
+    // Delega a `formatarMoeda`: espaco normal, "." no milhar e "," nos centavos.
+    expect(moedaBRL("1000.00")).toBe("R$ 1.000,00");
+    expect(moedaBRL("1234567.89")).toBe("R$ 1.234.567,89");
+    expect(moedaBRL(0)).toBe("R$ 0,00");
   });
   it("devolve travessao para nulo, vazio ou nao numerico", () => {
     expect(moedaBRL(null)).toBe("—");

@@ -27,7 +27,7 @@ export type TipoMedicao = "NORMAL" | "RETIFICACAO" | "EXTRA" | "REAJUSTAMENTO";
 
 export const TIPOS_MEDICAO: { chave: TipoMedicao; titulo: string }[] = [
   { chave: "NORMAL", titulo: "Normal" },
-  { chave: "RETIFICACAO", titulo: "Retificacao" },
+  { chave: "RETIFICACAO", titulo: "Retificação" },
   { chave: "EXTRA", titulo: "Extra" },
   { chave: "REAJUSTAMENTO", titulo: "Reajustamento" },
 ];

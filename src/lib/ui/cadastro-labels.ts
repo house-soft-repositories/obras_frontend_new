@@ -8,6 +8,8 @@
  * fallback padrao para valores ausentes.
  */
 
+import { formatarMoeda } from "./dinheiro";
+
 /** Rotulo do tipo de orgao; "—" para nulo e o valor cru quando desconhecido. */
 export function tipoOrgaoLabel(tipo: string | null | undefined): string {
   switch (tipo) {
@@ -62,20 +64,13 @@ export function ouTraco(valor: string | null | undefined): string {
   return texto ? texto : "—";
 }
 
-const FORMATADOR_BRL = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-});
-
 /**
  * Formata um valor em reais (string numerica da API, ex.: "1000.00") no padrao
- * pt-BR ("R$ 1.000,00"); "—" para nulo, vazio ou nao numerico.
+ * pt-BR ("R$ 1.000,00"); "—" para nulo, vazio ou nao numerico. Delega ao
+ * formatador canonico de `lib/ui/dinheiro`.
  */
 export function moedaBRL(valor: string | number | null | undefined): string {
-  if (valor === null || valor === undefined || valor === "") return "—";
-  const numero = typeof valor === "number" ? valor : Number(valor);
-  if (!Number.isFinite(numero)) return "—";
-  return FORMATADOR_BRL.format(numero);
+  return formatarMoeda(valor);
 }
 
 /** Subtitulo "{N} registros" do cabecalho das listas (singular quando N=1). */

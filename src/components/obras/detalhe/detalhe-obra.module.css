@@ -72,6 +72,27 @@
   flex-shrink: 0;
 }
 
+/*
+ * Download do dossie no cabecalho — mesmo desenho do .botaoFantasma do modulo
+ * de obras privadas, que ja abriga o botao equivalente.
+ */
+.botaoDossie {
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-superficie);
+  color: var(--cor-acento);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.5rem 0.8rem;
+  border-radius: 7px;
+  cursor: pointer;
+  min-height: 38px;
+  white-space: nowrap;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
 .semaforo {
   display: inline-flex;
   align-items: center;

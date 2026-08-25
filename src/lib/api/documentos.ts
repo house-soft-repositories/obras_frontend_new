@@ -66,6 +66,28 @@ export function ehPastaRaiz(pasta: Pick<Pasta, "pastaPaiId">): boolean {
   return pasta.pastaPaiId == null;
 }
 
+/**
+ * Sigla do tipo do arquivo exibida no selo da lista (PDF, XLS, DOC...).
+ * Deriva da extensao do nome original; sem extensao reconhecivel, "ARQ".
+ */
+export function siglaTipoArquivo(nome: string | null | undefined): string {
+  if (!nome) return "ARQ";
+  const ponto = nome.lastIndexOf(".");
+  if (ponto < 0 || ponto === nome.length - 1) return "ARQ";
+  const ext = nome.slice(ponto + 1).toUpperCase();
+  const equivalencias: Record<string, string> = {
+    JPEG: "IMG",
+    JPG: "IMG",
+    PNG: "IMG",
+    GIF: "IMG",
+    WEBP: "IMG",
+    XLSX: "XLS",
+    DOCX: "DOC",
+    PPTX: "PPT",
+  };
+  return equivalencias[ext] ?? ext.slice(0, 4);
+}
+
 /** Formata bytes para exibicao (B, KB, MB, GB). */
 export function formatarTamanho(bytes: string | number | null): string {
   if (bytes == null) return "—";

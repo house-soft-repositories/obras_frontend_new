@@ -3,6 +3,7 @@ import type { Acompanhamento, Estagio } from "./cronograma";
 import {
   agruparPrazosPorDia,
   calcularBarrasGantt,
+  formatarValorAcompanhamento,
   matrizCalendario,
   serieHistorico,
 } from "./cronograma-visoes";
@@ -27,6 +28,8 @@ function estagio(over: Partial<Estagio> & { id: string }): Estagio {
     dataConclusao: null,
     latitude: null,
     longitude: null,
+    valorMeta: null,
+    valorRealizado: null,
     ...over,
   };
 }
@@ -100,5 +103,28 @@ describe("E3-08: historico Meta x Realizado", () => {
     expect(serie[0].meta).toBe(10);
     expect(serie[0].realizado).toBeNull();
     expect(serie[1].realizado).toBe(18);
+  });
+});
+
+describe("formatarValorAcompanhamento", () => {
+  it("exibe valor FINANCEIRO como moeda pt-BR", () => {
+    expect(formatarValorAcompanhamento("1234.56", "FINANCEIRO")).toBe(
+      "R$ 1.234,56",
+    );
+    expect(formatarValorAcompanhamento("1000000", "FINANCEIRO")).toBe(
+      "R$ 1.000.000,00",
+    );
+  });
+
+  it("mantem a unidade propria dos demais tipos", () => {
+    expect(formatarValorAcompanhamento("50", "PERCENTUAL")).toBe("50%");
+    expect(formatarValorAcompanhamento("12", "NUMERICO")).toBe("12 un");
+    expect(formatarValorAcompanhamento("12", null)).toBe("12");
+  });
+
+  it("devolve travessao quando nao ha valor", () => {
+    expect(formatarValorAcompanhamento(null, "FINANCEIRO")).toBe("—");
+    expect(formatarValorAcompanhamento(undefined, "PERCENTUAL")).toBe("—");
+    expect(formatarValorAcompanhamento("", "NUMERICO")).toBe("—");
   });
 });

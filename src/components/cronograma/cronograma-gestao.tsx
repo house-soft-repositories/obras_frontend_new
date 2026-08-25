@@ -17,7 +17,17 @@ import {
   type Estagio,
   type FiltroEstagio,
 } from "@/lib/api/cronograma";
+import {
+  corBarraRealizado,
+  desvioEstagio,
+  duracaoEstagio,
+  larguraBarra,
+  percentual,
+  periodoEstagio,
+  situacaoEstagio,
+} from "@/lib/ui/cronograma-estagio";
 import type { UsuarioResumo } from "@/lib/ui/usuario-labels";
+import estilos from "./cronograma.module.css";
 import { EstagioForm } from "./estagio-form";
 import { PainelAcompanhamento } from "./painel-acompanhamento";
 
@@ -110,44 +120,53 @@ export function CronogramaGestao({
   }
 
   const arvore = montarArvore(filtrarEstagios(estagios, filtro, null));
+  const nomeResponsavel = (id: string | null) =>
+    (id && usuarios.find((u) => u.id === id)?.nome) || "—";
 
   return (
     <section>
-      {/* Barra de acoes */}
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          flexWrap: "wrap",
-          alignItems: "center",
-          marginBottom: 12,
-        }}
-      >
-        {FILTROS_ESTAGIO.map((f) => (
-          <button
-            key={f.chave}
-            type="button"
-            onClick={() => trocarFiltro(f.chave)}
-            style={{ fontWeight: filtro === f.chave ? 700 : 400 }}
-          >
-            {f.titulo}
-          </button>
-        ))}
-        <span style={{ flex: 1 }} />
-        <button type="button" onClick={() => setForm({ tipo: "criar", paiId: null })}>
-          + Nova etapa
+      {/* Filtros de visao dos estagios (RN-CRO-22) */}
+      <div className={estilos.barra}>
+        <div className={estilos.filtros}>
+          {FILTROS_ESTAGIO.map((f) => (
+            <button
+              key={f.chave}
+              type="button"
+              onClick={() => trocarFiltro(f.chave)}
+              className={
+                filtro === f.chave
+                  ? `${estilos.filtro} ${estilos.filtroAtivo}`
+                  : estilos.filtro
+              }
+              aria-pressed={filtro === f.chave}
+            >
+              {f.titulo}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className={estilos.acoes}>
+        <button
+          type="button"
+          className="btn-primario"
+          onClick={() => setForm({ tipo: "criar", paiId: null })}
+        >
+          ＋ Nova etapa
         </button>
         {estagios.length === 0 && (
           <button
             type="button"
+            className="btn-secundario"
             onClick={() => comApi(() => criarEstagiosPredefinidos(obraId))}
           >
-            Criar estagios predefinidos
+            Criar estágios predefinidos
           </button>
         )}
         {selecionados.size > 0 && (
           <button
             type="button"
+            className="btn-perigo"
             onClick={() =>
               comApi(async () => {
                 await excluirLoteEstagios(obraId, [...selecionados]);
@@ -160,10 +179,10 @@ export function CronogramaGestao({
         )}
       </div>
 
-      {erro && <p style={{ color: "crimson" }}>{erro}</p>}
+      {erro && <p className={estilos.erro}>{erro}</p>}
 
       {form && (
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginTop: 14 }}>
           <EstagioForm
             obraId={obraId}
             usuarios={usuarios}
@@ -180,15 +199,17 @@ export function CronogramaGestao({
         </div>
       )}
 
-      {arvore.length === 0 && <p>Nenhum estagio cadastrado.</p>}
-
-      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+      <div className={estilos.lista}>
+        {arvore.length === 0 && (
+          <p className={estilos.vazio}>Nenhum estágio cadastrado.</p>
+        )}
         {arvore.map((raiz) => (
-          <li key={raiz.id} style={{ marginBottom: 4 }}>
+          <div key={raiz.id}>
             <LinhaEstagio
               estagio={raiz}
               atual={raiz.id === atualId}
               selecionado={selecionados.has(raiz.id)}
+              responsavel={nomeResponsavel(raiz.responsavelUsuarioId)}
               arrastavel
               onDragStart={() => setDragId(raiz.id)}
               onDrop={() => soltarSobre(raiz.id)}
@@ -201,41 +222,50 @@ export function CronogramaGestao({
               onDuplicar={() => comApi(() => duplicarEstagio(obraId, raiz.id))}
               onExcluir={() => comApi(() => excluirEstagio(obraId, raiz.id))}
             />
-            {raiz.subatividades.length > 0 && (
-              <ul style={{ listStyle: "none", paddingLeft: 28, margin: 0 }}>
-                {raiz.subatividades.map((sub) => (
-                  <li key={sub.id} style={{ marginTop: 2 }}>
-                    <LinhaEstagio
-                      estagio={sub}
-                      atual={false}
-                      selecionado={selecionados.has(sub.id)}
-                      onSelecionar={() => alternarSelecao(sub.id)}
-                      onAbrirPainel={() => setPainel(sub)}
-                      onEditar={() => setForm({ tipo: "editar", estagio: sub })}
-                      onAssumir={() => comApi(() => assumirEstagio(obraId, sub.id))}
-                      onConcluir={() => comApi(() => concluirEstagio(obraId, sub.id))}
-                      onDuplicar={() => comApi(() => duplicarEstagio(obraId, sub.id))}
-                      onExcluir={() => comApi(() => excluirEstagio(obraId, sub.id))}
-                    />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </li>
+            {raiz.subatividades.map((sub) => (
+              <LinhaEstagio
+                key={sub.id}
+                estagio={sub}
+                atual={false}
+                sub
+                selecionado={selecionados.has(sub.id)}
+                responsavel={nomeResponsavel(sub.responsavelUsuarioId)}
+                onSelecionar={() => alternarSelecao(sub.id)}
+                onAbrirPainel={() => setPainel(sub)}
+                onEditar={() => setForm({ tipo: "editar", estagio: sub })}
+                onAssumir={() => comApi(() => assumirEstagio(obraId, sub.id))}
+                onConcluir={() => comApi(() => concluirEstagio(obraId, sub.id))}
+                onDuplicar={() => comApi(() => duplicarEstagio(obraId, sub.id))}
+                onExcluir={() => comApi(() => excluirEstagio(obraId, sub.id))}
+              />
+            ))}
+          </div>
         ))}
-      </ul>
+      </div>
 
       {painel && (
-        <PainelAcompanhamento key={painel.id} obraId={obraId} estagio={painel} />
+        <PainelAcompanhamento
+          key={painel.id}
+          obraId={obraId}
+          estagio={painel}
+          usuarios={usuarios}
+        />
       )}
     </section>
   );
 }
 
+/**
+ * Linha de estagio no padrao do design: ordem, descricao, chip de situacao,
+ * metadados (tipo, periodo, duracao, responsavel), barras Meta x Realizado com
+ * desvio em p.p. e a barra de acoes do estagio.
+ */
 function LinhaEstagio({
   estagio,
   atual,
+  sub,
   selecionado,
+  responsavel,
   arrastavel,
   onDragStart,
   onDrop,
@@ -250,7 +280,9 @@ function LinhaEstagio({
 }: {
   estagio: Estagio;
   atual: boolean;
+  sub?: boolean;
   selecionado: boolean;
+  responsavel: string;
   arrastavel?: boolean;
   onDragStart?: () => void;
   onDrop?: () => void;
@@ -263,71 +295,151 @@ function LinhaEstagio({
   onDuplicar: () => void;
   onExcluir: () => void;
 }) {
+  const situacao = situacaoEstagio(estagio, atual);
+  // Sem cronograma alimentado, o percentual direto do estagio faz as vezes do
+  // realizado na barra (RN-CRO-11).
+  const realizado = estagio.valorRealizado ?? estagio.percentualRealizado;
+  const desvio = desvioEstagio(estagio.valorMeta, realizado);
+  const classes = [
+    estilos.linha,
+    atual ? estilos.linhaAtual : "",
+    estagio.ativo ? "" : estilos.linhaInativa,
+    sub ? estilos.linhaSub : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <div
+      className={classes}
       draggable={arrastavel}
       onDragStart={onDragStart}
       onDragOver={(e) => arrastavel && e.preventDefault()}
       onDrop={onDrop}
-      style={{
-        display: "flex",
-        gap: 8,
-        alignItems: "center",
-        padding: "6px 8px",
-        border: atual ? "2px solid #06c" : "1px solid #e2e2e2",
-        borderRadius: 6,
-        background: estagio.concluido ? "#eef7ee" : !estagio.ativo ? "#f3f3f3" : "#fff",
-        opacity: estagio.ativo ? 1 : 0.7,
-      }}
     >
-      <input type="checkbox" checked={selecionado} onChange={onSelecionar} />
-      {arrastavel && <span title="arraste para reordenar" style={{ cursor: "grab" }}>⠿</span>}
-      <button
-        type="button"
-        onClick={onAbrirPainel}
-        style={{
-          flex: 1,
-          textAlign: "left",
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          fontWeight: atual ? 700 : 400,
-        }}
-      >
-        {estagio.descricao}
-        {atual && <span style={{ color: "#06c", fontSize: 12 }}> — ATUAL</span>}
-        {estagio.concluido && (
-          <span style={{ color: "#2a8", fontSize: 12 }}> ✓ concluido</span>
-        )}
-        {!estagio.ativo && <span style={{ fontSize: 12 }}> (inativo)</span>}
-        {estagio.dataInicio && (
-          <span style={{ color: "#888", fontSize: 12 }}>
-            {" "}
-            {estagio.dataInicio} → {estagio.dataPrazo}
+      <div className={estilos.topo}>
+        {arrastavel && (
+          <span className={estilos.arrasta} title="Arraste para reordenar">
+            ⠿
           </span>
         )}
-      </button>
-      <div style={{ display: "flex", gap: 4 }}>
+        <input
+          type="checkbox"
+          className={estilos.selecao}
+          checked={selecionado}
+          onChange={onSelecionar}
+          aria-label={`Selecionar ${estagio.descricao}`}
+        />
+        <div className={estilos.corpo}>
+          <div className={estilos.tituloLinha}>
+            <span className={estilos.ordem}>{estagio.ordem + 1}</span>
+            <button
+              type="button"
+              onClick={onAbrirPainel}
+              className={
+                sub
+                  ? `${estilos.descricao} ${estilos.descricaoSub}`
+                  : estilos.descricao
+              }
+            >
+              {estagio.descricao}
+            </button>
+            <span className={`chip ${situacao.classe}`}>{situacao.titulo}</span>
+          </div>
+
+          <div className={estilos.meta}>
+            <span>{sub ? "Subatividade" : "Estágio"}</span>
+            <span>
+              📅 {periodoEstagio(estagio.dataInicio, estagio.dataPrazo)}
+            </span>
+            <span>⏱ {duracaoEstagio(estagio.totalDias)}</span>
+            <span>👤 {responsavel}</span>
+          </div>
+
+          <div className={estilos.avanco}>
+            <span className={estilos.avancoItem}>
+              <span className={estilos.avancoRotulo}>Meta</span>
+              <span className={estilos.trilha}>
+                <span
+                  className={estilos.preenchimento}
+                  style={{
+                    width: larguraBarra(estagio.valorMeta),
+                    background: "var(--sem-cinza)",
+                  }}
+                />
+              </span>
+              <span className={estilos.avancoValor}>
+                {percentual(estagio.valorMeta)}%
+              </span>
+            </span>
+            <span className={estilos.avancoItem}>
+              <span className={estilos.avancoRotulo}>Real.</span>
+              <span className={estilos.trilha}>
+                <span
+                  className={estilos.preenchimento}
+                  style={{
+                    width: larguraBarra(realizado),
+                    background: corBarraRealizado(desvio.tom),
+                  }}
+                />
+              </span>
+              <span className={estilos.avancoValor}>
+                {percentual(realizado)}%
+              </span>
+            </span>
+            <span
+              className={`${estilos.desvio} ${
+                desvio.tom === "critico"
+                  ? estilos.desvioCritico
+                  : desvio.tom === "atencao"
+                    ? estilos.desvioAtencao
+                    : estilos.desvioPositivo
+              }`}
+            >
+              {desvio.texto}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className={estilos.acoesLinha}>
         {onAddSub && (
-          <button type="button" onClick={onAddSub} title="adicionar subatividade">
+          <button
+            type="button"
+            className={`${estilos.acaoLinha} ${estilos.acaoAcento}`}
+            onClick={onAddSub}
+            title="Adicionar subatividade"
+          >
             + sub
           </button>
         )}
-        <button type="button" onClick={onAssumir}>
+        <button type="button" className={estilos.acaoLinha} onClick={onAssumir}>
           Assumir
         </button>
         {!estagio.concluido && (
-          <button type="button" onClick={onConcluir}>
+          <button
+            type="button"
+            className={`${estilos.acaoLinha} ${estilos.acaoSucesso}`}
+            onClick={onConcluir}
+          >
             Concluir
           </button>
         )}
-        <button type="button" onClick={onDuplicar}>
+        <button
+          type="button"
+          className={estilos.acaoLinha}
+          onClick={onDuplicar}
+        >
           Duplicar
         </button>
-        <button type="button" onClick={onEditar}>
+        <button type="button" className={estilos.acaoLinha} onClick={onEditar}>
           Editar
         </button>
-        <button type="button" onClick={onExcluir}>
+        <button
+          type="button"
+          className={`${estilos.acaoLinha} ${estilos.acaoPerigo}`}
+          onClick={onExcluir}
+        >
           Excluir
         </button>
       </div>

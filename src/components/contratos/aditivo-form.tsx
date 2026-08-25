@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import formulario from "@/components/comum/formulario.module.css";
 import type { OpcaoSelect } from "@/components/obras/obra-form";
 import {
   aditivoMostraFontes,
@@ -90,165 +91,163 @@ export function AditivoForm({
     <form
       onSubmit={enviar}
       aria-label="formulario-aditivo"
-      style={{
-        display: "grid",
-        gap: 8,
-        maxWidth: 520,
-        padding: 12,
-        border: "1px solid #ddd",
-        borderRadius: 6,
-      }}
+      className={formulario.cartao}
     >
-      <h3>Novo aditivo</h3>
+      <h3 className={formulario.titulo}>Novo aditivo</h3>
 
-      <label style={lbl}>
-        Numero *
-        <input
-          required
-          value={form.numero}
-          onChange={(e) => set("numero", e.target.value)}
-        />
-      </label>
+      <div className={formulario.grade}>
+        <label className={formulario.campo}>
+          <span className={formulario.campoRotulo}>Número *</span>
+          <input
+            required
+            placeholder="01/2026"
+            value={form.numero}
+            onChange={(e) => set("numero", e.target.value)}
+          />
+        </label>
 
-      <label style={lbl}>
-        Tipo *
-        <select
-          value={tipo}
-          onChange={(e) => set("tipo", e.target.value as TipoAditivo)}
-        >
-          {TIPOS_ADITIVO.map((t) => (
-            <option key={t.chave} value={t.chave}>
-              {t.titulo}
-            </option>
-          ))}
-        </select>
-      </label>
+        <label className={formulario.campo}>
+          <span className={formulario.campoRotulo}>Tipo *</span>
+          <select
+            value={tipo}
+            onChange={(e) => set("tipo", e.target.value as TipoAditivo)}
+          >
+            {TIPOS_ADITIVO.map((t) => (
+              <option key={t.chave} value={t.chave}>
+                {t.titulo}
+              </option>
+            ))}
+          </select>
+        </label>
 
-      <label style={lbl}>
-        Data de assinatura
-        <input
-          type="date"
-          value={form.dataAssinatura ?? ""}
-          onChange={(e) => set("dataAssinatura", e.target.value)}
-        />
-      </label>
+        <label className={formulario.campo}>
+          <span className={formulario.campoRotulo}>Data de assinatura</span>
+          <input
+            type="date"
+            value={form.dataAssinatura ?? ""}
+            onChange={(e) => set("dataAssinatura", e.target.value)}
+          />
+        </label>
 
-      {/* PRAZO / PRAZO_E_VALOR: prazo de execucao aditivado (dias ou data). */}
-      {aditivoMostraPrazo(tipo) && (
-        <fieldset style={fs}>
-          <legend>Prazo de execucao aditivado</legend>
-          <label style={lbl}>
-            Forma
-            <select
-              value={form.tipoPrazoExecucao ?? "DIAS"}
-              onChange={(e) =>
-                set(
-                  "tipoPrazoExecucao",
-                  e.target.value as FormularioAditivo["tipoPrazoExecucao"],
-                )
-              }
-            >
-              {TIPOS_PRAZO_EXECUCAO.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
-          </label>
-          {form.tipoPrazoExecucao === "DIAS" ? (
-            <label style={lbl}>
-              Dias
+        {/* PRAZO / PRAZO_E_VALOR: prazo de execucao aditivado (dias ou data). */}
+        {aditivoMostraPrazo(tipo) && (
+          <div className={formulario.bloco}>
+            <h4 className={formulario.blocoTitulo}>
+              Prazo de execução aditivado
+            </h4>
+            <label className={formulario.campo}>
+              <span className={formulario.campoRotulo}>Forma</span>
+              <select
+                value={form.tipoPrazoExecucao ?? "DIAS"}
+                onChange={(e) =>
+                  set(
+                    "tipoPrazoExecucao",
+                    e.target.value as FormularioAditivo["tipoPrazoExecucao"],
+                  )
+                }
+              >
+                {TIPOS_PRAZO_EXECUCAO.map((p) => (
+                  <option key={p} value={p}>
+                    {p === "DIAS" ? "Em dias" : "Por data"}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {form.tipoPrazoExecucao === "DIAS" ? (
+              <label className={formulario.campo}>
+                <span className={formulario.campoRotulo}>Dias</span>
+                <input
+                  type="number"
+                  min={1}
+                  value={form.prazoExecucaoDias ?? ""}
+                  onChange={(e) => set("prazoExecucaoDias", e.target.value)}
+                />
+              </label>
+            ) : (
+              <label className={formulario.campo}>
+                <span className={formulario.campoRotulo}>Data</span>
+                <input
+                  type="date"
+                  value={form.prazoExecucaoData ?? ""}
+                  onChange={(e) => set("prazoExecucaoData", e.target.value)}
+                />
+              </label>
+            )}
+          </div>
+        )}
+
+        {/* Vigencia aditivada (dias ou data) — exceto OUTROS. */}
+        {aditivoMostraVigencia(tipo) && (
+          <div className={formulario.bloco}>
+            <h4 className={formulario.blocoTitulo}>
+              Vigência aditivada (opcional)
+            </h4>
+            <label className={formulario.campo}>
+              <span className={formulario.campoRotulo}>Dias de vigência</span>
               <input
                 type="number"
                 min={1}
-                value={form.prazoExecucaoDias ?? ""}
-                onChange={(e) => set("prazoExecucaoDias", e.target.value)}
+                value={form.vigenciaDias ?? ""}
+                onChange={(e) => set("vigenciaDias", e.target.value)}
               />
             </label>
-          ) : (
-            <label style={lbl}>
-              Data
+            <label className={formulario.campo}>
+              <span className={formulario.campoRotulo}>
+                ou nova data de vigência
+              </span>
               <input
                 type="date"
-                value={form.prazoExecucaoData ?? ""}
-                onChange={(e) => set("prazoExecucaoData", e.target.value)}
+                value={form.vigenciaAditivada ?? ""}
+                onChange={(e) => set("vigenciaAditivada", e.target.value)}
               />
             </label>
-          )}
-        </fieldset>
-      )}
+          </div>
+        )}
 
-      {/* Vigencia aditivada (dias ou data) — exceto OUTROS. */}
-      {aditivoMostraVigencia(tipo) && (
-        <fieldset style={fs}>
-          <legend>Vigencia aditivada (opcional)</legend>
-          <label style={lbl}>
-            Dias de vigencia
-            <input
-              type="number"
-              min={1}
-              value={form.vigenciaDias ?? ""}
-              onChange={(e) => set("vigenciaDias", e.target.value)}
+        {/* VALOR / PRAZO_E_VALOR / FONTE: N pares fonte+valor. */}
+        {aditivoMostraFontes(tipo) && (
+          <div className={formulario.campoLargo}>
+            <FontesEditor
+              fontes={form.fontes}
+              opcoesFonte={opcoesFonte}
+              onChange={(fontes) => set("fontes", fontes)}
             />
-          </label>
-          <label style={lbl}>
-            ou nova data de vigencia
-            <input
-              type="date"
-              value={form.vigenciaAditivada ?? ""}
-              onChange={(e) => set("vigenciaAditivada", e.target.value)}
-            />
-          </label>
-        </fieldset>
-      )}
+          </div>
+        )}
 
-      {/* VALOR / PRAZO_E_VALOR / FONTE: N pares fonte+valor. */}
-      {aditivoMostraFontes(tipo) && (
-        <FontesEditor
-          fontes={form.fontes}
-          opcoesFonte={opcoesFonte}
-          onChange={(fontes) => set("fontes", fontes)}
-        />
-      )}
-
-      <label style={lbl}>
-        Observacoes{aditivoSomenteBasico(tipo) ? " *" : ""}
-        <textarea
-          value={form.observacoes ?? ""}
-          onChange={(e) => set("observacoes", e.target.value)}
-          rows={2}
-        />
-      </label>
+        <label className={`${formulario.campo} ${formulario.campoLargo}`}>
+          <span className={formulario.campoRotulo}>
+            Observações{aditivoSomenteBasico(tipo) ? " *" : ""}
+          </span>
+          <textarea
+            value={form.observacoes ?? ""}
+            onChange={(e) => set("observacoes", e.target.value)}
+            rows={2}
+          />
+        </label>
+      </div>
 
       {alerta && (
-        <p role="status" style={{ color: "#a60", fontWeight: 600 }}>
-          Atencao: {alerta}
+        <p role="status" className={formulario.alerta}>
+          ⚠️ {alerta}
         </p>
       )}
       {erros.length > 0 && (
-        <ul role="alert" style={{ color: "crimson", margin: 0 }}>
+        <ul role="alert" className={formulario.erros}>
           {erros.map((er) => (
             <li key={er}>{er}</li>
           ))}
         </ul>
       )}
 
-      <div style={{ display: "flex", gap: 8 }}>
-        <button type="submit" disabled={salvando}>
-          {salvando ? "Salvando..." : "Salvar aditivo"}
-        </button>
-        <button type="button" onClick={onCancelar}>
+      <div className={formulario.rodape}>
+        <button type="button" className="btn-secundario" onClick={onCancelar}>
           Cancelar
+        </button>
+        <button type="submit" className="btn-primario" disabled={salvando}>
+          {salvando ? "Salvando..." : "Salvar aditivo"}
         </button>
       </div>
     </form>
   );
 }
-
-const lbl: React.CSSProperties = { display: "grid", gap: 4 };
-const fs: React.CSSProperties = {
-  border: "1px solid #eee",
-  borderRadius: 6,
-  display: "grid",
-  gap: 6,
-};

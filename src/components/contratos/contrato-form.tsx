@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import formulario from "@/components/comum/formulario.module.css";
 import type { OpcaoSelect } from "@/components/obras/obra-form";
 import {
   atualizarContrato,
@@ -113,139 +114,131 @@ export function ContratoForm({
   }
 
   return (
-    <form
-      onSubmit={enviar}
-      aria-label="formulario-contrato"
-      style={{ display: "grid", gap: 8, maxWidth: 560 }}
-    >
-      <h3>{contratoExistente ? "Editar contrato" : "Novo contrato"}</h3>
+    <form onSubmit={enviar} aria-label="formulario-contrato">
+      <div className={formulario.grade}>
+        <label className={formulario.campo}>
+          <span className={formulario.campoRotulo}>Número do contrato *</span>
+          <input
+            required
+            value={form.numero}
+            onChange={(e) => set("numero", e.target.value)}
+          />
+        </label>
 
-      <label style={lbl}>
-        Numero *
-        <input
-          required
-          value={form.numero}
-          onChange={(e) => set("numero", e.target.value)}
-        />
-      </label>
-
-      <label style={lbl}>
-        Empresa contratada *
-        <select
-          required
-          value={form.empresaContratadaId}
-          onChange={(e) => set("empresaContratadaId", e.target.value)}
-        >
-          <option value="">— selecione —</option>
-          {empresas.map((emp) => (
-            <option key={emp.id} value={emp.id}>
-              {emp.nome}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label style={lbl}>
-        Objeto
-        <textarea
-          rows={2}
-          value={form.objeto ?? ""}
-          onChange={(e) => set("objeto", e.target.value)}
-        />
-      </label>
-
-      <label style={lbl}>
-        Data de assinatura
-        <input
-          type="date"
-          value={form.dataAssinatura ?? ""}
-          onChange={(e) => set("dataAssinatura", e.target.value)}
-        />
-      </label>
-
-      <label style={lbl}>
-        Fim de vigencia
-        <input
-          type="date"
-          value={form.fimVigencia ?? ""}
-          onChange={(e) => set("fimVigencia", e.target.value)}
-        />
-      </label>
-
-      <label style={lbl}>
-        Data da O.S. *
-        <input
-          required
-          type="date"
-          value={form.dataOs}
-          onChange={(e) => set("dataOs", e.target.value)}
-        />
-      </label>
-
-      <fieldset style={fs}>
-        <legend>Prazo de execucao</legend>
-        <label style={lbl}>
-          Forma
+        <label className={formulario.campo}>
+          <span className={formulario.campoRotulo}>Empresa contratada *</span>
           <select
-            value={form.tipoPrazoExecucao}
-            onChange={(e) =>
-              set("tipoPrazoExecucao", e.target.value as TipoPrazoExecucao)
-            }
+            required
+            value={form.empresaContratadaId}
+            onChange={(e) => set("empresaContratadaId", e.target.value)}
           >
-            {TIPOS_PRAZO_EXECUCAO.map((p) => (
-              <option key={p} value={p}>
-                {p === "DIAS" ? "Em dias" : "Por data"}
+            <option value="">— selecione —</option>
+            {empresas.map((emp) => (
+              <option key={emp.id} value={emp.id}>
+                {emp.nome}
               </option>
             ))}
           </select>
         </label>
-        {form.tipoPrazoExecucao === "DIAS" ? (
-          <label style={lbl}>
-            Prazo em dias *
-            <input
-              type="number"
-              min={1}
-              value={form.prazoExecucaoDias ?? ""}
-              onChange={(e) => set("prazoExecucaoDias", e.target.value)}
-            />
-          </label>
-        ) : (
-          <label style={lbl}>
-            Data do prazo *
-            <input
-              type="date"
-              value={form.prazoExecucaoData ?? ""}
-              onChange={(e) => set("prazoExecucaoData", e.target.value)}
-            />
-          </label>
-        )}
-      </fieldset>
 
-      <FontesEditor
-        fontes={form.fontes}
-        opcoesFonte={opcoesFonte}
-        onChange={(fontes) => set("fontes", fontes)}
-      />
+        <label className={formulario.campo}>
+          <span className={formulario.campoRotulo}>Data de assinatura</span>
+          <input
+            type="date"
+            value={form.dataAssinatura ?? ""}
+            onChange={(e) => set("dataAssinatura", e.target.value)}
+          />
+        </label>
+
+        <label className={formulario.campo}>
+          <span className={formulario.campoRotulo}>Fim de vigência</span>
+          <input
+            type="date"
+            value={form.fimVigencia ?? ""}
+            onChange={(e) => set("fimVigencia", e.target.value)}
+          />
+        </label>
+
+        <label className={formulario.campo}>
+          <span className={formulario.campoRotulo}>Data da O.S. *</span>
+          <input
+            required
+            type="date"
+            value={form.dataOs}
+            onChange={(e) => set("dataOs", e.target.value)}
+          />
+        </label>
+
+        <div className={formulario.bloco}>
+          <h4 className={formulario.blocoTitulo}>Prazo de execução</h4>
+          <label className={formulario.campo}>
+            <span className={formulario.campoRotulo}>Forma</span>
+            <select
+              value={form.tipoPrazoExecucao}
+              onChange={(e) =>
+                set("tipoPrazoExecucao", e.target.value as TipoPrazoExecucao)
+              }
+            >
+              {TIPOS_PRAZO_EXECUCAO.map((p) => (
+                <option key={p} value={p}>
+                  {p === "DIAS" ? "Em dias" : "Por data"}
+                </option>
+              ))}
+            </select>
+          </label>
+          {form.tipoPrazoExecucao === "DIAS" ? (
+            <label className={formulario.campo}>
+              <span className={formulario.campoRotulo}>Prazo em dias *</span>
+              <input
+                type="number"
+                min={1}
+                value={form.prazoExecucaoDias ?? ""}
+                onChange={(e) => set("prazoExecucaoDias", e.target.value)}
+              />
+            </label>
+          ) : (
+            <label className={formulario.campo}>
+              <span className={formulario.campoRotulo}>Data do prazo *</span>
+              <input
+                type="date"
+                value={form.prazoExecucaoData ?? ""}
+                onChange={(e) => set("prazoExecucaoData", e.target.value)}
+              />
+            </label>
+          )}
+        </div>
+
+        <label className={`${formulario.campo} ${formulario.campoLargo}`}>
+          <span className={formulario.campoRotulo}>Objeto</span>
+          <textarea
+            rows={2}
+            value={form.objeto ?? ""}
+            onChange={(e) => set("objeto", e.target.value)}
+          />
+        </label>
+
+        <div className={formulario.campoLargo}>
+          <FontesEditor
+            fontes={form.fontes}
+            opcoesFonte={opcoesFonte}
+            onChange={(fontes) => set("fontes", fontes)}
+          />
+        </div>
+      </div>
 
       {erros.length > 0 && (
-        <ul role="alert" style={{ color: "crimson", margin: 0 }}>
+        <ul role="alert" className={formulario.erros}>
           {erros.map((er) => (
             <li key={er}>{er}</li>
           ))}
         </ul>
       )}
 
-      <button type="submit" disabled={salvando}>
-        {salvando ? "Salvando..." : "Salvar contrato"}
-      </button>
+      <div className={formulario.rodape}>
+        <button type="submit" className="btn-primario" disabled={salvando}>
+          {salvando ? "Salvando..." : "Salvar contrato"}
+        </button>
+      </div>
     </form>
   );
 }
-
-const lbl: React.CSSProperties = { display: "grid", gap: 4 };
-const fs: React.CSSProperties = {
-  border: "1px solid #eee",
-  borderRadius: 6,
-  display: "grid",
-  gap: 6,
-};

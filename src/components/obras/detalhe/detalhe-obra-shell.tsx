@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 // nota: carregamento client com guarda `vivo` (padrao do repo). O cabecalho
 // re-busca quando o ObraForm dispara o evento "obra:atualizada" apos salvar.
-import type { DesempenhoObra } from "@/lib/api/relatorios";
+import { urlDossieObra, type DesempenhoObra } from "@/lib/api/relatorios";
 import { abaAtivaDoPathname, abasDetalheObra } from "@/lib/ui/obra-detalhe";
 import {
   semaforoInfo,
@@ -109,6 +109,11 @@ export function DetalheObraShell({
             />
             {semaforo.rotulo}
           </span>
+          {obra && (
+            <a className={estilos.botaoDossie} href={urlDossieObra(obra.id)}>
+              ⤓ Dossiê (PDF)
+            </a>
+          )}
         </div>
       </header>
 

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { OpcaoSelect } from "@/components/obras/obra-form";
+import secoes from "@/components/obras/detalhe/secoes.module.css";
 import {
   excluirAditivo,
   excluirParalisacao,
@@ -9,27 +10,40 @@ import {
   listarParalisacoes,
   obterPrazoFinal,
   obterValores,
-  TIPOS_ADITIVO,
+  somarFontes,
   type Aditivo,
   type Contrato,
+  type FonteResumo,
   type Paralisacao,
   type PrazoFinalExecucao,
   type ValoresContrato,
 } from "@/lib/api/contratos";
+import {
+  chipTipoAditivo,
+  diasParadosTexto,
+  partesPrazoFinal,
+  prazoAditivo,
+  situacaoParalisacao,
+} from "@/lib/ui/contrato-aba";
+import { formatarData } from "@/lib/ui/datas";
+import { formatarMoeda } from "@/lib/ui/dinheiro";
 import { AditivoForm } from "./aditivo-form";
 import { ContratoForm } from "./contrato-form";
 import { ParalisacaoForm } from "./paralisacao-form";
 import { ReinicioForm } from "./reinicio-form";
 
-function rotuloTipo(tipo: string): string {
-  return TIPOS_ADITIVO.find((t) => t.chave === tipo)?.titulo ?? tipo;
+/** Valor de um aditivo = soma dos seus pares fonte+valor (RN-CON-13). */
+function valorAditivo(aditivo: Aditivo): string | null {
+  if (aditivo.fontes.length === 0) return null;
+  const total = somarFontes(aditivo.fontes);
+  return Number(total) === 0 ? null : total;
 }
 
 /**
- * Guia Contrato da obra (E4-05/E4-06): formulario do contrato, secoes de
- * Aditivos e Paralisacoes e os destaques de Prazo Final de Execucao (RN-CON-01)
- * e Valor Total Contratado (RN-CON-13), recarregados apos cada lancamento
- * (RN-CON-10). Acoes de escrita escondidas para CONSULTA.
+ * Guia Contrato da obra (E4-05/E4-06): destaques de Prazo Final de Execucao
+ * (RN-CON-01) e Valor Total Contratado (RN-CON-13) com sua decomposicao, dados
+ * do contrato com as fontes de recurso, aditivos e paralisacoes. Recarregada
+ * apos cada lancamento (RN-CON-10). Acoes de escrita escondidas para CONSULTA.
  */
 export function ContratoGestao({
   obraId,
@@ -44,7 +58,7 @@ export function ContratoGestao({
 }: {
   obraId: string;
   empresas: OpcaoSelect[];
-  opcoesFonte: OpcaoSelect[];
+  opcoesFonte: FonteResumo[];
   contratoInicial: Contrato | null;
   aditivosIniciais: Aditivo[];
   paralisacoesIniciais: Paralisacao[];
@@ -57,11 +71,12 @@ export function ContratoGestao({
   const [contrato] = useState<Contrato | null>(contratoInicial);
   const [editandoContrato, setEditandoContrato] = useState(!contratoInicial);
   const [aditivos, setAditivos] = useState<Aditivo[]>(aditivosIniciais);
-  const [paralisacoes, setParalisacoes] = useState<Paralisacao[]>(
-    paralisacoesIniciais,
-  );
+  const [paralisacoes, setParalisacoes] =
+    useState<Paralisacao[]>(paralisacoesIniciais);
   const [prazo, setPrazo] = useState<PrazoFinalExecucao | null>(prazoInicial);
-  const [valores, setValores] = useState<ValoresContrato | null>(valoresIniciais);
+  const [valores, setValores] = useState<ValoresContrato | null>(
+    valoresIniciais,
+  );
 
   const [novoAditivo, setNovoAditivo] = useState(false);
   const [reinicioDe, setReinicioDe] = useState<string | null>(null);
@@ -140,51 +155,123 @@ export function ContratoGestao({
       await excluirParalisacao(contratoId, id);
       await recarregarAgregados();
     } catch {
-      setErro("Falha ao excluir paralisacao");
+      setErro("Falha ao excluir paralisação");
     }
   }
 
+  const nomeFonte = (id: string) =>
+    opcoesFonte.find((f) => f.id === id)?.nome ?? id;
+  const codigoFonte = (id: string) =>
+    opcoesFonte.find((f) => f.id === id)?.codigo ?? "";
+
+  const camposContrato = contrato
+    ? [
+        { rotulo: "Número do contrato", valor: contrato.numero },
+        {
+          rotulo: "Empresa contratada",
+          valor:
+            empresas.find((e) => e.id === contrato.empresaContratadaId)?.nome ??
+            "—",
+        },
+        {
+          rotulo: "Data de assinatura",
+          valor: formatarData(contrato.dataAssinatura),
+        },
+        { rotulo: "Data da O.S.", valor: formatarData(contrato.dataOs) },
+        {
+          rotulo: "Tipo de prazo de execução",
+          valor: contrato.tipoPrazoExecucao,
+        },
+        {
+          rotulo: "Prazo de execução",
+          valor:
+            contrato.tipoPrazoExecucao === "DIAS"
+              ? `${contrato.prazoExecucaoDias ?? "—"} dias`
+              : formatarData(contrato.prazoExecucaoData),
+        },
+        {
+          rotulo: "Fim de vigência",
+          valor: formatarData(contrato.fimVigencia),
+        },
+        { rotulo: "Objeto", valor: contrato.objeto ?? "—" },
+      ]
+    : [];
+
   return (
-    <section style={{ display: "grid", gap: 24 }}>
-      {/* Destaques: prazo final e valor total */}
+    <section className={secoes.pilha}>
+      {/* Destaques: prazo final e valor total contratado */}
       {contrato && (
-        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-          <div style={cartao}>
-            <span style={rotulo}>Prazo Final de Execucao</span>
-            <strong style={{ fontSize: 22 }}>
-              {prazo?.prazoFinal ?? "—"}
-            </strong>
+        <div className={secoes.destaques}>
+          <div className={secoes.destaque}>
+            <div className={secoes.destaqueRotulo}>Prazo final de execução</div>
+            <div className={secoes.destaqueValor}>
+              {prazo ? formatarData(prazo.prazoFinal) : "—"}
+            </div>
             {prazo && (
-              <span style={{ color: "#666", fontSize: 12 }}>
-                {prazo.totalDias} dias (base {prazo.diasBase} + paralisacoes{" "}
-                {prazo.diasParalisacoes} + aditivos {prazo.diasAditivos})
-              </span>
+              <>
+                <div className={secoes.destaqueSub}>
+                  {prazo.totalDias} dias no total
+                </div>
+                <div className={secoes.partes}>
+                  {partesPrazoFinal(contrato.dataOs, prazo).map((p) => (
+                    <div key={p.chave} className={secoes.parte}>
+                      <span className={secoes.parteChave}>{p.chave}</span>
+                      <span className={secoes.parteValor}>{p.valor}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
-          <div style={cartao}>
-            <span style={rotulo}>Valor Total Contratado</span>
-            <strong style={{ fontSize: 22 }}>
-              R$ {valores?.total ?? "—"}
-            </strong>
-            {valores && (
-              <span style={{ color: "#666", fontSize: 12 }}>
-                inicial R$ {valores.contratadoInicial} + aditivado R${" "}
-                {valores.aditivado}
-              </span>
-            )}
+
+          <div className={secoes.destaque}>
+            <div className={secoes.destaqueRotulo}>Valor total contratado</div>
+            <div className={secoes.destaqueValor}>
+              {formatarMoeda(valores?.total, { vazio: "R$ 0,00" })}
+            </div>
+            <div className={secoes.partes}>
+              <div className={secoes.parte}>
+                <span className={secoes.parteChave}>Contratado inicial</span>
+                <span className={secoes.parteValor}>
+                  {formatarMoeda(valores?.contratadoInicial, {
+                    vazio: "R$ 0,00",
+                  })}
+                </span>
+              </div>
+              <div className={secoes.parte}>
+                <span className={secoes.parteChave}>Aditivado (valor)</span>
+                <span className={secoes.parteValor}>
+                  + {formatarMoeda(valores?.aditivado, { vazio: "R$ 0,00" })}
+                </span>
+              </div>
+              <div className={secoes.parte}>
+                <span className={secoes.parteChave}>Nº de aditivos</span>
+                <span className={secoes.parteValor}>{aditivos.length}</span>
+              </div>
+              <div className={secoes.parte}>
+                <span className={secoes.parteChave}>Fontes vinculadas</span>
+                <span className={secoes.parteValor}>
+                  {contrato.fontes.length}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {erro && <p style={{ color: "crimson" }}>{erro}</p>}
+      {erro && <p className={secoes.erros}>{erro}</p>}
 
       {/* Contrato */}
-      <div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <h2 style={{ margin: 0 }}>Contrato</h2>
+      <div className={secoes.secao}>
+        <div className={secoes.secaoCabecalho}>
+          <h2 className={secoes.secaoTitulo}>Contrato</h2>
           {contrato && podeEditar && !editandoContrato && (
-            <button type="button" onClick={() => setEditandoContrato(true)}>
-              Editar
+            <button
+              type="button"
+              className={`btn-secundario ${secoes.secaoAcao}`}
+              onClick={() => setEditandoContrato(true)}
+            >
+              Editar contrato
             </button>
           )}
         </div>
@@ -198,40 +285,63 @@ export function ContratoGestao({
             onSalvo={aoSalvarContrato}
           />
         ) : contrato ? (
-          <dl style={{ display: "grid", gridTemplateColumns: "max-content 1fr", gap: "4px 12px" }}>
-            <dt>Numero</dt>
-            <dd>{contrato.numero}</dd>
-            <dt>Objeto</dt>
-            <dd>{contrato.objeto ?? "—"}</dd>
-            <dt>Data O.S.</dt>
-            <dd>{contrato.dataOs}</dd>
-            <dt>Prazo</dt>
-            <dd>
-              {contrato.tipoPrazoExecucao === "DIAS"
-                ? `${contrato.prazoExecucaoDias} dias`
-                : contrato.prazoExecucaoData}
-            </dd>
-            <dt>Valor inicial</dt>
-            <dd>R$ {contrato.valorContratadoInicial}</dd>
-          </dl>
+          <>
+            <div className={secoes.grade}>
+              {camposContrato.map((c) => (
+                <div key={c.rotulo}>
+                  <div className="rotulo-campo">{c.rotulo}</div>
+                  <div className="valor-campo">{c.valor}</div>
+                </div>
+              ))}
+            </div>
+
+            <div
+              className={secoes.secaoCabecalho}
+              style={{ marginTop: "1.1rem" }}
+            >
+              <h3 className={secoes.secaoTitulo} style={{ fontSize: "0.9rem" }}>
+                Fontes de recurso
+              </h3>
+            </div>
+            <div className={secoes.listaEmbutida}>
+              {contrato.fontes.map((f) => (
+                <div key={f.id} className={secoes.itemLista}>
+                  <span className={secoes.itemCodigo}>
+                    {codigoFonte(f.fonteId)}
+                  </span>
+                  <span className={secoes.itemNome}>
+                    {nomeFonte(f.fonteId)}
+                  </span>
+                  <span className={secoes.itemValor}>
+                    {formatarMoeda(f.valor)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </>
         ) : (
-          !podeEditar && <p>Nenhum contrato cadastrado.</p>
+          <p className={secoes.vazio}>Nenhum contrato cadastrado.</p>
         )}
       </div>
 
       {/* Aditivos */}
       {contrato && (
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <h2 style={{ margin: 0 }}>Aditivos</h2>
+        <div className={secoes.secao}>
+          <div className={secoes.secaoCabecalho}>
+            <h2 className={secoes.secaoTitulo}>Aditivos</h2>
             {podeEditar && !novoAditivo && (
-              <button type="button" onClick={() => setNovoAditivo(true)}>
-                + Novo aditivo
+              <button
+                type="button"
+                className={`btn-primario ${secoes.secaoAcao}`}
+                onClick={() => setNovoAditivo(true)}
+              >
+                ＋ Novo aditivo
               </button>
             )}
           </div>
+
           {novoAditivo && podeEditar && (
-            <div style={{ marginTop: 8 }}>
+            <div style={{ marginBottom: "0.9rem" }}>
               <AditivoForm
                 contratoId={contrato.id}
                 opcoesFonte={opcoesFonte}
@@ -243,41 +353,140 @@ export function ContratoGestao({
               />
             </div>
           )}
+
           {aditivos.length === 0 ? (
-            <p>Nenhum aditivo.</p>
+            <p className={secoes.vazio}>Nenhum aditivo lançado.</p>
           ) : (
-            <ul style={{ listStyle: "none", padding: 0 }}>
-              {aditivos.map((a) => (
-                <li key={a.id} style={linha}>
-                  <span>
-                    <strong>#{a.numero}</strong> — {rotuloTipo(a.tipo)}
-                    {a.dataAssinatura ? ` (${a.dataAssinatura})` : ""}
-                  </span>
-                  {podeEditar && (
-                    <button type="button" onClick={() => removerAditivo(a.id)}>
-                      Excluir
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <>
+              <div className={`${secoes.soDesktop} ${secoes.tabelaEnvolucro}`}>
+                <table className={secoes.tabela}>
+                  <thead>
+                    <tr>
+                      <th>Nº</th>
+                      <th>Tipo</th>
+                      <th>Assinatura</th>
+                      <th>Prazo</th>
+                      <th>Valor</th>
+                      <th>Vigência</th>
+                      {podeEditar && <th />}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {aditivos.map((a) => {
+                      const chip = chipTipoAditivo(a.tipo);
+                      const valor = valorAditivo(a);
+                      return (
+                        <tr key={a.id}>
+                          <td className={`${secoes.forte} ${secoes.num}`}>
+                            {a.numero}
+                          </td>
+                          <td>
+                            <span className={`chip ${chip.classe}`}>
+                              {chip.titulo}
+                            </span>
+                          </td>
+                          <td className={secoes.num}>
+                            {formatarData(a.dataAssinatura)}
+                          </td>
+                          <td className={secoes.num}>{prazoAditivo(a)}</td>
+                          <td className={`${secoes.forte} ${secoes.num}`}>
+                            {valor ? formatarMoeda(valor) : "—"}
+                          </td>
+                          <td className={secoes.num}>
+                            {formatarData(a.vigenciaAditivada)}
+                          </td>
+                          {podeEditar && (
+                            <td className={secoes.direita}>
+                              <button
+                                type="button"
+                                title="Excluir aditivo"
+                                className={`${secoes.acaoIcone} ${secoes.acaoIconePerigo}`}
+                                onClick={() => removerAditivo(a.id)}
+                              >
+                                ✕
+                              </button>
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className={secoes.soMobile}>
+                {aditivos.map((a) => {
+                  const chip = chipTipoAditivo(a.tipo);
+                  const valor = valorAditivo(a);
+                  return (
+                    <div key={a.id} className={secoes.bloco}>
+                      <div className={secoes.blocoTopo}>
+                        <span className={secoes.blocoData}>{a.numero}</span>
+                        <span className={`chip ${chip.classe}`}>
+                          {chip.titulo}
+                        </span>
+                      </div>
+                      <div className={secoes.cartaoLinha}>
+                        <span className={secoes.cartaoChave}>Valor</span>
+                        <span className={secoes.cartaoValor}>
+                          {valor ? formatarMoeda(valor) : "—"}
+                        </span>
+                      </div>
+                      <div className={secoes.cartaoLinha}>
+                        <span className={secoes.cartaoChave}>Prazo</span>
+                        <span className={secoes.cartaoValor}>
+                          {prazoAditivo(a)}
+                        </span>
+                      </div>
+                      <div className={secoes.cartaoLinha}>
+                        <span className={secoes.cartaoChave}>Assinatura</span>
+                        <span className={secoes.cartaoValor}>
+                          {formatarData(a.dataAssinatura)}
+                        </span>
+                      </div>
+                      <div className={secoes.cartaoLinha}>
+                        <span className={secoes.cartaoChave}>Vigência</span>
+                        <span className={secoes.cartaoValor}>
+                          {formatarData(a.vigenciaAditivada)}
+                        </span>
+                      </div>
+                      {podeEditar && (
+                        <button
+                          type="button"
+                          className="btn-perigo"
+                          style={{ width: "100%", marginTop: "0.5rem" }}
+                          onClick={() => removerAditivo(a.id)}
+                        >
+                          Excluir
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       )}
 
       {/* Paralisacoes */}
       {contrato && (
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <h2 style={{ margin: 0 }}>Paralisacoes</h2>
+        <div className={secoes.secao}>
+          <div className={secoes.secaoCabecalho}>
+            <h2 className={secoes.secaoTitulo}>Paralisações</h2>
             {podeEditar && !novaParalisacao && (
-              <button type="button" onClick={() => setNovaParalisacao(true)}>
-                + Registrar paralisacao
+              <button
+                type="button"
+                className={`btn-primario ${secoes.secaoAcao}`}
+                onClick={() => setNovaParalisacao(true)}
+              >
+                ＋ Nova paralisação
               </button>
             )}
           </div>
+
           {novaParalisacao && podeEditar && (
-            <div style={{ marginTop: 8 }}>
+            <div style={{ marginBottom: "0.9rem" }}>
               <ParalisacaoForm
                 contratoId={contrato.id}
                 onSalvo={async () => {
@@ -288,91 +497,94 @@ export function ContratoGestao({
               />
             </div>
           )}
+
           {paralisacoes.length === 0 ? (
-            <p>Nenhuma paralisacao.</p>
+            <p className={secoes.vazio}>Nenhuma paralisação registrada.</p>
           ) : (
-            <ul style={{ listStyle: "none", padding: 0 }}>
+            <div className={secoes.blocos}>
               {paralisacoes.map((p) => {
-                const aberta = !p.dataReinicio && p.diasParados == null;
+                const situacao = situacaoParalisacao(p);
                 return (
-                  <li key={p.id} style={{ ...linha, flexWrap: "wrap" }}>
-                    <span>
-                      {p.dataParalisacao} — {p.motivo}{" "}
-                      {aberta ? (
-                        <em style={{ color: "#a60" }}>(em aberto)</em>
-                      ) : (
-                        <em style={{ color: "#2a8" }}>
-                          (reiniciada
-                          {p.dataReinicio ? ` em ${p.dataReinicio}` : ""}
-                          {p.diasParados != null
-                            ? `, ${p.diasParados} dias`
-                            : ""}
-                          )
-                        </em>
-                      )}
-                    </span>
-                    {podeEditar && (
-                      <span style={{ display: "flex", gap: 6 }}>
-                        {aberta && (
+                  <div key={p.id} className={secoes.bloco}>
+                    <div className={secoes.blocoTopo}>
+                      <span className={secoes.blocoData}>
+                        {formatarData(p.dataParalisacao)}
+                      </span>
+                      <span className={`chip ${situacao.classe}`}>
+                        {situacao.titulo}
+                      </span>
+                      <span className={secoes.blocoDireita}>
+                        <span className={secoes.parteValor}>
+                          {diasParadosTexto(p.diasParados)}
+                        </span>
+                        {podeEditar && situacao.aberta && (
                           <button
                             type="button"
+                            className={secoes.acaoIcone}
+                            title="Registrar reinício"
                             onClick={() =>
                               setReinicioDe(reinicioDe === p.id ? null : p.id)
                             }
                           >
-                            Reinicio
+                            ↺
                           </button>
                         )}
-                        <button
-                          type="button"
-                          onClick={() => removerParalisacao(p.id)}
-                        >
-                          Excluir
-                        </button>
+                        {podeEditar && (
+                          <button
+                            type="button"
+                            title="Excluir paralisação"
+                            className={`${secoes.acaoIcone} ${secoes.acaoIconePerigo}`}
+                            onClick={() => removerParalisacao(p.id)}
+                          >
+                            ✕
+                          </button>
+                        )}
                       </span>
-                    )}
-                    {reinicioDe === p.id && podeEditar && (
-                      <div style={{ width: "100%" }}>
-                        <ReinicioForm
-                          contratoId={contrato.id}
-                          paralisacaoId={p.id}
-                          onSalvo={async () => {
-                            setReinicioDe(null);
-                            await recarregarAgregados();
-                          }}
-                          onCancelar={() => setReinicioDe(null)}
-                        />
+                    </div>
+
+                    <p className={secoes.blocoTexto}>{p.motivo}</p>
+
+                    <div className={secoes.blocoGrade}>
+                      <div>
+                        <div className="rotulo-campo">Termo de paralisação</div>
+                        <div className="valor-campo">
+                          📎 {p.termoParalisacaoArquivoId}
+                        </div>
                       </div>
+                      <div>
+                        <div className="rotulo-campo">Data de reinício</div>
+                        <div className="valor-campo num">
+                          {formatarData(p.dataReinicio)}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="rotulo-campo">Termo de retomada</div>
+                        <div className="valor-campo">
+                          {p.termoRetomadaArquivoId
+                            ? `📎 ${p.termoRetomadaArquivoId}`
+                            : "—"}
+                        </div>
+                      </div>
+                    </div>
+
+                    {reinicioDe === p.id && podeEditar && (
+                      <ReinicioForm
+                        contratoId={contrato.id}
+                        paralisacaoId={p.id}
+                        onSalvo={async () => {
+                          setReinicioDe(null);
+                          await recarregarAgregados();
+                        }}
+                        onCancelar={() => setReinicioDe(null)}
+                      />
                     )}
-                  </li>
+                  </div>
                 );
               })}
-            </ul>
+            </div>
           )}
         </div>
       )}
     </section>
   );
 }
-
-const cartao: React.CSSProperties = {
-  display: "grid",
-  gap: 4,
-  padding: 16,
-  border: "1px solid #ddd",
-  borderRadius: 8,
-  minWidth: 240,
-};
-const rotulo: React.CSSProperties = {
-  fontSize: 12,
-  textTransform: "uppercase",
-  color: "#888",
-};
-const linha: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: 8,
-  padding: "8px 0",
-  borderBottom: "1px solid #eee",
-};

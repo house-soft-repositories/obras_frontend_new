@@ -4,8 +4,10 @@ import { agruparPorDia, diasNoMes } from "./calendario";
 
 function obra(id: string, prazo: string | null): ItemListaObras {
   return {
-    obraId: id, nome: id, statusObra: "EM_DESENVOLVIMENTO", estagioAtualNome: null,
-    prazoConclusaoEstagio: prazo, percentualRealizado: 0, semaforo: null, orgaoId: null,
+    obraId: id, codigo: `OBR-2026-000${id}`, nome: id,
+    statusObra: "EM_DESENVOLVIMENTO", tipo: "REFORMA", estagioAtualNome: null,
+    prazoConclusaoEstagio: prazo, percentualRealizado: 0, percentualFinanceiro: 0,
+    semaforo: null, orgaoId: null, orgaoNome: null,
     localidadeNome: null, responsavelNome: null, tags: [], acaoConveniada: null,
     prioritaria: false, empresaExecutora: null, numeroContrato: null, localizacoes: [],
     dataCriacao: "2026-01-01T00:00:00Z", ultimaAtualizacao: null,

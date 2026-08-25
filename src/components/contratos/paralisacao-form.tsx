@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import formulario from "@/components/comum/formulario.module.css";
 import {
   criarParalisacao,
   ErroApi,
@@ -73,57 +74,57 @@ export function ParalisacaoForm({
     <form
       onSubmit={enviar}
       aria-label="formulario-paralisacao"
-      style={{
-        display: "grid",
-        gap: 8,
-        maxWidth: 480,
-        padding: 12,
-        border: "1px solid #ddd",
-        borderRadius: 6,
-      }}
+      className={formulario.cartao}
     >
-      <h3>Registrar paralisacao</h3>
-      <label style={lbl}>
-        Data da paralisacao *
-        <input
-          type="date"
-          value={form.dataParalisacao}
-          onChange={(e) => set("dataParalisacao", e.target.value)}
-        />
-      </label>
-      <label style={lbl}>
-        Motivo *
-        <textarea
-          rows={2}
-          value={form.motivo}
-          onChange={(e) => set("motivo", e.target.value)}
-        />
-      </label>
-      <label style={lbl}>
-        Termo de paralisacao (id do arquivo) *
-        <input
-          value={form.termoParalisacaoArquivoId}
-          onChange={(e) => set("termoParalisacaoArquivoId", e.target.value)}
-          placeholder="id do termo anexado"
-        />
-      </label>
+      <h3 className={formulario.titulo}>Registrar paralisação</h3>
+
+      <div className={formulario.grade}>
+        <label className={formulario.campo}>
+          <span className={formulario.campoRotulo}>Data da paralisação *</span>
+          <input
+            type="date"
+            value={form.dataParalisacao}
+            onChange={(e) => set("dataParalisacao", e.target.value)}
+          />
+        </label>
+
+        <label className={formulario.campo}>
+          <span className={formulario.campoRotulo}>
+            Termo de paralisação (id do arquivo) *
+          </span>
+          <input
+            value={form.termoParalisacaoArquivoId}
+            onChange={(e) => set("termoParalisacaoArquivoId", e.target.value)}
+            placeholder="id do termo anexado"
+          />
+        </label>
+
+        <label className={`${formulario.campo} ${formulario.campoLargo}`}>
+          <span className={formulario.campoRotulo}>Motivo *</span>
+          <textarea
+            rows={2}
+            value={form.motivo}
+            onChange={(e) => set("motivo", e.target.value)}
+          />
+        </label>
+      </div>
+
       {erros.length > 0 && (
-        <ul role="alert" style={{ color: "crimson", margin: 0 }}>
+        <ul role="alert" className={formulario.erros}>
           {erros.map((er) => (
             <li key={er}>{er}</li>
           ))}
         </ul>
       )}
-      <div style={{ display: "flex", gap: 8 }}>
-        <button type="submit" disabled={salvando}>
-          {salvando ? "Salvando..." : "Registrar"}
-        </button>
-        <button type="button" onClick={onCancelar}>
+
+      <div className={formulario.rodape}>
+        <button type="button" className="btn-secundario" onClick={onCancelar}>
           Cancelar
+        </button>
+        <button type="submit" className="btn-primario" disabled={salvando}>
+          {salvando ? "Salvando..." : "Registrar"}
         </button>
       </div>
     </form>
   );
 }
-
-const lbl: React.CSSProperties = { display: "grid", gap: 4 };
