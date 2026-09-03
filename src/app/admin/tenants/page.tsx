@@ -51,7 +51,7 @@ export default function TenantsPage() {
 
   useEffect(() => {
     let vivo = true;
-    proxyJson<Tenant[]>("admin/tenants")
+    proxyJson<Tenant[]>("tenancies")
       .then((d) => {
         if (!vivo) return;
         setItens(d);
@@ -60,7 +60,7 @@ export default function TenantsPage() {
       .catch(() => {
         if (!vivo) return;
         setItens([]);
-        setErroLista("Acesso restrito a SUPER_ADMIN ou API indisponível.");
+        setErroLista("Acesso restrito a SUPERADMIN ou API indisponível.");
       })
       .finally(() => vivo && setCarregando(false));
     return () => {
@@ -89,12 +89,17 @@ export default function TenantsPage() {
     setErroForm(null);
     setSalvando(true);
     try {
-      await proxyJson("admin/tenants", {
+      const cnpj = form.cnpj.replace(/\D/g, "");
+      if (cnpj && cnpj.length !== 14) {
+        setErroForm("Informe um CNPJ com 14 dígitos.");
+        return;
+      }
+      await proxyJson("tenancies", {
         method: "POST",
         body: JSON.stringify({
-          nome: form.nome.trim(),
+          name: form.nome.trim(),
           slug: form.slug.trim(),
-          ...(form.cnpj.trim() ? { cnpj: form.cnpj.trim() } : {}),
+          ...(cnpj ? { cnpj } : {}),
         }),
       });
       fecharForm();
