@@ -202,7 +202,11 @@ h3 {
   margin: 1.25rem 0 0.5rem;
 }
 
-a {
+/*
+ * Links com classe (por exemplo, a navegação da sidebar) controlam a própria
+ * cor. Mantemos o azul institucional apenas para links de conteúdo sem classe.
+ */
+a:not([class]) {
   color: var(--cor-acento);
 }
 
