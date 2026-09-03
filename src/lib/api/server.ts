@@ -1,5 +1,10 @@
+import { auth } from "@/core/config/auth_options";
 import { cookies } from "next/headers";
-import { COOKIE_ACCESS } from "@/lib/auth/session";
+import { NextRequest } from "next/server";
+import {
+  obterTokenBackend,
+  renovarTokenBackend,
+} from "@/lib/auth/backend-token";
 import { montarUrl } from "./client";
 
 /** Fetch autenticado server-side: injeta o access token (cookie httpOnly). */
@@ -7,13 +12,22 @@ export async function apiServerFetch<T>(
   caminho: string,
   init?: RequestInit,
 ): Promise<T> {
+  const session = await auth();
+  if (!session?.user) throw new Error("Sessão ausente");
   const jar = await cookies();
-  const token = jar.get(COOKIE_ACCESS)?.value;
+  const req = new NextRequest("http://localhost", {
+    headers: { cookie: jar.toString() },
+  });
+  let token = await obterTokenBackend(req);
+  if (token?.accessTokenExpiresAt && Date.now() >= token.accessTokenExpiresAt) {
+    token = await renovarTokenBackend(token);
+  }
+  if (!token?.accessToken) throw new Error("Access token ausente");
   const resposta = await fetch(montarUrl(caminho), {
     ...init,
     headers: {
       "content-type": "application/json",
-      ...(token ? { authorization: `Bearer ${token}` } : {}),
+      authorization: `Bearer ${token.accessToken}`,
       ...(init?.headers ?? {}),
     },
     cache: "no-store",

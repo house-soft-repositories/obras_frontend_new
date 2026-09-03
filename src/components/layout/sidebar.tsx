@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { limparCacheMe, papelPrincipal, type MeResposta } from "@/lib/api/me";
 import { iniciais } from "@/lib/ui/obra-labels";
 import { ehAtivo, marcaDaRota, menuDaRota } from "@/lib/ui/navegacao";
@@ -22,15 +23,12 @@ interface Props {
 
 export function Sidebar({ mobileAberto, aoNavegar, me }: Props) {
   const pathname = usePathname() ?? "";
-  const router = useRouter();
   const menu = menuDaRota(pathname);
   const marca = marcaDaRota(pathname);
 
   async function sair() {
-    await fetch("/api/auth/logout", { method: "POST" });
     limparCacheMe();
-    router.push("/login");
-    router.refresh();
+    await signOut({ callbackUrl: "/login" });
   }
 
   return (

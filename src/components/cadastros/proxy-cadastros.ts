@@ -4,6 +4,7 @@
  * `ErroHttp` com status + mensagem exibivel (message do Nest quando houver).
  */
 import { mensagemErroApi } from "@/lib/ui/cadastro-labels";
+import { signOut } from "next-auth/react";
 
 export class ErroHttp extends Error {
   constructor(
@@ -25,6 +26,12 @@ export async function proxyJson<T>(
     ...init,
   });
   if (!resposta.ok) {
+    if (resposta.status === 401) {
+      // O proxy só devolve 401 após uma tentativa de refresh. Limpa o cookie
+      // httpOnly via Auth.js e leva o usuário para uma nova autenticação.
+      await signOut({ redirect: false });
+      window.location.assign("/login");
+    }
     const corpo: unknown = await resposta.json().catch(() => null);
     throw new ErroHttp(
       resposta.status,
