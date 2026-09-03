@@ -1,5 +1,73 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--app-background);
+  --color-surface: var(--app-surface);
+  --color-surface-subtle: var(--app-surface-subtle);
+  --color-foreground: var(--app-foreground);
+  --color-muted: var(--app-muted);
+  --color-accent: var(--app-accent);
+  --color-accent-hover: var(--app-accent-hover);
+  --color-border: var(--app-border);
+  --color-input: var(--app-input);
+  --color-ring: var(--app-ring);
+  --radius-app: var(--radius-md);
+  --shadow-card: var(--app-shadow-card);
+  --shadow-overlay: var(--app-shadow-overlay);
+  --color-login-canvas: #f6f5f2;
+  --color-login-ink: #252525;
+  --color-login-muted: #5f6368;
+  --color-login-line: #deddd8;
+  --color-login-accent: #f5b700;
+  --color-login-accent-hover: #dfa600;
+  --color-login-placeholder: color-mix(
+    in oklch,
+    var(--color-login-muted) 65%,
+    white
+  );
+  --color-login-danger: color-mix(
+    in oklch,
+    var(--color-login-ink) 70%,
+    #dc2626
+  );
+  --font-display: var(--fonte-display), system-ui, sans-serif;
+  --font-body: var(--fonte), system-ui, sans-serif;
+  --shadow-login-button: 0 4px 10px rgb(37 37 37 / 12%);
+}
+
 :root {
   color-scheme: light;
+
+  /* Obras Gest design system — fonte: Open Design / DESIGN.md */
+  --app-background: #fff;
+  --app-surface: #fff;
+  --app-foreground: #252525;
+  --app-muted: #5f6368;
+  --app-accent: #f5b700;
+  --app-surface-subtle: color-mix(
+    in oklch,
+    var(--app-muted) 10%,
+    var(--app-background)
+  );
+  --app-border: color-mix(
+    in oklch,
+    var(--app-muted) 32%,
+    var(--app-background)
+  );
+  --app-input: color-mix(in oklch, var(--app-muted) 42%, var(--app-background));
+  --app-accent-hover: color-mix(
+    in oklch,
+    var(--app-accent) 88%,
+    var(--app-foreground)
+  );
+  --app-ring: color-mix(in oklch, var(--app-accent) 70%, transparent);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-pill: 999px;
+  --app-shadow-card: 0 4px 12px
+    color-mix(in oklch, var(--app-foreground) 12%, transparent);
+  --app-shadow-overlay: 0 16px 40px
+    color-mix(in oklch, var(--app-foreground) 24%, transparent);
 
   /* Paleta base (Claude Design — "Obras Publicas") */
   --cor-fundo: #f5f6f8;
