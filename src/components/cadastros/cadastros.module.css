@@ -24,6 +24,45 @@
   font-weight: 600;
 }
 
+.descricao {
+  max-width: 680px;
+  margin: 0.25rem 0 0;
+  color: var(--cor-texto-fraco);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.nota {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 760px;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--cor-acento-borda, #cfe0ff);
+  border-radius: var(--raio);
+  background: var(--cor-acento-suave);
+  color: var(--cor-texto);
+}
+
+.nota p {
+  margin: 0.15rem 0 0;
+  color: var(--cor-texto-fraco);
+  font-size: 0.84rem;
+}
+
+.notaIcone {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--cor-acento);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
 /* ---- Busca client-side ---- */
 .busca {
   display: flex;

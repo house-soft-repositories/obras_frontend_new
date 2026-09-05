@@ -11,6 +11,11 @@
   --color-border: var(--app-border);
   --color-input: var(--app-input);
   --color-ring: var(--app-ring);
+  --color-sidebar: var(--app-sidebar);
+  --color-sidebar-foreground: var(--app-sidebar-foreground);
+  --color-sidebar-muted: var(--app-sidebar-muted);
+  --color-sidebar-hover: var(--app-sidebar-hover);
+  --color-sidebar-border: var(--app-sidebar-border);
   --radius-app: var(--radius-md);
   --shadow-card: var(--app-shadow-card);
   --shadow-overlay: var(--app-shadow-overlay);
@@ -61,6 +66,11 @@
     var(--app-foreground)
   );
   --app-ring: color-mix(in oklch, var(--app-accent) 70%, transparent);
+  --app-sidebar: #252525;
+  --app-sidebar-foreground: #fff;
+  --app-sidebar-muted: color-mix(in oklch, white 66%, transparent);
+  --app-sidebar-hover: color-mix(in oklch, white 10%, transparent);
+  --app-sidebar-border: color-mix(in oklch, white 12%, transparent);
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-pill: 999px;

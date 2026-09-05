@@ -34,7 +34,11 @@ type SessionCallbackParams = Parameters<SessionCallback>[0];
 type SessionCallbackResult = Awaited<ReturnType<SessionCallback>>;
 
 function ehUsuarioCredenciais(user: JwtCallbackParams["user"]): user is User {
-  return "accessToken" in user && "refreshToken" in user;
+  return (
+    user !== undefined &&
+    "accessToken" in user &&
+    "refreshToken" in user
+  );
 }
 
 function validarPayloadAccess(token: string): AccessTokenPayload | null {

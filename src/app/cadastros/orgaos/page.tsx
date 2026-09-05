@@ -9,6 +9,7 @@ import {
   CadastroBusca,
   CadastroCabecalho,
   CadastroForm,
+  CadastroNota,
   CadastroPagina,
   CadastroTabela,
   CadastroTrilha,
@@ -117,8 +118,13 @@ export default function OrgaosPage() {
 
   const filtrados = useMemo(
     () =>
-      filtrarCadastro(itens, busca, (o) => [o.nome, o.sigla, o.responsavel]),
-    [itens, busca],
+      filtrarCadastro(itens, busca, (o) => [
+        o.nome,
+        o.sigla,
+        o.responsavel,
+        localidades.find((l) => l.id === o.localidadeId)?.nome,
+      ]),
+    [itens, localidades, busca],
   );
 
   function abrirCriar() {
@@ -333,16 +339,20 @@ export default function OrgaosPage() {
       <CadastroCabecalho
         titulo="Órgãos"
         sub={carregando ? "Carregando…" : resumoRegistros(itens.length)}
+        descricao="Estrutura administrativa vinculada às localidades do tenant."
         acao={
           <button type="button" className="btn-primario" onClick={abrirCriar}>
             + Novo órgão
           </button>
         }
       />
+      <CadastroNota titulo="Permissão de administração">
+        Você pode criar e editar órgãos deste tenant.
+      </CadastroNota>
       <CadastroBusca
         valor={busca}
         aoMudar={setBusca}
-        placeholder="Buscar por nome, sigla ou responsável"
+        placeholder="Buscar por nome, sigla, localidade ou responsável"
       />
       {erroLista && <AvisoCadastro tipo="erro">{erroLista}</AvisoCadastro>}
       {carregando ? (

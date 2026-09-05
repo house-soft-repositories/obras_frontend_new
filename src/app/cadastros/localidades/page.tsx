@@ -7,6 +7,7 @@ import {
   CadastroBusca,
   CadastroCabecalho,
   CadastroForm,
+  CadastroNota,
   CadastroPagina,
   CadastroTabela,
   CadastroTrilha,
@@ -273,16 +274,20 @@ export default function LocalidadesPage() {
       <CadastroCabecalho
         titulo="Localidades"
         sub={carregando ? "Carregando…" : resumoRegistros(itens.length)}
+        descricao="Territórios reutilizados na organização de órgãos e obras."
         acao={
           <button type="button" className="btn-primario" onClick={abrirCriar}>
             + Nova localidade
           </button>
         }
       />
+      <CadastroNota titulo="Permissão de administração">
+        Você pode criar e editar localidades deste tenant.
+      </CadastroNota>
       <CadastroBusca
         valor={busca}
         aoMudar={setBusca}
-        placeholder="Buscar por nome, município ou UF"
+        placeholder="Buscar por nome, município, UF ou código IBGE"
       />
       {erroLista && <AvisoCadastro tipo="erro">{erroLista}</AvisoCadastro>}
       {carregando ? (

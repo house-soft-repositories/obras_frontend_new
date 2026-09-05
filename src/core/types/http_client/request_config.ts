@@ -1,4 +1,4 @@
 export interface RequestConfig extends RequestInit {
   baseURL?: string;
-  extra?: Record<string, any>;
+  extra?: Record<string, unknown>;
 }

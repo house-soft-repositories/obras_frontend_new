@@ -8,7 +8,7 @@ import {
 export class HttpClient {
   private static instance: HttpClient | null = null;
   private interceptors: Interceptor[] = [];
-  private extra: Record<string, any> = {};
+  private extra: Record<string, unknown> = {};
 
   private constructor(
     private readonly baseURL: string,
@@ -54,8 +54,8 @@ export class HttpClient {
 
   private async runInterceptors(
     type: 'request' | 'response' | 'error',
-    value: any
-  ): Promise<any> {
+    value: unknown
+  ): Promise<unknown> {
     let result = value;
 
     for (const interceptor of this.interceptors) {
@@ -89,7 +89,7 @@ export class HttpClient {
       const interceptedConfig = await this.runInterceptors(
         'request',
         finalConfig
-      );
+      ) as RequestConfig;
 
       const fullUrl = this.baseURL + url;
       const response = await fetch(fullUrl, interceptedConfig);
@@ -97,7 +97,7 @@ export class HttpClient {
 
       await this.runInterceptors('response', responseForInterceptors);
 
-      let data: any;
+      let data: unknown;
       try {
         data = await response.json();
       } catch {
@@ -105,15 +105,20 @@ export class HttpClient {
       }
 
       if (!response.ok) {
-        const rawMessage = data?.message;
+        const rawMessage =
+          typeof data === 'object' && data !== null && 'message' in data
+            ? data.message
+            : undefined;
         const message = Array.isArray(rawMessage)
           ? rawMessage.join(', ')
-          : rawMessage || 'Request failed';
+          : typeof rawMessage === 'string'
+            ? rawMessage
+            : 'Request failed';
         throw new HttpClientException(message, response.status);
       }
 
       return {
-        data,
+        data: data as T,
         status: response.status,
         headers: response.headers,
         config: finalConfig,
@@ -122,7 +127,7 @@ export class HttpClient {
       const interceptedError = await this.runInterceptors('error', error);
       let isConnectionError = false;
       if (typeof error === 'object' && error !== null && 'code' in error) {
-        if ((error as any).code === 'ECONNREFUSED') {
+        if ((error as { code?: unknown }).code === 'ECONNREFUSED') {
           isConnectionError = true;
         }
       }
@@ -213,7 +218,7 @@ export class HttpClient {
       const interceptedConfig = await this.runInterceptors(
         'request',
         finalConfig
-      );
+      ) as RequestConfig;
 
       const fullUrl = this.baseURL + url;
       const response = await fetch(fullUrl, interceptedConfig);
@@ -229,7 +234,9 @@ export class HttpClient {
       // async por um worker) — o corpo é JSON, não binário. Tratar como uma
       // falha "ainda processando" em vez de devolver esse JSON como blob.
       if (response.status === 202) {
-        const pendingBody = await response.json().catch(() => ({}));
+        const pendingBody = await response.json().catch(() => ({})) as {
+          message?: string;
+        };
         throw new HttpClientException(
           pendingBody.message || 'Arquivo ainda sendo processado',
           202,

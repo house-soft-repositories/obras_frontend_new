@@ -72,7 +72,8 @@ export async function persistirTokenBackend(res: NextResponse, token: JWT) {
   });
 }
 
-function lerExpiracao(token: string) {
+/** Lê a expiração de um access token para manter o JWT do Auth.js sincronizado. */
+export function lerExpiracao(token: string) {
   try {
     const payload = token.split(".")[1];
     if (!payload) return undefined;

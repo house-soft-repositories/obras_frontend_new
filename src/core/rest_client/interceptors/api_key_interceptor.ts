@@ -38,7 +38,7 @@ export class ApiKeyInterceptor implements Interceptor {
     return response;
   }
 
-  async error(error: any): Promise<any> {
+  async error(error: unknown): Promise<unknown> {
     return error;
   }
 }

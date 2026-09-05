@@ -7,16 +7,19 @@ import {
   ChartNoAxesCombined,
   HardHat,
   House,
+  Landmark,
   MapPinned,
+  Network,
   Plus,
-  Settings2,
 } from "lucide-react";
 
 const publicNavigationItems = [
   { href: "/home", label: "Início", icon: House },
   { href: "/obras", label: "Obras públicas", icon: Building2 },
   { href: "/dashboard", label: "Dashboard", icon: ChartNoAxesCombined },
-  { href: "/cadastros/orgaos", label: "Cadastros", icon: Settings2 },
+  { href: "/cadastros/localidades", label: "Localidades", icon: MapPinned },
+  { href: "/cadastros/orgaos", label: "Órgãos", icon: Landmark },
+  { href: "/cadastros/setores", label: "Setores", icon: Network },
 ] as const;
 
 const privateNavigationItems = [

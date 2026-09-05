@@ -1,9 +1,9 @@
-import { AppShell } from "@/components/layout/app-shell";
+import { PrivateLayout } from "@/components/layout/private-layout";
 
 export default function HomeLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <AppShell>{children}</AppShell>;
+  return <PrivateLayout>{children}</PrivateLayout>;
 }

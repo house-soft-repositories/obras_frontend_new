@@ -2,22 +2,22 @@
 
 import type { ReactNode } from "react";
 import { CalendarDays, Menu } from "lucide-react";
-import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { TenancySwitcher, type TenancyOpcao } from "./tenancy-switcher";
 
 interface PrivateShellProps {
   children: ReactNode;
   sidebar: ReactNode;
+  tenancies: TenancyOpcao[];
 }
 
 /** Camada de interação do layout privado; a Sidebar continua renderizada no servidor. */
-export function PrivateShell({ children, sidebar }: PrivateShellProps) {
+export function PrivateShell({
+  children,
+  sidebar,
+  tenancies,
+}: PrivateShellProps) {
   const [menuAberto, setMenuAberto] = useState(false);
-  const pathname = usePathname() ?? "";
-  const areaPrivada = pathname.startsWith("/obras-privadas");
-  const titulo = areaPrivada
-    ? "Fiscalização de obras privadas"
-    : "Gestão de obras públicas";
 
   return (
     <div
@@ -51,14 +51,10 @@ export function PrivateShell({ children, sidebar }: PrivateShellProps) {
           >
             <Menu aria-hidden="true" className="size-5" />
           </button>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-foreground">
-              {titulo}
-            </p>
-            <p className="mt-0.5 truncate text-xs text-muted">
-              Prefeitura de São Bento
-            </p>
-          </div>
+          <TenancySwitcher
+            nomePadrao="Prefeitura de São Bento"
+            tenancies={tenancies}
+          />
           <div className="ml-auto hidden items-center gap-2 text-xs text-muted sm:flex">
             <CalendarDays aria-hidden="true" className="size-4" />
             Atualizado agora

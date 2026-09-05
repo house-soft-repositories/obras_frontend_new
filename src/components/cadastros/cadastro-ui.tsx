@@ -21,10 +21,12 @@ export function CadastroPagina({ children }: { children: ReactNode }) {
 export function CadastroCabecalho({
   titulo,
   sub,
+  descricao,
   acao,
 }: {
   titulo: ReactNode;
   sub?: string;
+  descricao?: string;
   acao?: ReactNode;
 }) {
   return (
@@ -32,9 +34,31 @@ export function CadastroCabecalho({
       <div>
         <h1 className="page-titulo">{titulo}</h1>
         {sub && <p className="page-sub">{sub}</p>}
+        {descricao && <p className={s.descricao}>{descricao}</p>}
       </div>
       {acao}
     </header>
+  );
+}
+
+/** Nota contextual no topo dos cadastros, equivalente ao bloco de permissao do OD. */
+export function CadastroNota({
+  titulo,
+  children,
+}: {
+  titulo: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className={s.nota} aria-label={titulo}>
+      <div className={s.notaIcone} aria-hidden="true">
+        ✓
+      </div>
+      <div>
+        <strong>{titulo}</strong>
+        <p>{children}</p>
+      </div>
+    </section>
   );
 }
 
