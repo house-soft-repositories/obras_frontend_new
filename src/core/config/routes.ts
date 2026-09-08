@@ -7,7 +7,6 @@ export type Route = {
   children?: Route[];
   label: string;
   icon?: string;
-  section?: "Principal" | "Gestão" | "Sistema" | "Outros";
 };
 
 export const publicRoutes: Route[] = [
@@ -17,32 +16,13 @@ export const publicRoutes: Route[] = [
     whenAuthenticated: "redirect",
     roles: null,
   },
-  {
-    path: "/confirm-email",
-    label: "Confirmar Email",
-    whenAuthenticated: "redirect",
-    roles: null,
-  },
-  {
-    path: "/validar-documento",
-    label: "Validar Documento",
-    whenAuthenticated: "allow",
-    roles: null,
-  },
-  {
-    path: "/redefinir-senha",
-    label: "Redefinir Senha",
-    whenAuthenticated: "allow",
-    roles: null,
-  },
 ];
 
 export const privateRoutes: Route[] = [
   {
-    path: "/",
-    label: "Inicio",
-    icon: "LayoutDashboard",
-    section: "Principal",
+    path: "/home",
+    label: "Início",
+    icon: "House",
     roles: [
       userRoleSchema.enum.SUPERADMIN,
       userRoleSchema.enum.ADMIN,
@@ -50,9 +30,61 @@ export const privateRoutes: Route[] = [
       userRoleSchema.enum.STAFF,
     ],
   },
+  {
+    path: "/admin/tenants",
+    label: "Tenants",
+    icon: "Shield",
+    roles: [userRoleSchema.enum.SUPERADMIN],
+  },
+  {
+    path: "/cadastros/usuarios",
+    label: "Usuários",
+    icon: "Users",
+    roles: [userRoleSchema.enum.SUPERADMIN],
+  },
+  {
+    path: "/obras",
+    label: "Obras",
+    icon: "Building2",
+    roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.ADMIN],
+  },
+  {
+    path: "/cadastros/localidades",
+    label: "Localidades",
+    icon: "MapPinned",
+    roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.ADMIN],
+  },
+  {
+    path: "/cadastros/orgaos",
+    label: "Órgãos",
+    icon: "Landmark",
+    roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.ADMIN],
+  },
+  {
+    path: "/cadastros/setores",
+    label: "Setores",
+    icon: "Network",
+    roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.ADMIN],
+  },
+  {
+    path: "/obras",
+    label: "Obras",
+    icon: "Building2",
+    roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.STAFF],
+  },
+  {
+    path: "/obras",
+    label: "Obras",
+    icon: "Building2",
+    roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.USER],
+  },
 ];
 
 export const routes: Route[] = [...privateRoutes, ...publicRoutes];
+
+export function privateRoutesForRole(role: UserRole | null | undefined): Route[] {
+  return privateRoutes.filter((route) => role && route.roles?.includes(role));
+}
 
 function isDynamicSegment(segment: string): boolean {
   return segment.startsWith(":");

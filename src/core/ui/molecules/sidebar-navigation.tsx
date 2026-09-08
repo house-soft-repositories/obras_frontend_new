@@ -4,29 +4,31 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Building2,
-  ChartNoAxesCombined,
   HardHat,
   House,
   Landmark,
   MapPinned,
   Network,
-  Plus,
+  Shield,
+  Users,
 } from "lucide-react";
+import type { ComponentType } from "react";
+import {
+  privateRoutesForRole,
+  type Route,
+} from "@/core/config/routes";
+import { type UserRole } from "@/core/schemas/user/user_schema";
 
-const publicNavigationItems = [
-  { href: "/home", label: "Início", icon: House },
-  { href: "/obras", label: "Obras públicas", icon: Building2 },
-  { href: "/dashboard", label: "Dashboard", icon: ChartNoAxesCombined },
-  { href: "/cadastros/localidades", label: "Localidades", icon: MapPinned },
-  { href: "/cadastros/orgaos", label: "Órgãos", icon: Landmark },
-  { href: "/cadastros/setores", label: "Setores", icon: Network },
-] as const;
-
-const privateNavigationItems = [
-  { href: "/obras-privadas", label: "Obras privadas", icon: HardHat },
-  { href: "/obras-privadas/mapa", label: "Mapa da cidade", icon: MapPinned },
-  { href: "/obras-privadas/nova", label: "Nova obra privada", icon: Plus },
-] as const;
+const iconByName: Record<string, ComponentType<{ className?: string }>> = {
+  Building2,
+  HardHat,
+  House,
+  Landmark,
+  MapPinned,
+  Network,
+  Shield,
+  Users,
+};
 
 function isCurrentPath(pathname: string, href: string): boolean {
   if (href === "/home") return pathname === href;
@@ -34,11 +36,31 @@ function isCurrentPath(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** Navegação client-side para refletir rota e área ativa sem duplicar a sidebar. */
-export function SidebarNavigation() {
+function renderRoute(pathname: string, route: Route, key: string) {
+  const Icon = route.icon ? iconByName[route.icon] : undefined;
+  const isActive = isCurrentPath(pathname, route.path);
+
+  return (
+    <Link
+      key={key}
+      href={route.path}
+      aria-current={isActive ? "page" : undefined}
+      className={`flex min-h-11 items-center gap-3 rounded-app px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+        isActive
+          ? "bg-accent text-foreground"
+          : "text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-foreground"
+      }`}
+    >
+      {Icon ? <Icon aria-hidden="true" className="size-[18px]" /> : null}
+      {route.label}
+    </Link>
+  );
+}
+
+/** Navegação client-side filtrada pelas roles definidas em `privateRoutes`. */
+export function SidebarNavigation({ role }: { role?: UserRole | null }) {
   const pathname = usePathname() ?? "/home";
-  const isPrivate = pathname.startsWith("/obras-privadas");
-  const items = isPrivate ? privateNavigationItems : publicNavigationItems;
+  const routes = privateRoutesForRole(role);
 
   return (
     <>
@@ -49,9 +71,9 @@ export function SidebarNavigation() {
         <Link
           href="/home"
           className={`flex min-h-10 items-center justify-center rounded-[6px] px-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-            !isPrivate
-              ? "bg-accent text-foreground"
-              : "text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-foreground"
+            pathname.startsWith("/obras-privadas")
+              ? "text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-foreground"
+              : "bg-accent text-foreground"
           }`}
         >
           Públicas
@@ -59,7 +81,7 @@ export function SidebarNavigation() {
         <Link
           href="/obras-privadas"
           className={`flex min-h-10 items-center justify-center rounded-[6px] px-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-            isPrivate
+            pathname.startsWith("/obras-privadas")
               ? "bg-accent text-foreground"
               : "text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-foreground"
           }`}
@@ -69,25 +91,9 @@ export function SidebarNavigation() {
       </nav>
 
       <nav aria-label="Navegação principal" className="mt-5 grid gap-1">
-        {items.map(({ href, label, icon: Icon }) => {
-          const isActive = isCurrentPath(pathname, href);
-
-          return (
-            <Link
-              key={href}
-              href={href}
-              aria-current={isActive ? "page" : undefined}
-              className={`flex min-h-11 items-center gap-3 rounded-app px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                isActive
-                  ? "bg-accent text-foreground"
-                  : "text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-foreground"
-              }`}
-            >
-              <Icon aria-hidden="true" className="size-[18px]" />
-              {label}
-            </Link>
-          );
-        })}
+        {routes.map((route, index) =>
+          renderRoute(pathname, route, `${route.path}:${index}`),
+        )}
       </nav>
     </>
   );

@@ -27,7 +27,7 @@ export async function Sidebar() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const { name, email } = session.user;
+  const { name, email, role } = session.user;
 
   return (
     <div
@@ -51,7 +51,7 @@ export async function Sidebar() {
         </span>
       </Link>
 
-      <SidebarNavigation />
+      <SidebarNavigation role={role} />
 
       <div className="mt-auto border-t border-sidebar-border px-2 pt-4">
         <div className="flex items-center gap-3 px-2">
