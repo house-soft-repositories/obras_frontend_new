@@ -16,17 +16,6 @@ export interface TenancyOpcao {
   updatedAt: string;
 }
 
-function mensagemTroca(status: number, corpo: unknown) {
-  const code = (corpo as { code?: string } | null)?.code;
-  if (status === 403 || code === "AUTH_TENANCY_SWITCH_FORBIDDEN") {
-    return "A troca de tenancy é exclusiva para SUPERADMIN.";
-  }
-  if (status === 404 || code === "AUTH_TENANCY_SWITCH_UNAVAILABLE") {
-    return "A tenancy selecionada não está disponível.";
-  }
-  return "Não foi possível trocar a tenancy ativa.";
-}
-
 export function TenancySwitcher({
   nomePadrao,
   tenancies,
@@ -77,22 +66,16 @@ export function TenancySwitcher({
     setErro(null);
     setSucesso(false);
     try {
-      const resposta = await fetch("/api/auth/switch-tenancy", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ tenantId: tenancyIdSelecionada }),
-      });
-      const corpo: unknown = await resposta.json().catch(() => null);
-      if (!resposta.ok) throw { status: resposta.status, corpo };
-
-      setSelecionado((corpo as { tenancy: TenancyOpcao }).tenancy.id);
-      await update();
+      const novaSessao = await update({ tenantId: tenancyIdSelecionada });
+      if (novaSessao?.error) {
+        throw new Error(novaSessao.error);
+      }
+      setSelecionado(novaSessao?.user.tenantId ?? tenancyIdSelecionada);
       setSucesso(true);
       setAberto(false);
       router.refresh();
-    } catch (falha) {
-      const erroHttp = falha as { status?: number; corpo?: unknown };
-      setErro(mensagemTroca(erroHttp.status ?? 0, erroHttp.corpo));
+    } catch {
+      setErro("Não foi possível trocar a tenancy ativa.");
     } finally {
       setTrocando(false);
     }
@@ -106,7 +89,7 @@ export function TenancySwitcher({
         aria-haspopup="listbox"
         aria-expanded={aberto}
         aria-controls="tenancy-options"
-        onClick={() => setAberto((atual) => !atual)}
+        onClick={() => setAberto((atualAberto) => !atualAberto)}
       >
         <span className="min-w-0">
           <span className="block text-xs font-medium text-muted">
@@ -128,7 +111,9 @@ export function TenancySwitcher({
         />
       ) : null}
       {aberto ? (
-        <div className="absolute left-0 top-full z-50 mt-3 w-80 overflow-hidden rounded-app border border-border bg-surface shadow-overlay">
+        <div
+          className="absolute left-0 top-full z-50 mt-3 w-80 overflow-hidden rounded-app border border-border bg-surface shadow-overlay"
+        >
           <div
             id="tenancy-options"
             role="listbox"
@@ -142,11 +127,7 @@ export function TenancySwitcher({
                 role="option"
                 aria-selected={tenancy.id === tenancyIdSelecionada}
                 className="flex min-h-11 w-full items-center justify-between gap-3 rounded-app border-transparent bg-transparent px-3 py-2 text-left hover:bg-surface-subtle"
-                onClick={() => {
-                  setSelecionado(tenancy.id);
-                  setErro(null);
-                  setSucesso(false);
-                }}
+                onClick={() => setSelecionado(tenancy.id)}
               >
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-semibold text-foreground">
@@ -172,7 +153,12 @@ export function TenancySwitcher({
                 A troca recarrega os dados do ambiente.
               </p>
             )}
-            <Button size="sm" disabled={!alterado || trocando} onClick={trocar}>
+            <Button
+              size="sm"
+              disabled={!alterado || trocando}
+              type="button"
+              onClick={trocar}
+            >
               {trocando ? (
                 <LoaderCircle aria-hidden="true" className="animate-spin" />
               ) : null}

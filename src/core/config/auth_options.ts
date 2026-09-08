@@ -103,6 +103,43 @@ async function renovarToken(token: JWT): Promise<JWT> {
   }
 }
 
+async function trocarTenancyNoBackend(
+  token: JWT,
+  tenantId: string,
+): Promise<JWT> {
+  if (!token.accessToken) return { ...token, error: "RefreshTokenError" };
+
+  try {
+    const resposta = await api.auth.post<unknown>("/api/auth/switch-tenancy", {
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ tenantId }),
+    });
+    const tokens = authTokensSchema.parse(resposta.data);
+    const payload = validarPayloadAccess(tokens.accessToken);
+    if (!payload) {
+      throw new Error("Access token inválido no switch de tenancy");
+    }
+
+    const usuario = await buscarUsuario(tokens.accessToken);
+    if (usuario.id !== payload.sub) return { ...token, error: "RefreshTokenError" };
+
+    return {
+      ...token,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      accessTokenExpiresAt: payload.exp * 1000,
+      sub: usuario.id,
+      name: usuario.name,
+      email: usuario.email,
+      tenantId: usuario.tenantId,
+      role: usuario.role,
+      error: undefined,
+    };
+  } catch {
+    return { ...token, error: "RefreshTokenError" };
+  }
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.NEXT_AUTH_SECRET,
   session: { strategy: "jwt" },
@@ -177,7 +214,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }: JwtCallbackParams): Promise<JwtCallbackResult> {
+    async jwt({ token, user, trigger, session }: JwtCallbackParams & {
+      trigger?: "update" | "signIn" | "signUp";
+      session?: { tenantId?: string };
+    }): Promise<JwtCallbackResult> {
       if (ehUsuarioCredenciais(user)) {
         return {
           ...token,
@@ -190,6 +230,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           tenantId: user.tenantId,
           role: user.role,
         };
+      }
+      if (trigger === "update" && typeof session?.tenantId === "string") {
+        return trocarTenancyNoBackend(token, session.tenantId);
       }
       if (
         token.accessToken &&
