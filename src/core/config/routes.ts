@@ -66,18 +66,7 @@ export const privateRoutes: Route[] = [
     icon: "Network",
     roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.ADMIN],
   },
-  {
-    path: "/obras",
-    label: "Obras",
-    icon: "Building2",
-    roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.STAFF],
-  },
-  {
-    path: "/obras",
-    label: "Obras",
-    icon: "Building2",
-    roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.USER],
-  },
+
 ];
 
 export const routes: Route[] = [...privateRoutes, ...publicRoutes];

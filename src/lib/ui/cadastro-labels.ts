@@ -38,7 +38,7 @@ export function tipoLocalidadeLabel(tipo: string | null | undefined): string {
     case "ZONA_RURAL":
       return "Zona rural";
     default:
-      return tipo ?? "—";
+      return "";
   }
 }
 

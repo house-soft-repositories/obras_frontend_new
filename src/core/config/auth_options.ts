@@ -131,7 +131,7 @@ async function trocarTenancyNoBackend(
       sub: usuario.id,
       name: usuario.name,
       email: usuario.email,
-      tenantId: usuario.tenantId,
+      tenantId: tenantId,
       role: usuario.role,
       error: undefined,
     };
