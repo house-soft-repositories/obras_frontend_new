@@ -110,8 +110,11 @@ async function trocarTenancyNoBackend(
   if (!token.accessToken) return { ...token, error: "RefreshTokenError" };
 
   try {
-    const resposta = await api.auth.post<unknown>("/api/auth/switch-tenancy", {
-      headers: { "content-type": "application/json" },
+    const resposta = await api.unauth.post<unknown>("/api/auth/switch-tenancy", {
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${token.accessToken}`,
+      },
       body: JSON.stringify({ tenantId }),
     });
     const tokens = authTokensSchema.parse(resposta.data);

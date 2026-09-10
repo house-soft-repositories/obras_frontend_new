@@ -28,6 +28,10 @@ export class HttpClient {
     return new HttpClient(baseURL);
   }
 
+  public static create(baseURL: string, config: RequestConfig = {}): HttpClient {
+    return new HttpClient(baseURL, config);
+  }
+
   public addInterceptor(interceptor: Interceptor): void {
     this.interceptors.push(interceptor);
   }
@@ -59,8 +63,14 @@ export class HttpClient {
     let result = value;
 
     for (const interceptor of this.interceptors) {
-      if (interceptor[type]) {
-        result = await interceptor[type]!(result);
+      if (type === 'request' && interceptor.request) {
+        result = await interceptor.request(result as RequestConfig);
+      }
+      if (type === 'response' && interceptor.response) {
+        result = await interceptor.response(result as Response);
+      }
+      if (type === 'error' && interceptor.error) {
+        result = await interceptor.error(result);
       }
     }
 
