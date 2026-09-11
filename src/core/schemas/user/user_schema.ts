@@ -19,8 +19,20 @@ export const userSchema = z.object({
 });
 
 /** Resposta de GET /api/auth/me (`UserRequestContext`), sem password. */
-export const userRequestContextSchema = userSchema.omit({ password: true });
-
+export const userRequestContextSchema = userSchema
+  .omit({
+    password: true,
+    tenantId: true,
+  })
+  .extend({
+    tenant: z
+      .object({
+        id: z.string(),
+        name: z.string(),
+        slug: z.string(),
+      })
+      .nullable(),
+  });
 
 export type User = z.infer<typeof userSchema>;
 export type UserRequestContext = z.infer<typeof userRequestContextSchema>;

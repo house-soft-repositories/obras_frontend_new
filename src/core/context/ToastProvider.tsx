@@ -1,6 +1,6 @@
 'use client';
 
-import { ToastContainer } from '@/core/components/atoms/ToastContainer';
+import { ToastContainer } from '@/core/ui/molecules/toast-container';
 import {
   Toast,
   ToastContextType,

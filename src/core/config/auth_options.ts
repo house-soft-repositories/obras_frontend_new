@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import type { AuthConfig } from "@auth/core/types";
 import Credentials from "next-auth/providers/credentials";
+import { CredentialsSignin } from "next-auth";
 import type { User } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import HttpClientException from "@/core/exceptions/http_client_exception";
@@ -21,6 +22,15 @@ interface CredenciaisRenovadas {
   tokens: AuthTokens;
   payload: AccessTokenPayload;
   usuario: AuthenticatedUser;
+}
+
+class AuthCredentialsError extends CredentialsSignin {
+  code: string;
+
+  constructor(code: string) {
+    super();
+    this.code = code;
+  }
 }
 
 type AuthCallbacks = NonNullable<AuthConfig["callbacks"]>;
@@ -56,11 +66,45 @@ function validarPayloadAccess(token: string): AccessTokenPayload | null {
   }
 }
 
+function extrairMensagemErroAutenticacao(error: unknown): string {
+  if (error instanceof AuthCredentialsError) return error.code;
+
+  if (error instanceof HttpClientException) {
+    const data = error.data;
+    if (typeof data === "object" && data !== null) {
+      const message = "message" in data ? data.message : undefined;
+      if (typeof message === "string" && message.trim()) return message.trim();
+    }
+
+    const message = error.message?.trim();
+    if (message) return message;
+  }
+
+  return "AUTH_INVALID_CREDENTIALS";
+}
+
 async function buscarUsuario(accessToken: string): Promise<AuthenticatedUser> {
   const resposta = await api.unauth.get<unknown>("/api/auth/me", {
     headers: { authorization: `Bearer ${accessToken}` },
   });
-  return authenticatedUserSchema.parse(resposta.data);
+
+  const data = resposta.data;
+  const usuario =
+    typeof data === "object" && data !== null && !("tenantId" in data)
+      ? {
+          ...data,
+          tenantId:
+            "tenant" in data &&
+            typeof data.tenant === "object" &&
+            data.tenant !== null &&
+            "id" in data.tenant &&
+            typeof data.tenant.id === "string"
+              ? data.tenant.id
+              : null,
+        }
+      : data;
+
+  return authenticatedUserSchema.parse(usuario);
 }
 
 async function renovarCredenciais(
@@ -155,7 +199,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw Error("InvalidCredentials");
+          throw new AuthCredentialsError("AUTH_REQUIRED_FIELDS");
         }
 
         try {
@@ -169,14 +213,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           const tokens = authTokensSchema.safeParse(resposta.data);
 
-          if (!tokens.success) return null;
+          if (!tokens.success) {
+            throw new AuthCredentialsError("AUTH_INVALID_CREDENTIALS");
+          }
 
           let credenciais = tokens.data;
 
           let payload = validarPayloadAccess(credenciais.accessToken);
 
           if (!payload) {
-            return null;
+            throw new AuthCredentialsError("AUTH_INVALID_CREDENTIALS");
           }
 
           let usuario: AuthenticatedUser;
@@ -187,7 +233,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               !(erro instanceof HttpClientException) ||
               erro.statusCode !== 401
             ) {
-              return null;
+              throw new AuthCredentialsError(
+                extrairMensagemErroAutenticacao(erro),
+              );
             }
             const renovadas = await renovarCredenciais(
               credenciais.refreshToken,
@@ -197,7 +245,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             usuario = renovadas.usuario;
           }
 
-          if (usuario.id !== payload.sub) return null;
+          if (usuario.id !== payload.sub) {
+            throw new AuthCredentialsError("AUTH_INVALID_CREDENTIALS");
+          }
           return {
             id: usuario.id,
             name: usuario.name,
@@ -210,8 +260,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             tenantId: usuario.tenantId,
             role: usuario.role,
           };
-        } catch {
-          return null;
+        } catch (error) {
+          throw new AuthCredentialsError(
+            extrairMensagemErroAutenticacao(error),
+          );
         }
       },
     }),
