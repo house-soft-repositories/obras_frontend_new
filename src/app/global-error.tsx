@@ -40,7 +40,7 @@ function TenantRequiredView({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const tenantId = session?.user?.tenantId ?? "";
+  const tenantId = session?.user?.tenant?.id ?? "";
 
   useEffect(() => {
     let alive = true;
@@ -212,7 +212,7 @@ function Inner({
     !tenantRequired &&
     status !== "loading" &&
     session?.user?.role === "SUPERADMIN" &&
-    !session.user.tenantId &&
+    !session.user.tenant &&
     is401Like(error);
   if (tenantRequired || fallback) return <TenantRequiredView error={error} onRetry={onRetry} />;
   return <GenericView error={error} onRetry={onRetry} />;

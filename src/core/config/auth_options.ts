@@ -24,6 +24,11 @@ interface CredenciaisRenovadas {
   usuario: AuthenticatedUser;
 }
 
+const switchTenancyResponseSchema = authTokensSchema.extend({
+  tenancy: authenticatedUserSchema.shape.tenant.unwrap(),
+});
+
+
 class AuthCredentialsError extends CredentialsSignin {
   code: string;
 
@@ -88,23 +93,7 @@ async function buscarUsuario(accessToken: string): Promise<AuthenticatedUser> {
     headers: { authorization: `Bearer ${accessToken}` },
   });
 
-  const data = resposta.data;
-  const usuario =
-    typeof data === "object" && data !== null && !("tenantId" in data)
-      ? {
-          ...data,
-          tenantId:
-            "tenant" in data &&
-            typeof data.tenant === "object" &&
-            data.tenant !== null &&
-            "id" in data.tenant &&
-            typeof data.tenant.id === "string"
-              ? data.tenant.id
-              : null,
-        }
-      : data;
-
-  return authenticatedUserSchema.parse(usuario);
+  return authenticatedUserSchema.parse(resposta.data);
 }
 
 async function renovarCredenciais(
@@ -138,7 +127,7 @@ async function renovarToken(token: JWT): Promise<JWT> {
       sub: usuario.id,
       name: usuario.name,
       email: usuario.email,
-      tenantId: usuario.tenantId,
+      tenant: usuario.tenant,
       role: usuario.role,
       error: undefined,
     };
@@ -161,25 +150,23 @@ async function trocarTenancyNoBackend(
       },
       body: JSON.stringify({ tenantId }),
     });
-    const tokens = authTokensSchema.parse(resposta.data);
-    const payload = validarPayloadAccess(tokens.accessToken);
+    const data = switchTenancyResponseSchema.parse(resposta.data);
+    const payload = validarPayloadAccess(data.accessToken);
     if (!payload) {
       throw new Error("Access token inválido no switch de tenancy");
     }
 
-    const usuario = await buscarUsuario(tokens.accessToken);
-    if (usuario.id !== payload.sub) return { ...token, error: "RefreshTokenError" };
+    if (token.sub && token.sub !== payload.sub) {
+      return { ...token, error: "RefreshTokenError" };
+    }
 
     return {
       ...token,
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
       accessTokenExpiresAt: payload.exp * 1000,
-      sub: usuario.id,
-      name: usuario.name,
-      email: usuario.email,
-      tenantId: tenantId,
-      role: usuario.role,
+      sub: payload.sub,
+      tenant: data.tenancy,
       error: undefined,
     };
   } catch {
@@ -187,7 +174,7 @@ async function trocarTenancyNoBackend(
   }
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut, unstable_update: updateSession } = NextAuth({
   secret: process.env.NEXT_AUTH_SECRET,
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
@@ -257,7 +244,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             accessToken: credenciais.accessToken,
             refreshToken: credenciais.refreshToken,
             accessTokenExpiresAt: payload.exp * 1000,
-            tenantId: usuario.tenantId,
+            tenant: usuario.tenant,
             role: usuario.role,
           };
         } catch (error) {
@@ -271,7 +258,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user, trigger, session }: JwtCallbackParams & {
       trigger?: "update" | "signIn" | "signUp";
-      session?: { tenantId?: string };
+      session?: {
+        accessToken?: string;
+        refreshToken?: string;
+        accessTokenExpiresAt?: number;
+        tenant?: { id: string; name: string; slug: string } | null;
+        tenantId?: string;
+      };
     }): Promise<JwtCallbackResult> {
       if (ehUsuarioCredenciais(user)) {
         return {
@@ -282,12 +275,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           accessTokenExpiresAt: user.accessTokenExpiresAt,
           name: user.name,
           email: user.email,
-          tenantId: user.tenantId,
+          tenant: user.tenant,
           role: user.role,
         };
       }
-      if (trigger === "update" && typeof session?.tenantId === "string") {
-        return trocarTenancyNoBackend(token, session.tenantId);
+      if (
+        trigger === "update" &&
+        typeof session?.accessToken === "string" &&
+        typeof session.refreshToken === "string" &&
+        typeof session.accessTokenExpiresAt === "number"
+      ) {
+        return {
+          ...token,
+          accessToken: session.accessToken,
+          refreshToken: session.refreshToken,
+          accessTokenExpiresAt: session.accessTokenExpiresAt,
+          tenant: session.tenant ?? null,
+          error: undefined,
+        };
+      }
+      const tenantId = session?.tenant?.id ?? session?.tenantId;
+      if (trigger === "update" && typeof tenantId === "string") {
+        return trocarTenancyNoBackend(token, tenantId);
       }
       if (
         token.accessToken &&
@@ -304,7 +313,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: token.sub ?? "",
           name: token.name ?? "",
           email: token.email ?? "",
-          tenantId: token.tenantId ?? null,
+          tenant: token.tenant ?? null,
           role: token.role ?? "USER",
         },
         ...(token.error ? { error: token.error } : {}),

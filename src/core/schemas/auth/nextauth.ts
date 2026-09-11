@@ -31,7 +31,7 @@ export const nextAuthSessionUserSchema = authenticatedUserSchema.pick({
   name: true,
   email: true,
   role: true,
-  tenantId: true,
+  tenant: true,
 });
 
 export const nextAuthSessionSchema = z.object({
@@ -44,7 +44,7 @@ export const nextAuthJwtSchema = z.object({
   accessToken: authTokensSchema.shape.accessToken.optional(),
   refreshToken: authTokensSchema.shape.refreshToken.optional(),
   accessTokenExpiresAt: z.int().positive().optional(),
-  tenantId: authenticatedUserSchema.shape.tenantId.optional(),
+  tenant: authenticatedUserSchema.shape.tenant.optional(),
   role: authRoleSchema.optional(),
   error: sessionErrorSchema.optional(),
 });

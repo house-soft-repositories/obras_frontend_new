@@ -8,7 +8,7 @@ import type {
 
 type SessionUser = Pick<
   NextAuthSession["user"],
-  "id" | "name" | "email" | "role" | "tenantId"
+  "id" | "name" | "email" | "role" | "tenant"
 >;
 
 type SessionFields = Pick<NextAuthSession, "error">;
@@ -21,7 +21,7 @@ type UserFields = Pick<
   | "accessToken"
   | "refreshToken"
   | "accessTokenExpiresAt"
-  | "tenantId"
+  | "tenant"
   | "role"
   | "createdAt"
   | "updatedAt"
@@ -32,7 +32,7 @@ type JwtFields = Pick<
   | "accessToken"
   | "refreshToken"
   | "accessTokenExpiresAt"
-  | "tenantId"
+  | "tenant"
   | "role"
   | "error"
 >;
