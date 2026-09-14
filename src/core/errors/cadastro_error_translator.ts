@@ -8,6 +8,9 @@ export class CadastroErrorTranslator extends ErrorTranslator {
     "404": "Registro relacionado não encontrado.",
     "409": "Já existe um registro com estes dados.",
     "500": "Erro interno ao salvar. Tente novamente mais tarde.",
+    CADASTRO_NOT_FOUND: "Registro não encontrado.",
+    CADASTRO_PARENT_NOT_FOUND: "Registro pai não encontrado. Verifique o vínculo selecionado.",
+    CADASTRO_INVALID_NOME: "Informe um nome com pelo menos 2 caracteres.",
   };
 }
 

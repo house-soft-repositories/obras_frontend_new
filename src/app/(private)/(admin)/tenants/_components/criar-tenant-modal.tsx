@@ -49,8 +49,8 @@ export function CriarTenantModal() {
   const [slugEditado, setSlugEditado] = useState(false);
   const [isPending, startTransition] = useTransition();
   const toast = useToast();
-  const form = useForm<CreateTenantInput & { cnpj: string }>({
-    resolver: zodResolver(createTenantSchema),
+  const form = useForm<CreateTenantInput>({
+    resolver: zodResolver(createTenantSchema as unknown as never),
     defaultValues: {
       name: "",
       slug: "",

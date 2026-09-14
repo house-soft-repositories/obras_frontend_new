@@ -58,7 +58,6 @@ export const userRequestContextSchema = userSchema
       .object({
         id: z.string(),
         name: z.string(),
-        slug: z.string(),
       })
       .nullable(),
   });
