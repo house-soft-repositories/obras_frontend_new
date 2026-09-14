@@ -70,6 +70,12 @@ export const privateRoutes: Route[] = [
     icon: "Network",
     roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.ADMIN],
   },
+  {
+    path: "/cadastros/fontes",
+    label: "Fontes",
+    icon: "Wallet",
+    roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.ADMIN],
+  },
 ];
 
 export const routes: Route[] = [...privateRoutes, ...publicRoutes];
