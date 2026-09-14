@@ -3,7 +3,7 @@
 import * as Popover from "@base-ui/react/popover";
 import { Check, ChevronsUpDown, Search } from "lucide-react";
 import { useId, useMemo, useState } from "react";
-import { cn } from "@/lib/ui/cn";
+import { cn } from "@/components/ui/cn";
 
 export interface CommandOption {
   value: string;

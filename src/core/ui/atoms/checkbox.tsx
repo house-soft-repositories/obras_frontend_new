@@ -3,7 +3,7 @@
 import * as BaseCheckbox from "@base-ui/react/checkbox";
 import { Check, Minus } from "lucide-react";
 import type { ComponentProps } from "react";
-import { cn } from "@/lib/ui/cn";
+import { cn } from "@/core/ui/cn";
 
 export interface CheckboxProps extends Omit<
   ComponentProps<typeof BaseCheckbox.Checkbox.Root>,

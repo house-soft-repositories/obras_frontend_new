@@ -5,6 +5,7 @@ describe("privateRoutesForRole", () => {
   it("filtra as rotas por role", () => {
     expect(privateRoutesForRole("ADMIN").map((route) => route.path)).toEqual([
       "/home",
+      "/cadastros/usuarios",
       "/obras",
       "/cadastros/localidades",
       "/cadastros/orgaos",
@@ -12,25 +13,22 @@ describe("privateRoutesForRole", () => {
     ]);
     expect(privateRoutesForRole("STAFF").map((route) => route.path)).toEqual([
       "/home",
-      "/obras",
+      "/cadastros/usuarios",
     ]);
     expect(privateRoutesForRole("USER").map((route) => route.path)).toEqual([
       "/home",
-      "/obras",
     ]);
   });
 
   it("mostra a visão completa do SUPERADMIN", () => {
     expect(privateRoutesForRole("SUPERADMIN").map((route) => route.path)).toEqual([
       "/home",
-      "/admin/tenants",
+      "/tenants",
       "/cadastros/usuarios",
       "/obras",
       "/cadastros/localidades",
       "/cadastros/orgaos",
       "/cadastros/setores",
-      "/obras",
-      "/obras",
     ]);
   });
 });

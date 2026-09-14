@@ -1,5 +1,6 @@
 import type { ComponentProps } from "react";
-import { cn } from "@/lib/ui/cn";
+import { cn } from "@/core/ui/cn";
+
 
 type HeadingLevel = "h1" | "h2" | "h3" | "h4";
 

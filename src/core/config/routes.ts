@@ -31,7 +31,7 @@ export const privateRoutes: Route[] = [
     ],
   },
   {
-    path: "/admin/tenants",
+    path: "/tenants",
     label: "Tenants",
     icon: "Shield",
     roles: [userRoleSchema.enum.SUPERADMIN],
@@ -40,7 +40,11 @@ export const privateRoutes: Route[] = [
     path: "/cadastros/usuarios",
     label: "Usuários",
     icon: "Users",
-    roles: [userRoleSchema.enum.SUPERADMIN],
+    roles: [
+      userRoleSchema.enum.SUPERADMIN,
+      userRoleSchema.enum.ADMIN,
+      userRoleSchema.enum.STAFF,
+    ],
   },
   {
     path: "/obras",
@@ -66,12 +70,13 @@ export const privateRoutes: Route[] = [
     icon: "Network",
     roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.ADMIN],
   },
-
 ];
 
 export const routes: Route[] = [...privateRoutes, ...publicRoutes];
 
-export function privateRoutesForRole(role: UserRole | null | undefined): Route[] {
+export function privateRoutesForRole(
+  role: UserRole | null | undefined,
+): Route[] {
   return privateRoutes.filter((route) => role && route.roles?.includes(role));
 }
 

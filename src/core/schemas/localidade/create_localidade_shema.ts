@@ -9,7 +9,10 @@ export const criarLocalidadeSchema = localidadeSchema
   })
   .extend({
     codigoIbge: z.string().optional(),
-    tipo: z.enum(TipoLocalidade).optional(),
+    tipo: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.enum(TipoLocalidade).optional(),
+    ),
     municipio: z.string().optional(),
     observacoes: z.string().optional(),
   })
@@ -24,7 +27,7 @@ export const criarLocalidadeSchema = localidadeSchema
       data.observacoes = undefined;
     }
     return data;
-  })
+  });
 
-export type CriarLocalidadeInput = z.infer<typeof criarLocalidadeSchema>;
+export type CriarLocalidadeInput = z.input<typeof criarLocalidadeSchema>;
 export type CriarLocalidadeOutput = z.output<typeof criarLocalidadeSchema>;

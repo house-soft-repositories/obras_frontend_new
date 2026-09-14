@@ -8,7 +8,7 @@ import {
   Plus,
 } from "lucide-react";
 import { auth } from "@/core/config/auth_options";
-import { saudacaoPorHora } from "@/lib/ui/obra-labels";
+import { saudacaoPorHora } from "@/core/utils/saudacao_por_hora";
 
 const shortcuts = [
   {

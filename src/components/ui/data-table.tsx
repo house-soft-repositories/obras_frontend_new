@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/core/ui/cn";
+import { cn } from "@/components/ui/cn";
 
 export interface DataTableColumn<T> {
   id: string;

@@ -18,6 +18,35 @@ export const userSchema = z.object({
   updatedAt: z.iso.datetime(),
 });
 
+export const usuarioOrganizationalSchema = userSchema
+  .omit({ password: true })
+  .extend({
+    localidadeId: z.uuid().nullable().optional(),
+    orgaoId: z.uuid().nullable().optional(),
+    setorId: z.uuid().nullable().optional(),
+    localidade: z
+      .object({
+        id: z.uuid(),
+        nome: z.string(),
+        uf: z.string(),
+      })
+      .nullable(),
+    orgao: z
+      .object({
+        id: z.uuid(),
+        nome: z.string(),
+        sigla: z.string().nullable().optional(),
+      })
+      .nullable(),
+    setor: z
+      .object({
+        id: z.uuid(),
+        nome: z.string(),
+        orgaoId: z.uuid(),
+      })
+      .nullable(),
+  });
+
 /** Resposta de GET /api/auth/me (`UserRequestContext`), sem password. */
 export const userRequestContextSchema = userSchema
   .omit({
@@ -35,5 +64,6 @@ export const userRequestContextSchema = userSchema
   });
 
 export type User = z.infer<typeof userSchema>;
+export type UsuarioOrganizational = z.infer<typeof usuarioOrganizationalSchema>;
 export type UserRequestContext = z.infer<typeof userRequestContextSchema>;
 export type UserRole = z.infer<typeof userRoleSchema>;

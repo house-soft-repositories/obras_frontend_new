@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { Toast as ToastType } from '@/core/types/toast';
-import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
-import { useEffect } from 'react';
+import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from "lucide-react";
+import { useEffect } from "react";
+import { Toast as ToastType } from "@/core/types/toast";
 
 interface ToastProps extends ToastType {
   onClose: (id: string) => void;
@@ -21,20 +21,20 @@ export function Toast({ id, message, type, duration, onClose }: ToastProps) {
 
   const getStyles = () => {
     const baseStyles =
-      'flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-white animate-in fade-in slide-in-from-bottom-5 duration-300';
+      "flex min-w-80 items-start gap-3 rounded-app px-4 py-3 text-white shadow-lg animate-in fade-in slide-in-from-bottom-5 duration-300";
 
     const typeStyles = {
-      success: 'bg-green-500',
-      error: 'bg-red-500',
-      info: 'bg-blue-500',
-      warning: 'bg-yellow-500',
+      success: "bg-green-500",
+      error: "bg-red-500",
+      info: "bg-blue-500",
+      warning: "bg-yellow-500",
     };
 
     return `${baseStyles} ${typeStyles[type]}`;
   };
 
   const getIcon = () => {
-    const iconProps = { className: 'w-5 h-5 flex-shrink-0' };
+    const iconProps = { className: "mt-0.5 size-5 shrink-0" };
 
     const icons = {
       success: <CheckCircle {...iconProps} />,
@@ -49,13 +49,16 @@ export function Toast({ id, message, type, duration, onClose }: ToastProps) {
   return (
     <div className={getStyles()}>
       {getIcon()}
-      <span className="flex-1 text-sm font-medium">{message}</span>
+      <span className="min-w-0 flex-1 text-sm leading-6 font-medium">
+        {message}
+      </span>
       <button
+        type="button"
         onClick={() => onClose(id)}
-        className="p-1 hover:bg-white/20 rounded transition-colors duration-200"
+        className="-mr-1 inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-white shadow-sm ring-1 ring-white/30 transition-colors duration-200 hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
         aria-label="Fechar notificação"
       >
-        <X className="w-4 h-4" />
+        <X aria-hidden="true" className="size-4" strokeWidth={2.25} />
       </button>
     </div>
   );

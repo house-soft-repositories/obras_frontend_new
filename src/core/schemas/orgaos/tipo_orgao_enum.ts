@@ -1,0 +1,8 @@
+enum TipoOrgao {
+  SECRETARIA = "SECRETARIA",
+  AUTARQUIA = "AUTARQUIA",
+  FUNDACAO = "FUNDACAO",
+  EMPRESA_PUBLICA = "EMPRESA_PUBLICA",
+}
+
+export default TipoOrgao;

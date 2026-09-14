@@ -26,12 +26,14 @@ export function InputForm({
   const inputId = id ?? generatedId;
   const helperId = helperText ? `${inputId}-helper` : undefined;
   const errorId = error ? `${inputId}-error` : undefined;
-  const describedBy = [ariaDescribedBy, helperId, errorId]
-    .filter(Boolean)
-    .join(" ") || undefined;
+  const describedBy =
+    [ariaDescribedBy, helperId, errorId].filter(Boolean).join(" ") || undefined;
 
   return (
-    <div data-slot="input-form" className={cn("grid gap-2", containerClassName)}>
+    <div
+      data-slot="input-form"
+      className={cn("grid gap-2", containerClassName)}
+    >
       <label
         htmlFor={inputId}
         className={cn(
@@ -40,7 +42,9 @@ export function InputForm({
         )}
       >
         {label}
-        {required ? <span className="ml-1 text-[var(--cor-perigo)]">*</span> : null}
+        {required ? (
+          <span className="ml-1 text-[var(--cor-perigo)]">*</span>
+        ) : null}
       </label>
 
       <Input
@@ -49,7 +53,7 @@ export function InputForm({
         aria-invalid={error ? true : props["aria-invalid"]}
         aria-describedby={describedBy}
         className={cn(
-          error &&
+          Boolean(error) &&
             "!border-[var(--cor-perigo)] focus-visible:!ring-[var(--cor-perigo-borda)]",
           className,
         )}
@@ -63,7 +67,11 @@ export function InputForm({
       ) : null}
 
       {error ? (
-        <p id={errorId} className="text-xs leading-5 text-[var(--cor-perigo)]" role="alert">
+        <p
+          id={errorId}
+          className="text-xs leading-5 text-[var(--cor-perigo)]"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}

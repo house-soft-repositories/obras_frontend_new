@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 import { tv, type VariantProps } from "tailwind-variants";
-import { cn } from "@/core/ui/cn";
+import { cn } from "@/components/ui/cn";
 
 export const buttonVariants = tv({
   base: "!inline-flex !min-h-11 cursor-pointer items-center justify-center gap-2 !rounded-app !border !px-4 !py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4",
