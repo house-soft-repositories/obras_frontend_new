@@ -11,6 +11,7 @@ import {
   Network,
   Shield,
   Users,
+  Wallet,
 } from "lucide-react";
 import type { ComponentType } from "react";
 import {
@@ -28,6 +29,7 @@ const iconByName: Record<string, ComponentType<{ className?: string }>> = {
   Network,
   Shield,
   Users,
+  Wallet,
 };
 
 function isCurrentPath(pathname: string, href: string): boolean {
