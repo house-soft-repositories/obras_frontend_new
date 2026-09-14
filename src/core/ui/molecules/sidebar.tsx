@@ -32,7 +32,7 @@ export async function Sidebar() {
   return (
     <div
       data-slot="sidebar"
-      className="flex h-dvh flex-col bg-sidebar p-4 text-sidebar-foreground"
+      className="flex h-full min-h-0 flex-col overflow-hidden bg-sidebar p-4 text-sidebar-foreground"
     >
       <Link
         href="/home"
@@ -51,9 +51,11 @@ export async function Sidebar() {
         </span>
       </Link>
 
-      <SidebarNavigation role={role} />
+      <div className="sidebar-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+        <SidebarNavigation role={role} />
+      </div>
 
-      <div className="mt-auto border-t border-sidebar-border px-2 pt-4">
+      <div className="shrink-0 border-t border-sidebar-border px-2 pt-4">
         <div className="flex items-center gap-3 px-2">
           <span
             className="grid size-9 shrink-0 place-items-center rounded-full bg-surface text-xs font-bold text-foreground"

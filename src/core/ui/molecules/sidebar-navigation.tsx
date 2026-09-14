@@ -12,12 +12,14 @@ import {
   Shield,
   Users,
   Wallet,
+  Layers,
+  Tag,
+  Tags,
+  Shapes,
+  Boxes,
 } from "lucide-react";
 import type { ComponentType } from "react";
-import {
-  privateRoutesForRole,
-  type Route,
-} from "@/core/config/routes";
+import { privateRouteGroupsForRole, type Route } from "@/core/config/routes";
 import { type UserRole } from "@/core/schemas/user/user_schema";
 
 const iconByName: Record<string, ComponentType<{ className?: string }>> = {
@@ -30,6 +32,11 @@ const iconByName: Record<string, ComponentType<{ className?: string }>> = {
   Shield,
   Users,
   Wallet,
+  Layers,
+  Tag,
+  Tags,
+  Shapes,
+  Boxes,
 };
 
 function isCurrentPath(pathname: string, href: string): boolean {
@@ -59,10 +66,10 @@ function renderRoute(pathname: string, route: Route, key: string) {
   );
 }
 
-/** Navegação client-side filtrada pelas roles definidas em `privateRoutes`. */
+/** Navegação client-side agrupada e filtrada pelas roles das rotas privadas. */
 export function SidebarNavigation({ role }: { role?: UserRole | null }) {
   const pathname = usePathname() ?? "/home";
-  const routes = privateRoutesForRole(role);
+  const routeGroups = privateRouteGroupsForRole(role);
 
   return (
     <>
@@ -92,10 +99,25 @@ export function SidebarNavigation({ role }: { role?: UserRole | null }) {
         </Link>
       </nav>
 
-      <nav aria-label="Navegação principal" className="mt-5 grid gap-1">
-        {routes.map((route, index) =>
-          renderRoute(pathname, route, `${route.path}:${index}`),
-        )}
+      <nav aria-label="Navegação principal" className="mt-5 grid gap-5">
+        {routeGroups.map((group) => (
+          <section
+            key={group.label}
+            aria-labelledby={`route-group-${group.label}`}
+          >
+            <h2
+              id={`route-group-${group.label}`}
+              className="mb-2 px-3 text-[11px] font-bold uppercase tracking-wider text-sidebar-muted"
+            >
+              {group.label}
+            </h2>
+            <div className="grid gap-1">
+              {group.routes.map((route, index) =>
+                renderRoute(pathname, route, `${route.path}:${index}`),
+              )}
+            </div>
+          </section>
+        ))}
       </nav>
     </>
   );
