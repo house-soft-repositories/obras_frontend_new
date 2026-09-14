@@ -119,12 +119,16 @@ export class HttpClient {
           typeof data === 'object' && data !== null && 'message' in data
             ? data.message
             : undefined;
+        const code =
+          typeof data === 'object' && data !== null && 'code' in data && typeof data.code === 'string'
+            ? data.code
+            : undefined;
         const message = Array.isArray(rawMessage)
           ? rawMessage.join(', ')
           : typeof rawMessage === 'string'
             ? rawMessage
             : 'Request failed';
-        throw new HttpClientException(message, response.status);
+        throw new HttpClientException(code ?? message, response.status, data);
       }
 
       return {

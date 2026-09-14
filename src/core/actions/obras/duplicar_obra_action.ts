@@ -2,14 +2,14 @@
 
 import { updateTag } from "next/cache";
 import api from "@/core/rest_client/api";
-import type { DuplicarObraPayload } from "@/lib/api/obras";
-import type { ObraResponseDto } from "@/lib/api/obras";
+import type { DuplicarObraInput } from "@/core/schemas/obras/duplicar_obra_schema";
+import type { Obra } from "@/core/schemas/obras/obra_schema";
 
-export default async function duplicarObraAction(obraId: string, payload: DuplicarObraPayload): Promise<ObraResponseDto> {
-  const res = await api.auth.post<ObraResponseDto>(`/api/obras/${obraId}/duplicar`, {
+export default async function duplicarObraAction(obraId: string, payload: DuplicarObraInput = {}): Promise<Obra> {
+  const res = await api.auth.post<Obra>(`/api/obras/${obraId}/duplicar`, {
     headers: { "content-type": "application/json" },
     body: JSON.stringify(payload),
   });
   updateTag("list-obras");
-  return res.data as ObraResponseDto;
+  return res.data;
 }

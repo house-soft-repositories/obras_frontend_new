@@ -42,7 +42,7 @@ export const privateRouteGroups: RouteGroup[] = [
         path: "/obras",
         label: "Obras",
         icon: "Building2",
-        roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.ADMIN],
+        roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.ADMIN, userRoleSchema.enum.STAFF],
       },
     ],
   },
