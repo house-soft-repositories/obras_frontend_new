@@ -10,9 +10,9 @@ import {
   type CreateTenantInput,
 } from "@/core/schemas/tenants/create_tenant_schema";
 import { useToast } from "@/core/hooks/useToast";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { InputPattern } from "@/components/ui/input-pattern";
+import { Button } from "@/core/ui/atoms/button";
+import { Input } from "@/core/ui/atoms/input";
+import { InputPattern } from "@/core/ui/atoms/input-pattern";
 import { Modal } from "@/core/ui/molecules/modal";
 
 function gerarSlug(valor: string) {

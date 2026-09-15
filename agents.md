@@ -11,7 +11,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 <INSTRUCTIONS>
 
 
-## Qiosq — Convenções (lazy-loading)
+## Obras — Convenções (lazy-loading)
 
 > **Regra de carregamento:** este arquivo é o índice. NÃO leia os guias detalhados na inicialização. Leia o guia específico **apenas quando a tarefa exigir aquele domínio**.
 >
@@ -58,7 +58,7 @@ Se o arquivo detalhado não existir localmente, siga o resumo abaixo e o exemplo
   })
   ```
 - Erros → `<FormError>{errors.email?.message}</FormError>` + `invalid={Boolean(errors.email)}` no `Input`.
-- Envolva campos com `FormField` + `Label`; use `Small`/`FormError` de `core/components/ui/atoms/typography.tsx`.
+- Envolva campos com `FormField` + `Label`; use `Small`/`FormError` de `core/ui/atoms/typography.tsx`.
 
 ### 5. Páginas e componentes
 - `app/(private|public)/<rota>/page.tsx` é **thin server component**: busca dados / checa sessão e renderiza `<ClientComponent />` de `app/.../components/`.
@@ -66,7 +66,7 @@ Se o arquivo detalhado não existir localmente, siga o resumo abaixo e o exemplo
 - Nunca importe componente client com `server-only` no topo da page; mantenha separação.
 
 ### 6. UI — atoms vs molecules
-- `core/components/ui/atoms/*` — puros, reutilizáveis em toda a app, sem regra de negócio. Usam `twMerge` + `tv` + `core/styles/tokens.ts` e `app/globals.css` (ex.: `button.tsx`, `input.tsx`, `input-mask.tsx`, `card.tsx`, `typography.tsx`).
-- `core/components/ui/molecules/*` — composição maior com contexto/portal/estado (ex.: `modal.tsx` = `Modal` + `ModalContent` + `ModalTitle` + `ModalCloseButton`). Pode usar `createPortal`, `focus-trap`, mas sem regra de domínio.
+- `core/ui/atoms/*` — puros, reutilizáveis em toda a app, sem regra de negócio. Usam `twMerge` + `tv` + `core/styles/tokens.ts` e `app/globals.css` (ex.: `button.tsx`, `input.tsx`, `input-mask.tsx`, `card.tsx`, `typography.tsx`).
+- `core/ui/molecules/*` — composição maior com contexto/portal/estado (ex.: `modal.tsx` = `Modal` + `ModalContent` + `ModalTitle` + `ModalCloseButton`). Pode usar `createPortal`, `focus-trap`, mas sem regra de domínio.
 
 </INSTRUCTIONS>

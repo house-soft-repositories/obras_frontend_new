@@ -20,9 +20,9 @@ export type FooInput = z.infer<typeof fooSchema>
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { fooSchema, type FooInput } from "@/core/schemas/foo/foo_schema"
-import { Input } from "@/core/components/ui/atoms/input"
-import { Label } from "@/core/components/ui/atoms/label"
-import { FormError } from "@/core/components/ui/atoms/typography"
+import { Input } from "@/core/ui/atoms/input"
+import { Label } from "@/core/ui/atoms/label"
+import { FormError } from "@/core/ui/atoms/typography"
 
 const { register, handleSubmit, formState:{errors,isSubmitting} } = useForm<FooInput>({
   resolver: zodResolver(fooSchema),

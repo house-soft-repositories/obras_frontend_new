@@ -1,4 +1,4 @@
-import { PrivateLayout } from "@/components/layout/private-layout";
+import { PrivateLayout } from "@/core/ui/layout/private-layout";
 
 export default function PrivateRouteLayout({
   children,

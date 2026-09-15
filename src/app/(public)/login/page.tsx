@@ -5,10 +5,10 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
 import { Controller, useForm, type FieldErrors } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Body, Caption, Eyebrow, Heading } from "@/components/ui/typography";
+import { Button } from "@/core/ui/atoms/button";
+import { Checkbox } from "@/core/ui/atoms/checkbox";
+import { Input } from "@/core/ui/atoms/input";
+import { Body, Caption, Eyebrow, Heading } from "@/core/ui/atoms/typography";
 import { authErrorTranslator } from "@/core/errors/auth_error_translator";
 import { useToast } from "@/core/hooks/useToast";
 

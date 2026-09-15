@@ -1,6 +1,6 @@
 "use client";
 
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable } from "@/core/ui/atoms/data-table";
 import type { UsuarioOrganizational } from "@/core/schemas/user/user_schema";
 
 function formatNullable(value: string | null | undefined) {

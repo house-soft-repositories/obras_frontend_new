@@ -1,4 +1,4 @@
-import { PublicLayout } from "@/components/layout/public-layout";
+import { PublicLayout } from "@/core/ui/layout/public-layout";
 
 export default function PublicRouteLayout({
   children,

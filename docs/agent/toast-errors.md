@@ -15,7 +15,7 @@ else toast.success("Feito!")
 ## Contexto
 - `ToastProvider` em `app/layout.tsx` envolve a app.
 - `useToast` retorna `success|error|info|warning`; tem fallback SSR inerte.
-- Tipos em `core/types/toast.ts`, UI em `core/components/ui/atoms/Toast.tsx`.
+- Tipos em `core/types/toast.ts`, UI em `core/ui/atoms/toast.tsx`.
 
 ## Translators
 - `core/errors/error_translator.ts` (base), `auth_error_translator.ts`, `user_error_translator.ts` — mapeiam chaves/códigos para mensagens pt-BR.

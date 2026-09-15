@@ -1,6 +1,6 @@
 "use client";
 
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable } from "@/core/ui/atoms/data-table";
 import { EixoSchema } from "@/core/schemas/cadastros/eixo_schema";
 import PageMeta from "@/core/types/pagination/page_meta";
 

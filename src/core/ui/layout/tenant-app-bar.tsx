@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import switchTenancyAction from "@/core/actions/auth/switch_tenancy_action";
 
-type TenantOption = { id: string; name: string; slug: string };
+type TenantOption = { id: string; name: string; slug?: string };
 
 export function TenantAppBar({ tenants }: { tenants: TenantOption[] }) {
   const router = useRouter();
@@ -66,7 +66,9 @@ export function TenantAppBar({ tenants }: { tenants: TenantOption[] }) {
         >
           <span className="min-w-0">
             <span className="block truncate font-semibold">{currentTenant?.name ?? "Selecionar tenancy"}</span>
-            <span className="block truncate text-xs text-muted">{currentTenant?.slug ?? "Nenhuma selecionada"}</span>
+            <span className="block truncate text-xs text-muted">
+              {currentTenant?.name ?? "Nenhuma selecionada"}
+            </span>
           </span>
           {saving ? <LoaderCircle className="size-4 animate-spin" /> : canSwitchTenant ? <ChevronsUpDown className="size-4 text-muted" /> : null}
         </button>
@@ -81,7 +83,9 @@ export function TenantAppBar({ tenants }: { tenants: TenantOption[] }) {
               >
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">{tenant.name}</span>
-                  <span className="block truncate text-xs text-muted">{tenant.slug}</span>
+            <span className="block truncate text-xs text-muted">
+              {tenant.slug ?? tenant.name}
+            </span>
                 </span>
                 {tenant.id === currentTenant?.id && <Check className="size-4 shrink-0 text-accent" />}
               </button>

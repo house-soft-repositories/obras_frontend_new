@@ -3,7 +3,7 @@
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/core/ui/atoms/button";
 import { cn } from "@/core/ui/cn";
 
 
