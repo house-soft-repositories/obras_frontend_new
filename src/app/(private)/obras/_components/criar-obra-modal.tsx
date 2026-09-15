@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   useFieldArray,
   useForm,
@@ -16,12 +16,16 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/core/ui/atoms/button";
+import { Input } from "@/core/ui/atoms/input";
 import createObraAction from "@/core/actions/obras/create_obra_action";
 import listSubclassificacoesPaginationAction from "@/core/actions/cadastros/list_subclassificacoes_pagination_action";
 import listSubtipologiasPaginationAction from "@/core/actions/cadastros/list_subtipologias_pagination_action";
 import { useToast } from "@/core/hooks/useToast";
+import {
+  formatMoneyFromCents,
+  InputMoney,
+} from "@/core/ui/atoms/input-money";
 import { Modal } from "@/core/ui/molecules/modal";
 import {
   criarObraFormularioSchema,
@@ -66,19 +70,17 @@ const initialValues: CriarObraFormularioInput = {
   tipologiaId: "",
   subtipologiaId: "",
   seguirAutomatico: false,
-  orcamentos: [{ fonteId: "", valorCentavos: "" }],
+  orcamentos: [{ fonteId: "", valorCentavos: 0 }],
 };
-const brl = (cents: string) =>
-  (Number(cents || 0) / 100).toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
+
+
+
 
 export function CriarObraModal({ onSuccess, ...options }: Props) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [apiError, setApiError] = useState("");
-  const [pending, startTransition] = useTransition();
+  const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
   const [subclassificacoes, setSubclassificacoes] = useState<Option[]>([]);
   const [subtipologias, setSubtipologias] = useState<Option[]>([]);
@@ -105,16 +107,16 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
     control: form.control,
     name: "classificacaoId",
   });
-  const tipologiaId = useWatch({ control: form.control, name: "tipologiaId" });
   const tipo = useWatch({ control: form.control, name: "tipo" });
-  useEffect(() => {
-    if (!classificacaoId) {
+  function carregarSubclassificacoes(classificacaoSelecionadaId: string) {
+    form.setValue("subclassificacaoId", "", { shouldValidate: true });
+    if (!classificacaoSelecionadaId) {
       setSubclassificacoes([]);
       return;
     }
     setLoading(true);
     void listSubclassificacoesPaginationAction({
-      classificacaoId,
+      classificacaoId: classificacaoSelecionadaId,
       page: 1,
       take: 50,
       order: "ASC",
@@ -126,15 +128,16 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
         ),
       )
       .finally(() => setLoading(false));
-  }, [classificacaoId]);
-  useEffect(() => {
-    if (!tipologiaId) {
+  }
+  function carregarSubtipologias(tipologiaSelecionadaId: string) {
+    form.setValue("subtipologiaId", "", { shouldValidate: true });
+    if (!tipologiaSelecionadaId) {
       setSubtipologias([]);
       return;
     }
     setLoading(true);
     void listSubtipologiasPaginationAction({
-      tipologiaId,
+      tipologiaId: tipologiaSelecionadaId,
       page: 1,
       take: 50,
       order: "ASC",
@@ -146,14 +149,14 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
         ),
       )
       .finally(() => setLoading(false));
-  }, [tipologiaId]);
+  }
   useEffect(() => {
     if (tipo !== "OBRA") {
       form.setValue("subclassificacaoId", "", { shouldValidate: true });
     }
   }, [form, tipo]);
   const close = () => {
-    if (!pending) {
+    if (!submitting) {
       setOpen(false);
       setStep(0);
       setApiError("");
@@ -201,45 +204,43 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
   }
   function submit(data: CriarObraOutput) {
     setApiError("");
-    startTransition(async () => {
-      try {
-        const result = await createObraAction(data);
+    setSubmitting(true);
+    void createObraAction(data)
+      .then((result) => {
         if (!result.success) {
           throw new Error(result.error);
         }
         toast.success("Obra criada com sucesso.");
-        close();
+        setOpen(false);
+        setStep(0);
+        setApiError("");
+        form.reset(initialValues);
         onSuccess();
-      } catch (error) {
-        const code = error instanceof Error ? error.message : "";
-        const map: Record<string, [number, string]> = {
-          OBRA_INVALID_NOME: [0, "Confira o nome."],
-          OBRA_INVALID_TIPO: [0, "Confira o tipo."],
-          OBRA_INVALID_RESPONSAVEL: [1, "Confira o responsável."],
-          OBRA_INVALID_ORGAO: [1, "Confira o órgão."],
-          OBRA_INVALID_SUBCLASSIFICACAO: [2, "Confira a subclassificação."],
-          OBRA_INVALID_ORCAMENTO: [3, "Confira os orçamentos."],
-          OBRA_FONTE_INATIVA: [3, "Escolha uma fonte ativa."],
-        };
-        const mapped = map[code];
-        if (mapped) setStep(mapped[0]);
+      })
+      .catch((error) => {
         setApiError(
-          mapped?.[1] ??
-            "Não foi possível criar a obra. Os dados foram preservados.",
+          error instanceof Error
+            ? error.message
+            : "Não foi possível criar a obra. Os dados foram preservados.",
         );
-      }
-    });
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
   }
   const select = (
     name: keyof CriarObraFormularioInput,
     label: string,
     values: Option[],
+    onValueChange?: (value: string) => void,
   ) => (
     <label className="grid gap-1 text-sm font-medium">
       {label}
       <select
         className="h-11 rounded-app border border-input bg-surface px-3"
-        {...form.register(name as never)}
+        {...form.register(name as never, {
+          onChange: (event) => onValueChange?.(event.target.value),
+        })}
       >
         <option value="">Selecione</option>
         {values.map((item) => (
@@ -255,6 +256,7 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
       ) : null}
     </label>
   );
+  const orcamentoErrors = form.formState.errors.orcamentos;
   return (
     <Modal.Root open={open} onOpenChange={handleOpenChange}>
       <Modal.Trigger asChild>
@@ -357,6 +359,7 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
                   "classificacaoId",
                   "Classificação",
                   options.classificacoes,
+                  carregarSubclassificacoes,
                 )}
                 {tipo === "OBRA" && classificacaoId
                   ? select(
@@ -365,7 +368,12 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
                       subclassificacoes,
                     )
                   : null}
-                {select("tipologiaId", "Tipologia", options.tipologias)}
+                {select(
+                  "tipologiaId",
+                  "Tipologia",
+                  options.tipologias,
+                  carregarSubtipologias,
+                )}
                 {select("subtipologiaId", "Subtipologia", subtipologias)}
               </div>
             ) : null}
@@ -374,38 +382,57 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold">Fontes de orçamento</h3>
                   <span className="font-semibold text-primary">
-                    Total: {brl(String(totalCents))}
+                    Total: {formatMoneyFromCents(totalCents)}
                   </span>
                 </div>
-                {fields.map((field, index) => (
+                {fields.map((field, index) => {
+                  const valorFieldName =
+                    `orcamentos.${index}.valorCentavos` as const;
+
+                  return (
                   <div
                     className="grid gap-2 sm:grid-cols-[1fr_180px_auto]"
                     key={field.id}
                   >
-                    {select(
-                      `orcamentos.${index}.fonteId` as keyof CriarObraFormularioInput,
-                      "Fonte",
-                      options.fontes,
-                    )}
+                    <label className="grid gap-1 text-sm font-medium">
+                      Fonte
+                      <select
+                        className="h-11 rounded-app border border-input bg-surface px-3"
+                        {...form.register(`orcamentos.${index}.fonteId`)}
+                      >
+                        <option value="">Selecione</option>
+                        {options.fontes.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.nome}
+                          </option>
+                        ))}
+                      </select>
+                      {orcamentoErrors?.[index]?.fonteId?.message ? (
+                        <span className="text-xs text-red-700">
+                          {orcamentoErrors[index]?.fonteId?.message}
+                        </span>
+                      ) : null}
+                    </label>
                     <label className="grid gap-1 text-sm font-medium">
                       Valor
-                      <Input
-                        inputMode="decimal"
-                        placeholder="R$ 0,00"
-                        {...form.register(`orcamentos.${index}.valorCentavos`)}
-                        onChange={(event) =>
-                          form.setValue(
-                            `orcamentos.${index}.valorCentavos`,
-                            event.target.value.replace(/\D/g, ""),
-                            { shouldValidate: true },
-                          )
+                      <InputMoney
+                        valueInCents={
+                          watched.orcamentos?.[index]?.valorCentavos || ""
                         }
-                        value={brl(
-                          String(
-                            watched.orcamentos?.[index]?.valorCentavos || "",
-                          ),
-                        )}
+                        onBlur={() => void form.trigger(valorFieldName)}
+                        onValueChange={({ valorInCents }) => {
+                          form.setValue(
+                            valorFieldName,
+                            valorInCents,
+                            { shouldDirty: true, shouldValidate: true },
+                          );
+                        }}
                       />
+                      {orcamentoErrors?.[index]?.valorCentavos?.message ? (
+                        <span className="text-xs text-red-700">
+                          {orcamentoErrors[index]?.valorCentavos?.message}
+                        </span>
+                      ) : null}
                     </label>
                     <Button
                       type="button"
@@ -416,11 +443,12 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
                       <Trash2 className="size-4" />
                     </Button>
                   </div>
-                ))}
+                  );
+                })}
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={() => append({ fonteId: "", valorCentavos: "" })}
+                  onClick={() => append({ fonteId: "", valorCentavos: 0 })}
                 >
                   <Plus className="size-4" /> Adicionar fonte
                 </Button>
@@ -451,7 +479,7 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
                 />
                 <Review
                   label="Orçamentos"
-                  value={`${fields.length} fonte(s) · ${brl(String(totalCents))}`}
+                  value={`${fields.length} fonte(s) · ${formatMoneyFromCents(totalCents)}`}
                 />
               </div>
             ) : null}
@@ -459,18 +487,18 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
               <Button
                 type="button"
                 variant="ghost"
-                disabled={step === 0 || pending}
+                disabled={step === 0 || submitting}
                 onClick={() => setStep((value) => value - 1)}
               >
                 <ChevronLeft className="size-4" /> Voltar
               </Button>
               {step < 4 ? (
-                <Button type="button" disabled={pending} onClick={next}>
+                <Button type="button" disabled={submitting} onClick={next}>
                   Continuar <ChevronRight className="size-4" />
                 </Button>
               ) : (
-                <Button type="submit" disabled={pending}>
-                  {pending ? (
+                <Button type="submit" disabled={submitting}>
+                  {submitting ? (
                     <Loader2 className="size-4 animate-spin" />
                   ) : (
                     <>
