@@ -11,7 +11,7 @@ export const buttonVariants = tv({
       secondary:
         "!border-border !bg-surface text-foreground hover:!bg-surface-subtle",
       destructive:
-        "!border-transparent !bg-foreground text-white hover:!bg-foreground/90",
+        "!border-danger-border !bg-surface text-danger hover:!bg-danger-subtle",
       ghost:
         "!border-transparent !bg-transparent text-muted hover:!bg-surface-subtle hover:text-foreground",
     },

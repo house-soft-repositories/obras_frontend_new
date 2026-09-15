@@ -11,6 +11,9 @@
   --color-border: var(--app-border);
   --color-input: var(--app-input);
   --color-ring: var(--app-ring);
+  --color-danger: var(--cor-perigo);
+  --color-danger-border: var(--cor-perigo-borda);
+  --color-danger-subtle: var(--cor-perigo-suave);
   --color-sidebar: var(--app-sidebar);
   --color-sidebar-foreground: var(--app-sidebar-foreground);
   --color-sidebar-muted: var(--app-sidebar-muted);
