@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { HardHat, LogOut } from "lucide-react";
 import { auth, signOut } from "@/core/config/auth_options";
 import { SidebarNavigation } from "./sidebar-navigation";
+import getObraNavigationTypeAction from "@/core/actions/navigation/get_obra_navigation_action";
 
 function initials(name: string): string {
   return name
@@ -24,9 +25,11 @@ async function logout() {
  * de estado do navegador ou de claims lidas no cliente.
  */
 export async function Sidebar() {
-  const session = await auth();
+  const [session, obraType] = await Promise.all([
+    auth(),
+    getObraNavigationTypeAction(),
+  ]);
   if (!session?.user) redirect("/login");
-
   const { name, email, role } = session.user;
 
   return (
@@ -52,7 +55,7 @@ export async function Sidebar() {
       </Link>
 
       <div className="sidebar-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
-        <SidebarNavigation role={role} />
+        <SidebarNavigation role={role} obraType={obraType} />
       </div>
 
       <div className="shrink-0 border-t border-sidebar-border px-2 pt-4">

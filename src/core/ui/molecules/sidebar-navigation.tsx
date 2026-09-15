@@ -21,6 +21,7 @@ import {
 import type { ComponentType } from "react";
 import { privateRouteGroupsForRole, type Route } from "@/core/config/routes";
 import { type UserRole } from "@/core/schemas/user/user_schema";
+import switchObraTypeNavigationAction from "@/core/actions/navigation/switch_obra_navigation_action";
 
 const iconByName: Record<string, ComponentType<{ className?: string }>> = {
   Building2,
@@ -41,14 +42,12 @@ const iconByName: Record<string, ComponentType<{ className?: string }>> = {
 
 function isCurrentPath(pathname: string, href: string): boolean {
   if (href === "/home") return pathname === href;
-  if (href === "/obras" && pathname === "/obras/nova") return false;
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 function renderRoute(pathname: string, route: Route, key: string) {
   const Icon = route.icon ? iconByName[route.icon] : undefined;
   const isActive = isCurrentPath(pathname, route.path);
-
   return (
     <Link
       key={key}
@@ -67,9 +66,9 @@ function renderRoute(pathname: string, route: Route, key: string) {
 }
 
 /** Navegação client-side agrupada e filtrada pelas roles das rotas privadas. */
-export function SidebarNavigation({ role }: { role?: UserRole | null }) {
+export function SidebarNavigation({ role, obraType }: { role?: UserRole | null, obraType: "OBRA_PUBLIC" | "OBRA_PRIVATE" }) {
   const pathname = usePathname() ?? "/home";
-  const routeGroups = privateRouteGroupsForRole(role);
+  const routeGroups = privateRouteGroupsForRole(role).filter((group => group.type === obraType || group.type === null))
 
   return (
     <>
@@ -79,8 +78,11 @@ export function SidebarNavigation({ role }: { role?: UserRole | null }) {
       >
         <Link
           href="/home"
+          onClick={async (_) => {
+            await switchObraTypeNavigationAction("OBRA_PUBLIC");
+          }}
           className={`flex min-h-10 items-center justify-center rounded-[6px] px-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-            pathname.startsWith("/obras-privadas")
+              obraType === "OBRA_PRIVATE"
               ? "text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-foreground"
               : "bg-accent text-foreground"
           }`}
@@ -89,8 +91,11 @@ export function SidebarNavigation({ role }: { role?: UserRole | null }) {
         </Link>
         <Link
           href="/obras-privadas"
+          onClick={async (_) => {
+            await switchObraTypeNavigationAction("OBRA_PRIVATE");
+          }}
           className={`flex min-h-10 items-center justify-center rounded-[6px] px-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-            pathname.startsWith("/obras-privadas")
+           obraType === "OBRA_PRIVATE"
               ? "bg-accent text-foreground"
               : "text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-foreground"
           }`}

@@ -11,6 +11,7 @@ export type Route = {
 
 export type RouteGroup = {
   label: string;
+  type?: "OBRA_PUBLIC" | "OBRA_PRIVATE" | null;
   routes: Route[];
 };
 
@@ -26,6 +27,7 @@ export const publicRoutes: Route[] = [
 export const privateRouteGroups: RouteGroup[] = [
   {
     label: "Principal",
+    type: "OBRA_PUBLIC",
     routes: [
       {
         path: "/home",
@@ -42,12 +44,33 @@ export const privateRouteGroups: RouteGroup[] = [
         path: "/obras",
         label: "Obras",
         icon: "Building2",
-        roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.ADMIN, userRoleSchema.enum.STAFF],
+        roles: [
+          userRoleSchema.enum.SUPERADMIN,
+          userRoleSchema.enum.ADMIN,
+          userRoleSchema.enum.STAFF,
+        ],
+      },
+    ],
+  },
+  {
+    label: "Privadas",
+    type: "OBRA_PRIVATE",
+    routes: [
+      {
+        path: "/obras-privadas",
+        label: "Obras",
+        icon: "Building2",
+        roles: [
+          userRoleSchema.enum.SUPERADMIN,
+          userRoleSchema.enum.ADMIN,
+          userRoleSchema.enum.STAFF,
+        ],
       },
     ],
   },
   {
     label: "Administração",
+    type: null,
     routes: [
       {
         path: "/tenants",
@@ -69,6 +92,7 @@ export const privateRouteGroups: RouteGroup[] = [
   },
   {
     label: "Cadastros",
+    type: "OBRA_PUBLIC",
     routes: [
       {
         path: "/cadastros/localidades",
@@ -108,6 +132,7 @@ export const privateRouteGroups: RouteGroup[] = [
       },
       {
         path: "/cadastros/subclassificacoes",
+
         label: "Subclassificações",
         icon: "Tags",
         roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.ADMIN],
