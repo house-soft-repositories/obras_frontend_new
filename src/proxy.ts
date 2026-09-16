@@ -1,6 +1,8 @@
 import { findRoute, routes } from "@/core/config/routes";
+import { resolverCookieSessao } from "@/core/config/auth_cookie";
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
+import { env } from "@/core/config/enviroment_variables";
 
 const REDIRECT_WHEN_NOT_AUTHENTICATED = "/login";
 const REDIRECT_WHEN_NOT_PERMISSION = "/";
@@ -8,9 +10,15 @@ const REDIRECT_WHEN_NOT_PERMISSION = "/";
 export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const currentRoute = findRoute(routes, path);
+  const cookieSessao = resolverCookieSessao(
+    env.NEXTAUTH_URL,
+    request.headers.get("x-forwarded-proto"),
+  );
   const token = await getToken({
     req: request,
-    secret: process.env.NEXT_AUTH_SECRET,
+    secret: env.NEXT_AUTH_SECRET,
+    salt: cookieSessao.nome,
+    secureCookie: cookieSessao.seguro,
   });
 
   if (

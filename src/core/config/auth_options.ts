@@ -17,6 +17,7 @@ import {
   type AccessTokenPayload,
   type AuthenticatedUser,
 } from "@/core/schemas/auth/nextauth";
+import { env } from "@/core/config/enviroment_variables";
 
 interface CredenciaisRenovadas {
   tokens: AuthTokens;
@@ -175,7 +176,8 @@ async function trocarTenancyNoBackend(
 }
 
 export const { handlers, auth, signIn, signOut, unstable_update: updateSession } = NextAuth({
-  secret: process.env.NEXT_AUTH_SECRET,
+  secret: env.NEXT_AUTH_SECRET,
+  trustHost: true,
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
   providers: [

@@ -1,39 +1,34 @@
 import "server-only";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { getToken } from "next-auth/jwt";
 import { auth } from "@/core/config/auth_options";
 import { AuthTokens, authTokensSchema } from "@/core/schemas/auth/auth_tokens";
+import { resolverCookieSessao } from "@/core/config/auth_cookie";
 import { env } from "@/core/config/enviroment_variables";
-
-const COOKIE_SESSAO =
-  env.NODE_ENV === "production"
-    ? "__Secure-authjs.session-token"
-    : "authjs.session-token";
-
-
-
 
 export async function obterTokensDaSessao(): Promise<AuthTokens | null> {
   const session = await auth();
 
   if (!session?.user || session.error) return null;
 
+  const cookieSessao = resolverCookieSessao(
+    env.NEXTAUTH_URL,
+    (await headers()).get("x-forwarded-proto"),
+  );
+
   const token = await getToken({
     req: { headers: { cookie: (await cookies()).toString() } } as never,
-    secret: process.env.NEXT_AUTH_SECRET,
-    salt: COOKIE_SESSAO,
-    secureCookie: process.env.NODE_ENV === "production",
+    secret: env.NEXT_AUTH_SECRET,
+    salt: cookieSessao.nome,
+    secureCookie: cookieSessao.seguro,
   });
 
-
-  const tokens =  authTokensSchema.safeParse(token);
+  const tokens = authTokensSchema.safeParse(token);
 
   if (!tokens.success) {
     return null;
   }
-
- 
 
   return tokens.data;
 }
