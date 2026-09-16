@@ -26,6 +26,23 @@ export const publicRoutes: Route[] = [
 
 export const privateRouteGroups: RouteGroup[] = [
   {
+    label: "Painel",
+    type: null,
+    routes: [
+      {
+        path: "/dashboard",
+        label: "Dashboard",
+        icon: "ChartNoAxesCombined",
+        roles: [
+          userRoleSchema.enum.SUPERADMIN,
+          userRoleSchema.enum.ADMIN,
+          userRoleSchema.enum.USER,
+          userRoleSchema.enum.STAFF,
+        ],
+      },
+    ],
+  },
+  {
     label: "Principal",
     type: "OBRA_PUBLIC",
     routes: [
@@ -60,6 +77,67 @@ export const privateRouteGroups: RouteGroup[] = [
         path: "/obras-privadas",
         label: "Obras",
         icon: "Building2",
+        roles: [
+          userRoleSchema.enum.SUPERADMIN,
+          userRoleSchema.enum.ADMIN,
+          userRoleSchema.enum.STAFF,
+        ],
+        children: [
+          {
+            path: "/obras-privadas/:id",
+            label: "Detalhe da obra privada",
+            roles: [
+              userRoleSchema.enum.SUPERADMIN,
+              userRoleSchema.enum.ADMIN,
+              userRoleSchema.enum.STAFF,
+            ],
+          },
+        ],
+      },
+      {
+        path: "/pessoas",
+        label: "Pessoas",
+        icon: "Users",
+        roles: [
+          userRoleSchema.enum.SUPERADMIN,
+          userRoleSchema.enum.ADMIN,
+          userRoleSchema.enum.STAFF,
+        ],
+      },
+      {
+        path: "/obras-privadas/autos",
+        label: "Autos",
+        icon: "Gavel",
+        roles: [
+          userRoleSchema.enum.SUPERADMIN,
+          userRoleSchema.enum.ADMIN,
+          userRoleSchema.enum.STAFF,
+        ],
+      },
+      {
+        path: "/obras-privadas/fiscalizacoes",
+        label: "Fiscalizações",
+        icon: "HardHat",
+        roles: [
+          userRoleSchema.enum.SUPERADMIN,
+          userRoleSchema.enum.ADMIN,
+          userRoleSchema.enum.STAFF,
+        ],
+      },
+      {
+        path: "/obras-privadas/licenciamento",
+        label: "Licenciamento",
+        icon: "FileText",
+        roles: [
+          userRoleSchema.enum.SUPERADMIN,
+          userRoleSchema.enum.ADMIN,
+          userRoleSchema.enum.STAFF,
+        ],
+      },
+      {
+        path: "/obras-privadas/mapa",
+        label: "Mapa",
+        icon: "MapPinned",
         roles: [
           userRoleSchema.enum.SUPERADMIN,
           userRoleSchema.enum.ADMIN,

@@ -61,7 +61,7 @@ function ErrorCard({
 
 function TenantContextRequiredCard({ onRetry }: { onRetry: () => void }) {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const [tenancies, setTenancies] = useState<TenantType[]>([]);
   const [selectedTenantId, setSelectedTenantId] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -114,8 +114,8 @@ function TenantContextRequiredCard({ onRetry }: { onRetry: () => void }) {
         return;
       }
 
+      await update();
       onRetry();
-      router.replace("/home");
       router.refresh();
     });
   }

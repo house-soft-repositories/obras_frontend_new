@@ -4,6 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Building2,
+  ChartNoAxesCombined,
+  FileText,
+  Gavel,
   HardHat,
   House,
   Landmark,
@@ -25,6 +28,9 @@ import switchObraTypeNavigationAction from "@/core/actions/navigation/switch_obr
 
 const iconByName: Record<string, ComponentType<{ className?: string }>> = {
   Building2,
+  ChartNoAxesCombined,
+  FileText,
+  Gavel,
   HardHat,
   House,
   Landmark,

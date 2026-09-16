@@ -19,6 +19,7 @@ import {
 import { Button } from "@/core/ui/atoms/button";
 import { Input } from "@/core/ui/atoms/input";
 import createObraAction from "@/core/actions/obras/create_obra_action";
+import { aplicarTagsAction } from "@/core/actions/obras/tags_actions";
 import listSubclassificacoesPaginationAction from "@/core/actions/cadastros/list_subclassificacoes_pagination_action";
 import listSubtipologiasPaginationAction from "@/core/actions/cadastros/list_subtipologias_pagination_action";
 import { useToast } from "@/core/hooks/useToast";
@@ -53,9 +54,26 @@ const steps = [
   "Identificação",
   "Organização",
   "Classificação",
+  "Detalhes",
   "Orçamentos",
   "Revisão",
 ];
+const TIPO_FINANCIAMENTO_LABELS = {
+  COM_OGU: "Com OGU",
+  SEM_OGU: "Sem OGU",
+  INVESTIMENTO_PRIVADO: "Investimento privado",
+} as const;
+const MODO_DURACAO_LABELS = {
+  DEFINIDO_PELO_USUARIO: "Definido pelo usuário",
+  ESTAGIO_ATUAL: "Estágio atual",
+  TOTAL_ATIVIDADES: "Total de atividades",
+  EXECUCAO_CONTRATO: "Execução do contrato",
+} as const;
+const ACAO_CONVENIADA_LABELS = {
+  NAO: "Não",
+  FEDERAL: "Federal",
+  ESTADUAL: "Estadual",
+} as const;
 const initialValues: CriarObraFormularioInput = {
   nome: "",
   tipo: "OBRA",
@@ -70,6 +88,17 @@ const initialValues: CriarObraFormularioInput = {
   tipologiaId: "",
   subtipologiaId: "",
   seguirAutomatico: false,
+  tipoFinanciamento: "SEM_OGU",
+  modoDuracao: "DEFINIDO_PELO_USUARIO",
+  dataInicio: "",
+  dataPrazo: "",
+  acaoConveniada: "NAO",
+  prioritaria: false,
+  unidadeMedida: "",
+  quantidade: "",
+  programaPpa: "",
+  secretario: "",
+  dataPactuada: "",
   orcamentos: [{ fonteId: "", valorCentavos: 0 }],
 };
 
@@ -82,6 +111,7 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
   const [apiError, setApiError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [tags, setTags] = useState("");
   const [subclassificacoes, setSubclassificacoes] = useState<Option[]>([]);
   const [subtipologias, setSubtipologias] = useState<Option[]>([]);
   const toast = useToast();
@@ -108,6 +138,8 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
     name: "classificacaoId",
   });
   const tipo = useWatch({ control: form.control, name: "tipo" });
+  const modoDuracao = useWatch({ control: form.control, name: "modoDuracao" });
+  const datasTravadas = modoDuracao !== "DEFINIDO_PELO_USUARIO";
   function carregarSubclassificacoes(classificacaoSelecionadaId: string) {
     form.setValue("subclassificacaoId", "", { shouldValidate: true });
     if (!classificacaoSelecionadaId) {
@@ -160,6 +192,7 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
       setOpen(false);
       setStep(0);
       setApiError("");
+      setTags("");
       form.reset(initialValues);
     }
   };
@@ -187,6 +220,19 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
       "tipologiaId",
       "subtipologiaId",
     ],
+    [
+      "tipoFinanciamento",
+      "modoDuracao",
+      "dataInicio",
+      "dataPrazo",
+      "acaoConveniada",
+      "prioritaria",
+      "unidadeMedida",
+      "quantidade",
+      "programaPpa",
+      "secretario",
+      "dataPactuada",
+    ],
     ["orcamentos"],
     [],
   ];
@@ -210,10 +256,17 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
         if (!result.success) {
           throw new Error(result.error);
         }
+        if (tags.trim() && result.data?.id) {
+          return aplicarTagsAction(result.data.id, tags).then(() => result);
+        }
+        return result;
+      })
+      .then(() => {
         toast.success("Obra criada com sucesso.");
         setOpen(false);
         setStep(0);
         setApiError("");
+        setTags("");
         form.reset(initialValues);
         onSuccess();
       })
@@ -256,6 +309,25 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
       ) : null}
     </label>
   );
+  const enumSelect = <T extends string>(
+    name: keyof CriarObraFormularioInput,
+    label: string,
+    labels: Record<T, string>,
+  ) => (
+    <label className="grid gap-1 text-sm font-medium">
+      {label}
+      <select
+        className="h-11 rounded-app border border-input bg-surface px-3"
+        {...form.register(name as never)}
+      >
+        {Object.entries(labels).map(([value, optionLabel]) => (
+          <option key={value} value={value}>
+            {optionLabel as string}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
   const orcamentoErrors = form.formState.errors.orcamentos;
   return (
     <Modal.Root open={open} onOpenChange={handleOpenChange}>
@@ -275,7 +347,7 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
               </Modal.Header>
               <Modal.CloseIcon onClick={close} />
             </div>
-            <div className="mb-7 grid grid-cols-5 gap-1">
+            <div className="mb-7 grid grid-cols-6 gap-1">
               {steps.map((label, index) => (
                 <div key={label}>
                   <div
@@ -378,6 +450,66 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
               </div>
             ) : null}
             {step === 3 ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {enumSelect(
+                  "tipoFinanciamento",
+                  "Financiamento",
+                  TIPO_FINANCIAMENTO_LABELS,
+                )}
+                {enumSelect("modoDuracao", "Modo de duração", MODO_DURACAO_LABELS)}
+                <label className="grid gap-1 text-sm font-medium">
+                  Data início
+                  <Input
+                    type="date"
+                    readOnly={datasTravadas}
+                    {...form.register("dataInicio")}
+                  />
+                </label>
+                <label className="grid gap-1 text-sm font-medium">
+                  Data prazo
+                  <Input
+                    type="date"
+                    readOnly={datasTravadas}
+                    {...form.register("dataPrazo")}
+                  />
+                </label>
+                {enumSelect("acaoConveniada", "Ação conveniada", ACAO_CONVENIADA_LABELS)}
+                <label className="flex items-center gap-2 text-sm font-medium">
+                  <input type="checkbox" {...form.register("prioritaria")} />
+                  Prioritária
+                </label>
+                <label className="grid gap-1 text-sm font-medium">
+                  Unidade de medida
+                  <Input {...form.register("unidadeMedida")} />
+                </label>
+                <label className="grid gap-1 text-sm font-medium">
+                  Quantidade
+                  <Input inputMode="decimal" {...form.register("quantidade")} />
+                  {form.formState.errors.quantidade?.message ? (
+                    <span className="text-xs text-red-700">
+                      {form.formState.errors.quantidade.message}
+                    </span>
+                  ) : null}
+                </label>
+                <label className="grid gap-1 text-sm font-medium">
+                  Programa PPA
+                  <Input {...form.register("programaPpa")} />
+                </label>
+                <label className="grid gap-1 text-sm font-medium">
+                  Secretário(a)
+                  <Input {...form.register("secretario")} />
+                </label>
+                <label className="grid gap-1 text-sm font-medium">
+                  Data pactuada
+                  <Input type="date" {...form.register("dataPactuada")} />
+                </label>
+                <label className="grid gap-1 text-sm font-medium">
+                  Tags (vírgula/ponto-e-vírgula)
+                  <Input value={tags} onChange={(event) => setTags(event.target.value)} />
+                </label>
+              </div>
+            ) : null}
+            {step === 4 ? (
               <div className="grid gap-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold">Fontes de orçamento</h3>
@@ -454,7 +586,7 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
                 </Button>
               </div>
             ) : null}
-            {step === 4 ? (
+            {step === 5 ? (
               <div className="grid gap-4 text-sm">
                 <Review label="Nome" value={watched.nome ?? ""} />
                 <Review
@@ -481,6 +613,27 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
                   label="Orçamentos"
                   value={`${fields.length} fonte(s) · ${formatMoneyFromCents(totalCents)}`}
                 />
+                <Review
+                  label="Financiamento"
+                  value={TIPO_FINANCIAMENTO_LABELS[watched.tipoFinanciamento ?? "SEM_OGU"]}
+                />
+                <Review
+                  label="Modo de duração"
+                  value={MODO_DURACAO_LABELS[watched.modoDuracao ?? "DEFINIDO_PELO_USUARIO"]}
+                />
+                <Review label="Data início" value={watched.dataInicio || "—"} />
+                <Review label="Data prazo" value={watched.dataPrazo || "—"} />
+                <Review
+                  label="Ação conveniada"
+                  value={ACAO_CONVENIADA_LABELS[watched.acaoConveniada ?? "NAO"]}
+                />
+                <Review label="Prioritária" value={watched.prioritaria ? "Sim" : "Não"} />
+                <Review label="Unidade de medida" value={watched.unidadeMedida || "—"} />
+                <Review label="Quantidade" value={watched.quantidade || "—"} />
+                <Review label="Programa PPA" value={watched.programaPpa || "—"} />
+                <Review label="Secretário(a)" value={watched.secretario || "—"} />
+                <Review label="Data pactuada" value={watched.dataPactuada || "—"} />
+                <Review label="Tags" value={tags || "—"} />
               </div>
             ) : null}
             <div className="mt-7 flex justify-between gap-3">
@@ -492,7 +645,7 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
               >
                 <ChevronLeft className="size-4" /> Voltar
               </Button>
-              {step < 4 ? (
+              {step < steps.length - 1 ? (
                 <Button type="button" disabled={submitting} onClick={next}>
                   Continuar <ChevronRight className="size-4" />
                 </Button>
