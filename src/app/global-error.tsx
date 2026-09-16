@@ -12,10 +12,52 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import switchTenancyAction from "@/core/actions/auth/switch_tenancy_action";
 import listTenanciesAction from "@/core/actions/tenancies/list_tenancies_action";
+import HttpClientException from "@/core/exceptions/http_client_exception";
 import type { TenantType } from "@/core/schemas/tenants/tenant_schema";
 import "./globals.css";
 
+function getErrorDataMessage(error: unknown): string | undefined {
+  if (typeof error !== "object" || error === null || !("data" in error)) {
+    return undefined;
+  }
+
+  const data = error.data;
+  if (typeof data !== "object" || data === null || !("message" in data)) {
+    return undefined;
+  }
+
+  return typeof data.message === "string" ? data.message : undefined;
+}
+
+function getErrorStatusCode(error: unknown): number | undefined {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "statusCode" in error &&
+    typeof error.statusCode === "number"
+  ) {
+    return error.statusCode;
+  }
+
+  return undefined;
+}
+
 function isTenantContextRequired(error: Error & { digest?: string }): boolean {
+  if (error instanceof HttpClientException) {
+    return (
+      error.statusCode === 401 &&
+      (error.message === "TENANT_CONTEXT_REQUIRED" ||
+        getErrorDataMessage(error) === "TENANT_CONTEXT_REQUIRED")
+    );
+  }
+
+  if (
+    getErrorStatusCode(error) === 401 &&
+    getErrorDataMessage(error) === "TENANT_CONTEXT_REQUIRED"
+  ) {
+    return true;
+  }
+
   return [error.message, error.digest]
     .filter(Boolean)
     .some((value) => value?.includes("TENANT_CONTEXT_REQUIRED"));
