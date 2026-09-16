@@ -42,7 +42,7 @@ export async function getContratoDaObraAction(
 ): Promise<ServerActionResult<Contrato | null>> {
   try {
     const res = await api.auth.get<{ data: Contrato[] }>(
-      `/api/contratos?page=1&take=100&order=DESC`,
+      `/api/contratos?page=1&take=50&order=DESC`,
       { next: { tags: [tagContrato(obraId)] } },
     );
     const raw = res.data as unknown as { data?: Contrato[] } | Contrato[];

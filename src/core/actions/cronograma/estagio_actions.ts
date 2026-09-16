@@ -38,7 +38,7 @@ export async function listEstagiosAction(
 ): Promise<ServerActionResult<Estagio[]>> {
   try {
     const res = await api.auth.get<{ data: Estagio[] } | Estagio[]>(
-      `/api/obras/${obraId}/estagios?page=1&take=200&order=ASC`,
+      `/api/obras/${obraId}/estagios?page=1&take=50&order=ASC`,
       { next: { tags: [tagEstagios(obraId)] } },
     );
     const raw = res.data as unknown as { data?: Estagio[] } | Estagio[];

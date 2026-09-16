@@ -26,7 +26,7 @@ export async function listMedicoesAction(
 ): Promise<ServerActionResult<Medicao[]>> {
   try {
     const res = await api.auth.get<{ data: Medicao[] } | Medicao[]>(
-      `/api/obras/${obraId}/medicoes?page=1&take=200&order=DESC`,
+      `/api/obras/${obraId}/medicoes?page=1&take=50&order=DESC`,
       { next: { tags: [tagMedicoes(obraId)] } },
     );
     const raw = res.data as unknown as { data?: Medicao[] } | Medicao[];
