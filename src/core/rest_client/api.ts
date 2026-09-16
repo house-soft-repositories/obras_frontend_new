@@ -2,6 +2,7 @@ import { env } from "@/core/config/enviroment_variables";
 import {
   AuthInterceptor,
   LogInterceptor,
+  TenantContextInterceptor,
 } from "@/core/rest_client/interceptors";
 import { ApiKeyInterceptor } from "@/core/rest_client/interceptors/api_key_interceptor";
 import { HttpClient } from "./http_client";
@@ -16,5 +17,6 @@ api.addInterceptor(
 );
 api.addInterceptor(new AuthInterceptor());
 api.addInterceptor(new ApiKeyInterceptor());
+api.addInterceptor(new TenantContextInterceptor());
 
 export default api;

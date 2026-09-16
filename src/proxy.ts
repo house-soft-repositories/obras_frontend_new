@@ -9,6 +9,11 @@ const REDIRECT_WHEN_NOT_PERMISSION = "/";
 
 export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(
+    "x-obras-current-path",
+    `${request.nextUrl.pathname}${request.nextUrl.search}`,
+  );
   const currentRoute = findRoute(routes, path);
   const cookieSessao = resolverCookieSessao(
     env.NEXTAUTH_URL,
@@ -34,7 +39,7 @@ export async function proxy(request: NextRequest) {
     currentRoute?.roles === null &&
     currentRoute.whenAuthenticated === "allow"
   ) {
-    return NextResponse.next();
+    return nextWithCurrentPath();
   }
 
   // if (token && Array.isArray(currentRoute?.roles)) {
@@ -50,7 +55,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (!token && currentRoute?.roles === null) {
-    return NextResponse.next();
+    return nextWithCurrentPath();
   }
 
   // Deny-by-default (V-09): uma rota não registrada exige autenticação. Um usuário
@@ -60,7 +65,11 @@ export async function proxy(request: NextRequest) {
     return redirectUserNotAuthenticated(request);
   }
 
-  return NextResponse.next();
+  return nextWithCurrentPath();
+
+  function nextWithCurrentPath() {
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
 
   function redirectUserNotAuthenticated(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();

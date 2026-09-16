@@ -162,8 +162,8 @@ export class HttpClient {
         );
       }
 
-      if (error instanceof HttpClientException) {
-        throw error;
+      if (interceptedError instanceof HttpClientException) {
+        throw interceptedError;
       }
       if (interceptedError instanceof Error) {
         throw new HttpClientException(
