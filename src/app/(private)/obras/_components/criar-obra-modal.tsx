@@ -17,6 +17,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Button } from "@/core/ui/atoms/button";
+import { InputDate } from "@/core/ui/atoms/input-date";
 import { Input } from "@/core/ui/atoms/input";
 import createObraAction from "@/core/actions/obras/create_obra_action";
 import { aplicarTagsAction } from "@/core/actions/obras/tags_actions";
@@ -138,8 +139,6 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
     name: "classificacaoId",
   });
   const tipo = useWatch({ control: form.control, name: "tipo" });
-  const modoDuracao = useWatch({ control: form.control, name: "modoDuracao" });
-  const datasTravadas = modoDuracao !== "DEFINIDO_PELO_USUARIO";
   function carregarSubclassificacoes(classificacaoSelecionadaId: string) {
     form.setValue("subclassificacaoId", "", { shouldValidate: true });
     if (!classificacaoSelecionadaId) {
@@ -459,19 +458,21 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
                 {enumSelect("modoDuracao", "Modo de duração", MODO_DURACAO_LABELS)}
                 <label className="grid gap-1 text-sm font-medium">
                   Data início
-                  <Input
-                    type="date"
-                    readOnly={datasTravadas}
-                    {...form.register("dataInicio")}
-                  />
+                  <InputDate {...form.register("dataInicio")} />
+                  {form.formState.errors.dataInicio?.message ? (
+                    <span className="text-xs text-red-700">
+                      {form.formState.errors.dataInicio.message}
+                    </span>
+                  ) : null}
                 </label>
                 <label className="grid gap-1 text-sm font-medium">
                   Data prazo
-                  <Input
-                    type="date"
-                    readOnly={datasTravadas}
-                    {...form.register("dataPrazo")}
-                  />
+                  <InputDate {...form.register("dataPrazo")} />
+                  {form.formState.errors.dataPrazo?.message ? (
+                    <span className="text-xs text-red-700">
+                      {form.formState.errors.dataPrazo.message}
+                    </span>
+                  ) : null}
                 </label>
                 {enumSelect("acaoConveniada", "Ação conveniada", ACAO_CONVENIADA_LABELS)}
                 <label className="flex items-center gap-2 text-sm font-medium">
@@ -501,7 +502,12 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
                 </label>
                 <label className="grid gap-1 text-sm font-medium">
                   Data pactuada
-                  <Input type="date" {...form.register("dataPactuada")} />
+                  <InputDate {...form.register("dataPactuada")} />
+                  {form.formState.errors.dataPactuada?.message ? (
+                    <span className="text-xs text-red-700">
+                      {form.formState.errors.dataPactuada.message}
+                    </span>
+                  ) : null}
                 </label>
                 <label className="grid gap-1 text-sm font-medium">
                   Tags (vírgula/ponto-e-vírgula)

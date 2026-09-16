@@ -3,7 +3,10 @@ import { tipoObraSchema } from "./tipo_obra";
 
 const optionalUuid = z.string().uuid().or(z.literal(""));
 const optionalText = z.string();
-const optionalDate = z.string();
+const optionalDate = z.string().refine(
+  (value) => value.trim() === "" || parseDateInput(value) !== null,
+  "Informe uma data válida no formato dd/mm/aaaa.",
+);
 const optionalNumericText = z
   .string()
   .refine(
@@ -27,6 +30,31 @@ const modoDuracaoSchema = z.enum([
   "EXECUCAO_CONTRATO",
 ]);
 const acaoConveniadaSchema = z.enum(["NAO", "FEDERAL", "ESTADUAL"]);
+
+function parseDateInput(value: string) {
+  const trimmed = value.trim();
+  const brDate = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(trimmed);
+  const isoDate = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+
+  const day = brDate ? Number(brDate[1]) : isoDate ? Number(isoDate[3]) : 0;
+  const month = brDate ? Number(brDate[2]) : isoDate ? Number(isoDate[2]) : 0;
+  const year = brDate ? Number(brDate[3]) : isoDate ? Number(isoDate[1]) : 0;
+
+  if (!day || !month || !year) return null;
+
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  return `${year.toString().padStart(4, "0")}-${month
+    .toString()
+    .padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
+}
 
 export const criarObraFormularioSchema = z
   .object({
@@ -99,8 +127,8 @@ export const criarObraFormularioSchema = z
     modoDuracao: form.modoDuracao,
     acaoConveniada: form.acaoConveniada,
     prioritaria: form.prioritaria,
-    ...(form.dataInicio ? { dataInicio: form.dataInicio } : {}),
-    ...(form.dataPrazo ? { dataPrazo: form.dataPrazo } : {}),
+    ...(form.dataInicio ? { dataInicio: parseDateInput(form.dataInicio)! } : {}),
+    ...(form.dataPrazo ? { dataPrazo: parseDateInput(form.dataPrazo)! } : {}),
     ...(form.unidadeMedida.trim()
       ? { unidadeMedida: form.unidadeMedida.trim() }
       : {}),
@@ -109,7 +137,9 @@ export const criarObraFormularioSchema = z
       ? { programaPpa: form.programaPpa.trim() }
       : {}),
     ...(form.secretario.trim() ? { secretario: form.secretario.trim() } : {}),
-    ...(form.dataPactuada ? { dataPactuada: form.dataPactuada } : {}),
+    ...(form.dataPactuada
+      ? { dataPactuada: parseDateInput(form.dataPactuada)! }
+      : {}),
     seguirAutomatico: form.seguirAutomatico,
   }));
 
