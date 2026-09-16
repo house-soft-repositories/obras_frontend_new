@@ -1,5 +1,5 @@
 import NextAuth from "next-auth";
-import type { AuthConfig } from "@auth/core/types";
+import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { CredentialsSignin } from "next-auth";
 import type { User } from "next-auth";
@@ -38,7 +38,7 @@ class AuthCredentialsError extends CredentialsSignin {
   }
 }
 
-type AuthCallbacks = NonNullable<AuthConfig["callbacks"]>;
+type AuthCallbacks = NonNullable<NextAuthConfig["callbacks"]>;
 type JwtCallback = NonNullable<AuthCallbacks["jwt"]>;
 type SessionCallback = NonNullable<AuthCallbacks["session"]>;
 
