@@ -9,7 +9,7 @@ export const tipoMedicaoSchema = z.enum([
 export type TipoMedicao = z.infer<typeof tipoMedicaoSchema>;
 
 export const medicaoItemSchema = z.object({
-  fonteId: z.string().uuid("Escolha uma fonte válida."),
+  fonteId: z.string().uuid("Escolha um orçamento válido."),
   valor: z.number().min(0, "Valor inválido."),
 });
 export type MedicaoItem = z.infer<typeof medicaoItemSchema>;
@@ -33,6 +33,6 @@ export const criarMedicaoSchema = z.object({
   observacao: z.string().optional(),
   itens: z
     .array(medicaoItemSchema)
-    .min(1, "Adicione ao menos uma fonte com valor."),
+    .min(1, "Adicione ao menos um orçamento com valor."),
 });
 export type CriarMedicaoInput = z.infer<typeof criarMedicaoSchema>;

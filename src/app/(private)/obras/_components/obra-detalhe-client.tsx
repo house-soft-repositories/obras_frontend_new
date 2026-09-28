@@ -71,7 +71,7 @@ export function ObraDetalheClient({ obra }: { obra: Obra }) {
   const status = text(obra.status);
   const orgao = text(extra.orgao?.nome ?? extra.orgaoNome, "—");
 
-  const mutate = (action: () => Promise<unknown>, success: string) =>
+  const executarAcao = (action: () => Promise<unknown>, success: string) =>
     startTransition(async () => {
       try {
         await action();
@@ -111,7 +111,7 @@ export function ObraDetalheClient({ obra }: { obra: Obra }) {
             variant="secondary"
             disabled={pending}
             onClick={() =>
-              mutate(() => duplicarObraAction(obra.id), "Obra duplicada.")
+              executarAcao(() => duplicarObraAction(obra.id), "Obra duplicada.")
             }
           >
             <Copy className="size-4" /> Duplicar
@@ -121,7 +121,7 @@ export function ObraDetalheClient({ obra }: { obra: Obra }) {
             disabled={pending}
             onClick={() => {
               if (confirm("Excluir esta obra?"))
-                mutate(() => deleteObraAction(obra.id), "Obra excluída.");
+                executarAcao(() => deleteObraAction(obra.id), "Obra excluída.");
             }}
           >
             <Trash2 className="size-4" /> Excluir
@@ -178,7 +178,7 @@ export function ObraDetalheClient({ obra }: { obra: Obra }) {
           <Button
             disabled={!tag || pending}
             onClick={() =>
-              mutate(() => aplicarTagsAction(obra.id, tag), "Tag aplicada.")
+              executarAcao(() => aplicarTagsAction(obra.id, tag), "Tag aplicada.")
             }
           >
             Adicionar
@@ -193,7 +193,7 @@ export function ObraDetalheClient({ obra }: { obra: Obra }) {
           <Button
             disabled={!obs || pending}
             onClick={() =>
-              mutate(
+              executarAcao(
                 () => criarObservacaoAction(obra.id, obs),
                 "Observação adicionada.",
               )

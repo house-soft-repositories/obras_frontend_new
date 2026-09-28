@@ -19,6 +19,7 @@ import {
   listLiquidacoesAction,
   listPagamentosAction,
 } from "@/core/actions/financeiro/financeiro_actions";
+import { listOrcamentosAction } from "@/core/actions/obras/guias/orcamentos_actions";
 import { useToast } from "@/core/hooks/useToast";
 import {
   atualizarEmpenhoSchema,
@@ -44,6 +45,7 @@ import {
   type Pagamento,
   type VisaoFisicoFinanceira,
 } from "@/core/schemas/financeiro";
+import type { ObraOrcamentoReadModel } from "@/core/schemas/obras/orcamento_read_model_schema";
 import { Button } from "@/core/ui/atoms/button";
 import { DataTable } from "@/core/ui/atoms/data-table";
 import { Body, Caption } from "@/core/ui/atoms/typography";
@@ -56,6 +58,7 @@ type FinanceiroState = {
   empenhos: Empenho[];
   liquidacoes: Liquidacao[];
   pagamentos: Pagamento[];
+  orcamentos: ObraOrcamentoReadModel[];
   visao: VisaoFisicoFinanceira | null;
 };
 
@@ -63,6 +66,7 @@ const emptyState: FinanceiroState = {
   empenhos: [],
   liquidacoes: [],
   pagamentos: [],
+  orcamentos: [],
   visao: null,
 };
 
@@ -112,11 +116,16 @@ export function FinanceiroTab({ obraId }: { obraId: string }) {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [empenhos, liquidacoes, pagamentos, visao] = await Promise.all([
+    const orcamentosPromise = listOrcamentosAction(obraId).catch(() => {
+      toast.error("Não foi possível carregar os orçamentos.");
+      return [];
+    });
+    const [empenhos, liquidacoes, pagamentos, visao, orcamentos] = await Promise.all([
       listEmpenhosAction(obraId),
       listLiquidacoesAction(obraId),
       listPagamentosAction(obraId),
       getVisaoFisicoFinanceiraAction(obraId),
+      orcamentosPromise,
     ]);
 
     const firstError = [empenhos, liquidacoes, pagamentos, visao].find(
@@ -128,6 +137,7 @@ export function FinanceiroTab({ obraId }: { obraId: string }) {
       empenhos: empenhos.success ? empenhos.data : [],
       liquidacoes: liquidacoes.success ? liquidacoes.data : [],
       pagamentos: pagamentos.success ? pagamentos.data : [],
+      orcamentos,
       visao: visao.success ? visao.data : null,
     });
     setLoading(false);
@@ -203,10 +213,10 @@ export function FinanceiroTab({ obraId }: { obraId: string }) {
         recurso="empenho"
         title="Empenhos"
         rows={state.empenhos}
-        toolbar={<EmpenhoModal obraId={obraId} onSaved={load} />}
+        toolbar={<EmpenhoModal obraId={obraId} orcamentos={state.orcamentos} onSaved={load} />}
         onDelete={async (id) => deleteEmpenhoAction(obraId, id)}
         renderEdit={(item) => (
-          <EmpenhoModal obraId={obraId} registro={item} onSaved={load} />
+          <EmpenhoModal obraId={obraId} registro={item} orcamentos={state.orcamentos} onSaved={load} />
         )}
         onSaved={load}
       />
@@ -218,6 +228,7 @@ export function FinanceiroTab({ obraId }: { obraId: string }) {
           <LiquidacaoModal
             obraId={obraId}
             empenhos={state.empenhos}
+            orcamentos={state.orcamentos}
             onSaved={load}
           />
         }
@@ -227,6 +238,7 @@ export function FinanceiroTab({ obraId }: { obraId: string }) {
             obraId={obraId}
             registro={item}
             empenhos={state.empenhos}
+            orcamentos={state.orcamentos}
             onSaved={load}
           />
         )}
@@ -240,6 +252,7 @@ export function FinanceiroTab({ obraId }: { obraId: string }) {
           <PagamentoModal
             obraId={obraId}
             liquidacoes={state.liquidacoes}
+            orcamentos={state.orcamentos}
             onSaved={load}
           />
         }
@@ -249,6 +262,7 @@ export function FinanceiroTab({ obraId }: { obraId: string }) {
             obraId={obraId}
             registro={item}
             liquidacoes={state.liquidacoes}
+            orcamentos={state.orcamentos}
             onSaved={load}
           />
         )}
@@ -359,10 +373,12 @@ function LancamentosSection<
 function EmpenhoModal({
   obraId,
   registro,
+  orcamentos,
   onSaved,
 }: {
   obraId: string;
   registro?: Empenho;
+  orcamentos: ObraOrcamentoReadModel[];
   onSaved: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -430,6 +446,7 @@ function EmpenhoModal({
       </SelectField>
       <CommonFields
         form={form}
+        orcamentos={orcamentos}
         dateName="dataEmpenho"
         dateLabel="Data do empenho"
       />
@@ -441,11 +458,13 @@ function LiquidacaoModal({
   obraId,
   registro,
   empenhos,
+  orcamentos,
   onSaved,
 }: {
   obraId: string;
   registro?: Liquidacao;
   empenhos: Empenho[];
+  orcamentos: ObraOrcamentoReadModel[];
   onSaved: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -518,6 +537,7 @@ function LiquidacaoModal({
       </SelectField>
       <CommonFields
         form={form}
+        orcamentos={orcamentos}
         dateName="dataLiquidacao"
         dateLabel="Data da liquidação"
       />
@@ -529,11 +549,13 @@ function PagamentoModal({
   obraId,
   registro,
   liquidacoes,
+  orcamentos,
   onSaved,
 }: {
   obraId: string;
   registro?: Pagamento;
   liquidacoes: Liquidacao[];
+  orcamentos: ObraOrcamentoReadModel[];
   onSaved: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -619,6 +641,7 @@ function PagamentoModal({
       </SelectField>
       <CommonFields
         form={form}
+        orcamentos={orcamentos}
         dateName="dataOrdemBancaria"
         dateLabel="Data do pagamento"
         numberName="numeroOrdemBancaria"
@@ -663,7 +686,7 @@ function LancamentoModal({
           <Modal.Header>
             <Modal.Title>{title}</Modal.Title>
             <Modal.Description>
-              Informe fonte, valor e data do lançamento.
+              Informe orçamento, valor e data do lançamento.
             </Modal.Description>
           </Modal.Header>
           <form onSubmit={onSubmit} className="grid gap-4">
@@ -687,12 +710,14 @@ function LancamentoModal({
 
 function CommonFields({
   form,
+  orcamentos,
   dateName,
   dateLabel,
   numberName = "numero",
   numberLabel = "Número",
 }: {
   form: ReturnType<typeof useForm>;
+  orcamentos: ObraOrcamentoReadModel[];
   dateName: string;
   dateLabel: string;
   numberName?: string;
@@ -701,12 +726,19 @@ function CommonFields({
   const errors = form.formState.errors as Record<string, { message?: string }>;
   return (
     <>
-      <InputForm
-        label="Fonte (ID)"
-        required
+      <SelectField
+        label="Orçamento"
         {...form.register("fonteId")}
         error={errors.fonteId?.message}
-      />
+        required
+      >
+        <option value="">Selecione</option>
+        {orcamentos.map((orcamento) => (
+          <option key={orcamento.orcamentoId} value={orcamento.fonte.fonteId}>
+            {orcamento.fonte.fonteNome} · {formatCurrency(orcamento.fonte.valor)}
+          </option>
+        ))}
+      </SelectField>
       <InputForm
         label="Valor"
         required
