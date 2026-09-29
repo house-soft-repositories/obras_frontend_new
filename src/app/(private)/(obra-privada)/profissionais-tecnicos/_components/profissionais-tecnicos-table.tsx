@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition, type ComponentProps } from "react";
 import { useForm } from "react-hook-form";
+import { alternarAtivoProfissionalTecnicoAction } from "@/core/actions/profissionais-tecnicos/toggle_ativo_profissional_tecnico_action";
 import { atualizarProfissionalTecnicoAction } from "@/core/actions/profissionais-tecnicos/update_profissional_tecnico_action";
 import type { ProfissionalTecnico } from "@/core/schemas/profissionais-tecnicos/profissional_tecnico_schema";
 import {
@@ -18,6 +19,7 @@ import { DataTable } from "@/core/ui/atoms/data-table";
 import { Input } from "@/core/ui/atoms/input";
 import { InputForm } from "@/core/ui/molecules/input-form";
 import { Modal } from "@/core/ui/molecules/modal";
+import { Switch } from "@/core/ui/atoms/switch";
 
 const CONSELHOS = ["CREA", "CAU", "CFT"] as const;
 const UFS = [
@@ -205,6 +207,60 @@ function EditarProfissionalTecnicoModal({
   );
 }
 
+function AtivoSwitch({
+  profissional,
+}: {
+  profissional: ProfissionalTecnico;
+}) {
+  const router = useRouter();
+  const toast = useToast();
+  const [checked, setChecked] = useState(profissional.ativo);
+  const [isPending, startTransition] = useTransition();
+
+  function handleCheckedChange(next: boolean) {
+    setChecked(next);
+    startTransition(async () => {
+      const result = await alternarAtivoProfissionalTecnicoAction(
+        profissional.id,
+        { ativo: next },
+      );
+      if (!result.success) {
+        setChecked(!next);
+        toast.error(result.error);
+        return;
+      }
+      toast.success(
+        next
+          ? "Profissional ativado com sucesso."
+          : "Profissional desativado com sucesso.",
+      );
+      router.refresh();
+    });
+  }
+
+  return (
+    <span
+      className="inline-flex items-center gap-2"
+      onClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => event.stopPropagation()}
+    >
+      <Switch
+        checked={checked}
+        disabled={isPending}
+        onCheckedChange={handleCheckedChange}
+        aria-label={
+          checked
+            ? `Desativar profissional ${profissional.nome}`
+            : `Ativar profissional ${profissional.nome}`
+        }
+      />
+      <span className="text-sm text-foreground">
+        {checked ? "Ativo" : "Inativo"}
+      </span>
+    </span>
+  );
+}
+
 export function ProfissionaisTecnicosTable({
   data,
 }: {
@@ -277,7 +333,12 @@ export function ProfissionaisTecnicosTable({
           {
             id: "status",
             header: "Status",
-            cell: (profissional) => (profissional.ativo ? "Ativo" : "Inativo"),
+            cell: (profissional) => (
+              <AtivoSwitch
+                key={`${profissional.id}-${profissional.ativo}`}
+                profissional={profissional}
+              />
+            ),
           },
         ]}
       />
