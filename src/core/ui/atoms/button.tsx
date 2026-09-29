@@ -17,6 +17,7 @@ export const buttonVariants = tv({
     },
     size: {
       icon: "!size-11 !p-0",
+      iconSm: "!size-9 !min-h-9 !p-0 [&_svg]:!size-3.5",
       sm: "!min-h-9 !px-3 !py-1.5 text-xs",
       md: "!min-h-11 !px-4 !py-2 text-sm",
     },

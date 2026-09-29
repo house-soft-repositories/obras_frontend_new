@@ -105,6 +105,16 @@ export const privateRouteGroups: RouteGroup[] = [
         ],
       },
       {
+        path: "/profissionais-tecnicos",
+        label: "Profissionais técnicos",
+        icon: "HardHat",
+        roles: [
+          userRoleSchema.enum.SUPERADMIN,
+          userRoleSchema.enum.ADMIN,
+          userRoleSchema.enum.STAFF,
+        ],
+      },
+      {
         path: "/obras-privadas/autos",
         label: "Autos",
         icon: "Gavel",

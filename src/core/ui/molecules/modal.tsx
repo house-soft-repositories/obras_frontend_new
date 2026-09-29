@@ -221,7 +221,9 @@ function ModalCloseIcon({ className, children, ...props }: ButtonHTMLAttributes<
       )}
       {...props}
     >
-      {children ?? <X aria-hidden="true" className="size-4" />}
+      {children ?? (
+        <X aria-hidden="true" className="size-5 shrink-0" strokeWidth={2.5} />
+      )}
     </ModalClose>
   );
 }

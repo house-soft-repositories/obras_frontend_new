@@ -24,7 +24,11 @@ export default async function OrgaosPage() {
         </div>
         <CriarOrgaoModal localidades={localidades.data} />
       </section>
-      <OrgaosTable data={orgaos.data} meta={orgaos.meta} />
+      <OrgaosTable
+        data={orgaos.data}
+        meta={orgaos.meta}
+        localidades={localidades.data}
+      />
     </main>
   );
 }

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const setorSchema = z.object({
   id: z.uuid(),
-  orgaoId: z.uuid().optional(),
+  orgaoId: z.uuid(),
   nome: z.string(),
   ativo: z.boolean(),
   createdAt: z.coerce.date(),
