@@ -9,8 +9,8 @@ export const fonteSchema = z.object({
   valorPrevisto: z.string().nullable(),
   vigencia: z.string().nullable(),
   ativo: z.boolean(),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 });
 
 export type FonteSchema = z.infer<typeof fonteSchema>;

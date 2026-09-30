@@ -18,9 +18,18 @@ export const criarFonteSchema = fonteSchema
     descricao: data.descricao?.trim() ? data.descricao.trim() : undefined,
     codigo: data.codigo?.trim() ? data.codigo.trim() : undefined,
     tipo: data.tipo?.trim() ? data.tipo.trim() : undefined,
-    valorPrevisto: data.valorPrevisto?.trim() ? data.valorPrevisto.trim() : undefined,
+    valorPrevisto: data.valorPrevisto?.trim()
+      ? data.valorPrevisto.trim()
+      : undefined,
     vigencia: data.vigencia?.trim() ? data.vigencia.trim() : undefined,
   }));
 
 export type CriarFonteInput = z.input<typeof criarFonteSchema>;
 export type CriarFonteOutput = z.output<typeof criarFonteSchema>;
+
+export const atualizarFonteSchema = criarFonteSchema.and(
+  z.object({ ativo: z.boolean().optional() }),
+);
+
+export type AtualizarFonteInput = z.input<typeof atualizarFonteSchema>;
+export type AtualizarFonteOutput = z.output<typeof atualizarFonteSchema>;

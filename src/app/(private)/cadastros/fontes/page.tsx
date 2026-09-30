@@ -2,8 +2,25 @@ import listFontesPaginationAction from "@/core/actions/fontes/list_fontes_pagina
 import { CriarFonteModal } from "./_components/criar-fonte-modal";
 import { FontesTable } from "./_components/fontes-table";
 
-export default async function FontesPage() {
-  const fontes = await listFontesPaginationAction({ page: 1, order: "ASC", take: 10 });
+function parseAtivo(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value[0] : value;
+  if (raw === "true") return true;
+  if (raw === "false") return false;
+  return undefined;
+}
+
+export default async function FontesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const fontes = await listFontesPaginationAction({
+    page: 1,
+    order: "ASC",
+    take: 10,
+    ativo: parseAtivo(params.ativo),
+  });
 
   return (
     <main className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8 sm:py-10">

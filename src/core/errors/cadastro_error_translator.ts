@@ -12,6 +12,10 @@ export class CadastroErrorTranslator extends ErrorTranslator {
     CADASTRO_PARENT_NOT_FOUND:
       "Registro pai não encontrado. Verifique o vínculo selecionado.",
     CADASTRO_INVALID_NOME: "Informe um nome com pelo menos 2 caracteres.",
+    FONTE_NOT_FOUND: "Fonte não encontrada.",
+    FONTE_DUPLICATE_CODE: "Já existe uma fonte cadastrada com este código.",
+    FONTE_INVALID_NAME: "Informe um nome válido para a fonte.",
+    FONTE_INATIVA: "A fonte selecionada está inativa.",
     LOCALIDADE_NOT_FOUND: "Localidade não encontrada.",
     LOCALIDADE_DELETE_FAILED:
       "Não foi possível excluir esta localidade. Tente novamente.",

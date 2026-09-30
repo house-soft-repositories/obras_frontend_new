@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { criarFonteAction } from "@/core/actions/fontes/create_fonte_action";
@@ -16,6 +17,7 @@ import { Modal } from "@/core/ui/molecules/modal";
 import { TextareaForm } from "@/core/ui/molecules/textarea-form";
 
 export function CriarFonteModal() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const toast = useToast();
@@ -32,9 +34,8 @@ export function CriarFonteModal() {
   });
 
   function onSubmit(values: CriarFonteInput) {
-    const parsed = criarFonteSchema.parse(values);
     startTransition(async () => {
-      const result = await criarFonteAction(parsed);
+      const result = await criarFonteAction(values);
       if (!result.success) {
         toast.error(result.error);
         return;
@@ -42,6 +43,7 @@ export function CriarFonteModal() {
       toast.success("Fonte criada com sucesso.");
       form.reset();
       setOpen(false);
+      router.refresh();
     });
   }
 

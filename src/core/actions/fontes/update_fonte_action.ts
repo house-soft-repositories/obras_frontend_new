@@ -5,15 +5,17 @@ import api from "@/core/rest_client/api";
 import { cadastroErrorTranslator } from "@/core/errors/cadastro_error_translator";
 import HttpClientException from "@/core/exceptions/http_client_exception";
 import {
-  criarFonteSchema,
-  type CriarFonteInput,
+  atualizarFonteSchema,
+  type AtualizarFonteInput,
 } from "@/core/schemas/fontes/create_fonte_schema";
+import { FonteSchema } from "@/core/schemas/fontes/fonte_schema";
 import ServerActionResult from "@/core/types/server_action_result";
 
-export async function criarFonteAction(
-  data: CriarFonteInput,
-): Promise<ServerActionResult<{ ok: true }>> {
-  const parsed = criarFonteSchema.safeParse(data);
+export async function atualizarFonteAction(
+  id: string,
+  data: AtualizarFonteInput,
+): Promise<ServerActionResult<FonteSchema>> {
+  const parsed = atualizarFonteSchema.safeParse(data);
   if (!parsed.success) {
     return {
       success: false,
@@ -23,12 +25,14 @@ export async function criarFonteAction(
   }
 
   try {
-    await api.auth.post("/api/fontes", {
+    const response = await api.auth.patch<FonteSchema>(`/api/fontes/${id}`, {
       headers: { "content-type": "application/json" },
       body: JSON.stringify(parsed.data),
     });
     updateTag("list-fontes");
-    return { success: true, data: { ok: true }, error: null };
+    updateTag("fonte");
+    updateTag(`fonte-${id}`);
+    return { success: true, data: response.data, error: null };
   } catch (error) {
     if (error instanceof HttpClientException) {
       return {

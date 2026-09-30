@@ -4,30 +4,16 @@ import { updateTag } from "next/cache";
 import api from "@/core/rest_client/api";
 import { cadastroErrorTranslator } from "@/core/errors/cadastro_error_translator";
 import HttpClientException from "@/core/exceptions/http_client_exception";
-import {
-  criarFonteSchema,
-  type CriarFonteInput,
-} from "@/core/schemas/fontes/create_fonte_schema";
 import ServerActionResult from "@/core/types/server_action_result";
 
-export async function criarFonteAction(
-  data: CriarFonteInput,
+export async function excluirFonteAction(
+  id: string,
 ): Promise<ServerActionResult<{ ok: true }>> {
-  const parsed = criarFonteSchema.safeParse(data);
-  if (!parsed.success) {
-    return {
-      success: false,
-      data: null,
-      error: parsed.error.issues[0]?.message ?? "Dados inválidos.",
-    };
-  }
-
   try {
-    await api.auth.post("/api/fontes", {
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(parsed.data),
-    });
+    await api.auth.delete(`/api/fontes/${id}`);
     updateTag("list-fontes");
+    updateTag("fonte");
+    updateTag(`fonte-${id}`);
     return { success: true, data: { ok: true }, error: null };
   } catch (error) {
     if (error instanceof HttpClientException) {

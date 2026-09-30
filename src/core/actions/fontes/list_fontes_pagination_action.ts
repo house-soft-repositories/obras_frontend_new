@@ -7,16 +7,25 @@ import Pagination from "@/core/types/pagination/pagination";
 
 type Params = PageParam;
 
+type ListFontesPaginationParams = Params & {
+  ativo?: boolean;
+};
+
 export default async function listFontesPaginationAction({
   page,
   order,
   take,
-}: Params) {
+  ativo,
+}: ListFontesPaginationParams) {
   const params = new URLSearchParams({
     page: page.toString(),
     order,
     take: take.toString(),
   });
+
+  if (typeof ativo === "boolean") {
+    params.set("ativo", String(ativo));
+  }
 
   const response = await api.auth.get<Pagination<FonteSchema>>(
     `/api/fontes?${params.toString()}`,
