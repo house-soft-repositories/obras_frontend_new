@@ -1,8 +1,8 @@
-import listObrasPrivadasAction from "@/core/actions/obras-privadas/list_obras_privadas_action";
+import { listLicenciamentoPrivadasAction } from "@/core/actions/obras-privadas/obra_privada_recursos_actions";
 import { LicenciamentoTable } from "../_components/tabelas-simples";
 
 export default async function LicenciamentoPage() {
-  const obras = await listObrasPrivadasAction({
+  const licenciamento = await listLicenciamentoPrivadasAction({
     page: 1,
     take: 50,
     order: "DESC",
@@ -19,7 +19,7 @@ export default async function LicenciamentoPage() {
           Situação de alvarás e habite-se das obras privadas.
         </p>
       </section>
-      <LicenciamentoTable data={obras.data} />
+      <LicenciamentoTable data={licenciamento.data} />
     </main>
   );
 }

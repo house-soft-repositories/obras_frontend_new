@@ -1,8 +1,8 @@
-import listObrasPrivadasAction from "@/core/actions/obras-privadas/list_obras_privadas_action";
+import { listFiscalizacoesGlobaisPrivadasAction } from "@/core/actions/obras-privadas/obra_privada_recursos_actions";
 import { FiscalizacoesTable } from "../_components/tabelas-simples";
 
 export default async function FiscalizacoesPage() {
-  const obras = await listObrasPrivadasAction({
+  const fiscalizacoes = await listFiscalizacoesGlobaisPrivadasAction({
     page: 1,
     take: 50,
     order: "DESC",
@@ -19,7 +19,7 @@ export default async function FiscalizacoesPage() {
           Obras já visitadas pela equipe de fiscalização.
         </p>
       </section>
-      <FiscalizacoesTable data={obras.data} />
+      <FiscalizacoesTable data={fiscalizacoes.data} />
     </main>
   );
 }

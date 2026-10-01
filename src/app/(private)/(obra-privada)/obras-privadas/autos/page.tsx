@@ -1,8 +1,8 @@
-import listObrasPrivadasAction from "@/core/actions/obras-privadas/list_obras_privadas_action";
+import { listAutosGlobaisPrivadasAction } from "@/core/actions/obras-privadas/obra_privada_recursos_actions";
 import { AutosTable } from "../_components/tabelas-simples";
 
 export default async function AutosPage() {
-  const obras = await listObrasPrivadasAction({
+  const autos = await listAutosGlobaisPrivadasAction({
     page: 1,
     take: 50,
     order: "DESC",
@@ -19,7 +19,7 @@ export default async function AutosPage() {
           Obras autuadas ou embargadas pela fiscalização.
         </p>
       </section>
-      <AutosTable data={obras.data} />
+      <AutosTable data={autos.data} />
     </main>
   );
 }
