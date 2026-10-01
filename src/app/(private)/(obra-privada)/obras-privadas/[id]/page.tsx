@@ -1,4 +1,14 @@
 import getObraPrivadaAction from "@/core/actions/obras-privadas/get_obra_privada_action";
+import {
+  listAlvarasObraPrivadaAction,
+  listArquivosObraPrivadaAction,
+  listAutosObraPrivadaAction,
+  listFiscalizacoesObraPrivadaAction,
+  listHabiteSeObraPrivadaAction,
+  listObservacoesObraPrivadaAction,
+  listResponsaveisObraPrivadaAction,
+  listTimelineObraPrivadaAction,
+} from "@/core/actions/obras-privadas/obra_privada_recursos_actions";
 import { ObraPrivadaDetalheClient } from "./_components/obra-privada-detalhe-client";
 
 export default async function ObraPrivadaDetailPage({
@@ -7,7 +17,27 @@ export default async function ObraPrivadaDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const obra = await getObraPrivadaAction(id);
+  const [
+    obra,
+    alvaras,
+    fiscalizacoes,
+    autos,
+    habiteSe,
+    responsaveis,
+    observacoes,
+    arquivos,
+    timeline,
+  ] = await Promise.all([
+    getObraPrivadaAction(id),
+    listAlvarasObraPrivadaAction(id),
+    listFiscalizacoesObraPrivadaAction(id),
+    listAutosObraPrivadaAction(id),
+    listHabiteSeObraPrivadaAction(id),
+    listResponsaveisObraPrivadaAction(id),
+    listObservacoesObraPrivadaAction(id),
+    listArquivosObraPrivadaAction(id),
+    listTimelineObraPrivadaAction(id),
+  ]);
   if (!obra) {
     return (
       <main className="mx-auto w-full max-w-7xl px-5 py-12 sm:px-8">
@@ -20,5 +50,17 @@ export default async function ObraPrivadaDetailPage({
       </main>
     );
   }
-  return <ObraPrivadaDetalheClient obra={obra} />;
+  return (
+    <ObraPrivadaDetalheClient
+      obra={obra}
+      alvaras={alvaras}
+      fiscalizacoes={fiscalizacoes}
+      autos={autos}
+      habiteSe={habiteSe}
+      responsaveis={responsaveis}
+      observacoes={observacoes}
+      arquivos={arquivos}
+      timeline={timeline}
+    />
+  );
 }
