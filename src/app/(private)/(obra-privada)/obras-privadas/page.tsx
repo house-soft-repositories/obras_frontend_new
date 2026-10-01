@@ -32,6 +32,11 @@ export default async function ObrasPrivadasPage({
   return (
     <ObrasPrivadasClient
       obras={obras}
+      initialFilters={{
+        q: value("q") ?? "",
+        situacaoAlvara: value("situacaoAlvara") ?? "",
+        andamento: value("andamento") ?? "",
+      }}
       proprietarios={pessoas.data.map((item) => ({
         id: item.id,
         nome: item.nome ?? item.id,

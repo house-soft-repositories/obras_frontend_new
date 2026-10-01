@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Download, Search } from "lucide-react";
+import { exportarObrasPrivadasAction } from "@/core/actions/obras-privadas/download_obras_privadas_report_action";
+import { useToast } from "@/core/hooks/useToast";
 import { Button } from "@/core/ui/atoms/button";
 import { Input } from "@/core/ui/atoms/input";
 import {
@@ -16,9 +18,26 @@ import {
 import { CriarObraPrivadaModal } from "./criar-obra-privada-modal";
 import { ObrasPrivadasTable } from "./obras-privadas-table";
 
+function baixarBase64(base64: string, fileName: string, contentType: string) {
+  const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+  const url = URL.createObjectURL(new Blob([bytes], { type: contentType }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 type Option = { id: string; nome: string };
 type Props = {
   obras: ObraPrivadaList;
+  initialFilters: {
+    q: string;
+    situacaoAlvara: string;
+    andamento: string;
+  };
   proprietarios: Option[];
   orgaos: Option[];
   localidades: Option[];
@@ -26,14 +45,19 @@ type Props = {
 
 export function ObrasPrivadasClient({
   obras,
+  initialFilters,
   proprietarios,
   orgaos,
   localidades,
 }: Props) {
   const router = useRouter();
-  const [q, setQ] = useState("");
-  const [situacaoAlvara, setSituacaoAlvara] = useState("");
-  const [andamento, setAndamento] = useState("");
+  const toast = useToast();
+  const [q, setQ] = useState(initialFilters.q);
+  const [situacaoAlvara, setSituacaoAlvara] = useState(
+    initialFilters.situacaoAlvara,
+  );
+  const [andamento, setAndamento] = useState(initialFilters.andamento);
+  const [exportando, setExportando] = useState<"CSV" | "PDF" | null>(null);
 
   function filtrar(event: React.FormEvent) {
     event.preventDefault();
@@ -43,6 +67,27 @@ export function ObrasPrivadasClient({
     if (andamento) usp.set("andamento", andamento);
     const qs = usp.toString();
     router.push(qs ? `/obras-privadas?${qs}` : "/obras-privadas");
+  }
+
+  async function exportar(formato: "CSV" | "PDF") {
+    setExportando(formato);
+    const result = await exportarObrasPrivadasAction({
+      formato,
+      busca: q.trim() || undefined,
+      situacaoAlvara: situacaoAlvara || undefined,
+      andamento: andamento || undefined,
+    });
+    setExportando(null);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    baixarBase64(
+      result.data.base64,
+      result.data.fileName,
+      result.data.contentType,
+    );
+    toast.success("Relatório gerado.");
   }
 
   return (
@@ -65,24 +110,54 @@ export function ObrasPrivadasClient({
           onSuccess={() => router.refresh()}
         />
       </section>
-      <nav className="mb-5 flex flex-wrap gap-2 text-sm">
-        <Link className="rounded-full border border-border px-3 py-1 hover:underline" href="/obras-privadas/autos">
+      <nav className="mb-5 flex flex-wrap items-center gap-2 text-sm">
+        <Link
+          className="rounded-full border border-border px-3 py-1 hover:underline"
+          href="/obras-privadas/autos"
+        >
           Autos
         </Link>
-        <Link className="rounded-full border border-border px-3 py-1 hover:underline" href="/obras-privadas/fiscalizacoes">
+        <Link
+          className="rounded-full border border-border px-3 py-1 hover:underline"
+          href="/obras-privadas/fiscalizacoes"
+        >
           Fiscalizações
         </Link>
-        <Link className="rounded-full border border-border px-3 py-1 hover:underline" href="/obras-privadas/licenciamento">
+        <Link
+          className="rounded-full border border-border px-3 py-1 hover:underline"
+          href="/obras-privadas/licenciamento"
+        >
           Licenciamento
         </Link>
-        <Link className="rounded-full border border-border px-3 py-1 hover:underline" href="/obras-privadas/mapa">
+        <Link
+          className="rounded-full border border-border px-3 py-1 hover:underline"
+          href="/obras-privadas/mapa"
+        >
           Mapa
         </Link>
+        <span className="mx-1 hidden h-5 border-l border-border sm:block" />
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          disabled={exportando !== null}
+          onClick={() => exportar("CSV")}
+        >
+          <Download className="size-4" />{" "}
+          {exportando === "CSV" ? "Gerando..." : "CSV"}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          disabled={exportando !== null}
+          onClick={() => exportar("PDF")}
+        >
+          <Download className="size-4" />{" "}
+          {exportando === "PDF" ? "Gerando..." : "PDF"}
+        </Button>
       </nav>
-      <form
-        className="mb-5 flex flex-wrap items-end gap-3"
-        onSubmit={filtrar}
-      >
+      <form className="mb-5 flex flex-wrap items-end gap-3" onSubmit={filtrar}>
         <label className="grid gap-1 text-sm font-medium">
           Buscar
           <span className="relative block">
