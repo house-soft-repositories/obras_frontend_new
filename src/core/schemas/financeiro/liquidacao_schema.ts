@@ -9,6 +9,9 @@ export const liquidacaoSchema = financeiroBaseSchema.extend({
 });
 export type Liquidacao = z.infer<typeof liquidacaoSchema>;
 
+/** Read model da API (GET list/detalhe e POST/PATCH): inclui fonte como objeto. */
+export type LiquidacaoView = Liquidacao;
+
 export const liquidacaoListResponseSchema = z.union([
   z.array(liquidacaoSchema),
   z.object({ data: z.array(liquidacaoSchema) }),

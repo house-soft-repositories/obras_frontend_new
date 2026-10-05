@@ -13,6 +13,9 @@ export const pagamentoSchema = financeiroBaseSchema.extend({
 });
 export type Pagamento = z.infer<typeof pagamentoSchema>;
 
+/** Read model da API (GET list/detalhe e POST/PATCH): inclui fonte como objeto. */
+export type PagamentoView = Pagamento;
+
 export const pagamentoComAlertaSchema = pagamentoSchema.extend({
   alerta: z.string().optional(),
   warning: z.string().optional(),

@@ -8,11 +8,19 @@ export const valorFinanceiroSchema = z
   .refine((value) => Number.isFinite(value), "Informe o valor.")
   .refine((value) => value > 0, "Informe um valor maior que zero.");
 
+export const financialFonteSchema = z.object({
+  id: z.string().uuid(),
+  nome: z.string(),
+  valorPrevisto: z.string().nullable(),
+});
+export type FinancialFonte = z.infer<typeof financialFonteSchema>;
+
 export const financeiroBaseSchema = z
   .object({
     id: z.string().uuid(),
     obraId: z.string().uuid().optional(),
     fonteId: z.string().uuid("Escolha uma fonte válida."),
+    fonte: financialFonteSchema.nullable().optional(),
     valor: valorFinanceiroSchema,
     numero: z.string().nullable().optional(),
     observacao: z.string().nullable().optional(),

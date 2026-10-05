@@ -7,6 +7,9 @@ export const empenhoSchema = financeiroBaseSchema.extend({
 });
 export type Empenho = z.infer<typeof empenhoSchema>;
 
+/** Read model da API (GET list/detalhe e POST/PATCH): inclui fonte como objeto. */
+export type EmpenhoView = Empenho;
+
 export const empenhoListResponseSchema = z.union([
   z.array(empenhoSchema),
   z.object({ data: z.array(empenhoSchema) }),
