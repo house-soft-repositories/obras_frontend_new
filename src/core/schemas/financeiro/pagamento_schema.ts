@@ -37,7 +37,12 @@ export const criarPagamentoSchema = pagamentoSchema
     dataOrdemBancaria: true,
   })
   .extend({
-    empenhoId: z.string().uuid("Escolha uma liquidação válida."),
+    // Derivado da liquidação no onSubmit (o modal não tem campo de empenho,
+    // e o backend exige que seja igual ao empenho da liquidação).
+    empenhoId: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.string().uuid("Escolha uma liquidação válida.").optional(),
+    ),
     numeroOrdemBancaria: z.string().min(1, "Informe o número da ordem bancária."),
     observacoes: z.string().optional(),
     dataOrdemBancaria: z.string().min(1, "Informe a data do pagamento."),
