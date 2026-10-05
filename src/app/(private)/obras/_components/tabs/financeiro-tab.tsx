@@ -40,9 +40,10 @@ import {
   type CriarLiquidacaoFormInput,
   type CriarPagamentoInput,
   type CriarPagamentoFormInput,
-  type Empenho,
-  type Liquidacao,
-  type Pagamento,
+  type EmpenhoView,
+  type LiquidacaoView,
+  type PagamentoView,
+  type FinancialFonte,
   type VisaoFisicoFinanceira,
 } from "@/core/schemas/financeiro";
 import type { ObraOrcamentoReadModel } from "@/core/schemas/obras/orcamento_read_model_schema";
@@ -55,9 +56,9 @@ import { Modal } from "@/core/ui/molecules/modal";
 type Recurso = "empenho" | "liquidacao" | "pagamento";
 
 type FinanceiroState = {
-  empenhos: Empenho[];
-  liquidacoes: Liquidacao[];
-  pagamentos: Pagamento[];
+  empenhos: EmpenhoView[];
+  liquidacoes: LiquidacaoView[];
+  pagamentos: PagamentoView[];
   orcamentos: ObraOrcamentoReadModel[];
   visao: VisaoFisicoFinanceira | null;
 };
@@ -96,6 +97,15 @@ function formatDate(value: unknown) {
 
 function text(value: unknown) {
   return typeof value === "string" && value.trim() ? value : "—";
+}
+
+function fonteCell(fonte: FinancialFonte | null | undefined) {
+  if (!fonte) return "—";
+  const previsto =
+    fonte.valorPrevisto != null && fonte.valorPrevisto !== ""
+      ? ` · ${formatCurrency(fonte.valorPrevisto)}`
+      : "";
+  return `${text(fonte.nome)}${previsto}`;
 }
 
 function alertaPagamento(data: unknown) {
@@ -279,6 +289,7 @@ function LancamentosSection<
     numero?: string | null;
     numeroOrdemBancaria?: string | null;
     fonteId: string;
+    fonte?: FinancialFonte | null;
   },
 >({
   title,
@@ -339,7 +350,7 @@ function LancamentosSection<
             cell: (row) =>
               formatDate((row as Record<string, unknown>)[dateKey]),
           },
-          { id: "fonte", header: "Fonte", cell: (row) => row.fonteId },
+          { id: "fonte", header: "Fonte", cell: (row) => fonteCell(row.fonte) },
           {
             id: "valor",
             header: "Valor",
@@ -377,7 +388,7 @@ function EmpenhoModal({
   onSaved,
 }: {
   obraId: string;
-  registro?: Empenho;
+  registro?: EmpenhoView;
   orcamentos: ObraOrcamentoReadModel[];
   onSaved: () => void;
 }) {
@@ -462,8 +473,8 @@ function LiquidacaoModal({
   onSaved,
 }: {
   obraId: string;
-  registro?: Liquidacao;
-  empenhos: Empenho[];
+  registro?: LiquidacaoView;
+  empenhos: EmpenhoView[];
   orcamentos: ObraOrcamentoReadModel[];
   onSaved: () => void;
 }) {
@@ -531,7 +542,7 @@ function LiquidacaoModal({
         <option value="">Selecione</option>
         {empenhos.map((item) => (
           <option key={item.id} value={item.id}>
-            {item.numero || item.id} · {formatCurrency(item.valor)}
+            {item.numero || "—"} · {formatCurrency(item.valor)}
           </option>
         ))}
       </SelectField>
@@ -553,8 +564,8 @@ function PagamentoModal({
   onSaved,
 }: {
   obraId: string;
-  registro?: Pagamento;
-  liquidacoes: Liquidacao[];
+  registro?: PagamentoView;
+  liquidacoes: LiquidacaoView[];
   orcamentos: ObraOrcamentoReadModel[];
   onSaved: () => void;
 }) {
@@ -635,7 +646,7 @@ function PagamentoModal({
         <option value="">Selecione</option>
         {liquidacoes.map((item) => (
           <option key={item.id} value={item.id}>
-            {item.numero || item.id} · {formatCurrency(item.valor)}
+            {item.numero || "—"} · {formatCurrency(item.valor)}
           </option>
         ))}
       </SelectField>
