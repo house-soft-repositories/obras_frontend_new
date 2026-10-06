@@ -18,6 +18,10 @@ export const buttonVariants = tv({
     size: {
       icon: "!size-11 !p-0",
       iconSm: "!size-9 !min-h-9 !p-0 [&_svg]:!size-3.5",
+      // Ação responsiva: só ícone no mobile, ícone + rótulo no desktop (lg+).
+      // Use com ActionButton para ter sempre tooltip.
+      action:
+        "!size-9 !min-h-9 !p-0 lg:!h-auto lg:!min-h-9 lg:!w-auto lg:!px-3 lg:!py-1.5 lg:!text-xs",
       sm: "!min-h-9 !px-3 !py-1.5 text-xs",
       md: "!min-h-11 !px-4 !py-2 text-sm",
     },
