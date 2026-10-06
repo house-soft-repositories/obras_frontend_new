@@ -40,6 +40,7 @@ export function aplicarMascara(valor: string, mascara?: string) {
   let indiceValor = 0;
   let resultado = "";
   for (const caractereMascara of mascara) {
+    const hasValor = valor.length > 0;
     if (caractereMascara === "9") {
       const proximo = valor[indiceValor];
       if (!proximo) break;
@@ -47,7 +48,7 @@ export function aplicarMascara(valor: string, mascara?: string) {
       indiceValor += 1;
       continue;
     }
-    if (indiceValor > 0) resultado += caractereMascara;
+    if (hasValor) resultado += caractereMascara;
   }
   return resultado;
 }
