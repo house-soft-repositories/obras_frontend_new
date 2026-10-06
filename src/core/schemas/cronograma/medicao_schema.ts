@@ -8,31 +8,48 @@ export const tipoMedicaoSchema = z.enum([
 ]);
 export type TipoMedicao = z.infer<typeof tipoMedicaoSchema>;
 
-export const medicaoItemSchema = z.object({
+const decimalValueSchema = z.union([
+  z.number().min(0, "Valor inválido."),
+  z.string().min(1, "Informe o valor."),
+]);
+
+export const medicaoFonteSchema = z.object({
+  id: z.string().optional(),
+  tenantId: z.string().optional(),
+  medicaoId: z.string().optional(),
   fonteId: z.string().uuid("Escolha um orçamento válido."),
-  valor: z.number().min(0, "Valor inválido."),
+  valor: decimalValueSchema,
 });
-export type MedicaoItem = z.infer<typeof medicaoItemSchema>;
+export type MedicaoFonte = z.infer<typeof medicaoFonteSchema>;
 
 export const medicaoSchema = z
   .object({
     id: z.string(),
     obraId: z.string(),
-    numero: z.number(),
+    numero: z.coerce.number(),
     tipo: tipoMedicaoSchema,
     dataMedicao: z.string(),
-    observacao: z.string().nullable().optional(),
-    itens: z.array(medicaoItemSchema.passthrough()).default([]),
+    orgaoId: z.string().nullable().optional(),
+    observacoes: z.string().nullable().optional(),
+    fontes: z.array(medicaoFonteSchema.passthrough()).default([]),
   })
   .passthrough();
 export type Medicao = z.infer<typeof medicaoSchema>;
 
 export const criarMedicaoSchema = z.object({
+  numero: z.number().int().min(1, "Número inválido."),
   tipo: tipoMedicaoSchema,
   dataMedicao: z.string().min(1, "Informe a data da medição."),
-  observacao: z.string().optional(),
-  itens: z
-    .array(medicaoItemSchema)
+  orgaoId: z.string().uuid("Selecione o órgão."),
+  observacoes: z.string().optional(),
+  fontes: z
+    .array(medicaoFonteSchema)
     .min(1, "Adicione ao menos um orçamento com valor."),
 });
 export type CriarMedicaoInput = z.infer<typeof criarMedicaoSchema>;
+
+export const atualizarMedicaoSchema = criarMedicaoSchema.partial();
+export type AtualizarMedicaoInput = z.infer<typeof atualizarMedicaoSchema>;
+
+export const medicaoFormSchema = criarMedicaoSchema;
+export type MedicaoFormInput = z.infer<typeof medicaoFormSchema>;

@@ -5,7 +5,9 @@ import api from "@/core/rest_client/api";
 import { obraErrorTranslator } from "@/core/errors/obra_error_translator";
 import HttpClientException from "@/core/exceptions/http_client_exception";
 import {
+  atualizarMedicaoSchema,
   criarMedicaoSchema,
+  type AtualizarMedicaoInput,
   type CriarMedicaoInput,
   type Medicao,
 } from "@/core/schemas/cronograma/medicao_schema";
@@ -14,11 +16,24 @@ import type ServerActionResult from "@/core/types/server_action_result";
 const tagMedicoes = (obraId: string) => `obra-${obraId}-medicoes`;
 
 function fail(error: unknown): ServerActionResult<never> {
-  if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) throw error;
+  if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT"))
+    throw error;
   if (error instanceof HttpClientException) {
-    return { success: false, data: null, error: obraErrorTranslator.translate(error) };
+    return {
+      success: false,
+      data: null,
+      error: obraErrorTranslator.translate(error),
+    };
   }
   throw error;
+}
+
+function clean(input: Record<string, unknown>) {
+  const out: Record<string, unknown> = { ...input };
+  for (const [k, v] of Object.entries(out)) {
+    if (v === "" || v === undefined) delete out[k];
+  }
+  return out;
 }
 
 export async function listMedicoesAction(
@@ -53,6 +68,60 @@ export async function criarMedicaoAction(
     });
     updateTag(tagMedicoes(obraId));
     return { success: true, data: res.data, error: null };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function getMedicaoAction(
+  obraId: string,
+  medicaoId: string,
+): Promise<ServerActionResult<Medicao>> {
+  try {
+    const res = await api.auth.get<Medicao>(
+      `/api/obras/${obraId}/medicoes/${medicaoId}`,
+    );
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function atualizarMedicaoAction(
+  obraId: string,
+  medicaoId: string,
+  input: AtualizarMedicaoInput,
+): Promise<ServerActionResult<Medicao>> {
+  const parsed = atualizarMedicaoSchema.safeParse(input);
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "Dados inválidos.";
+    return { success: false, data: null, error: message };
+  }
+  try {
+    const res = await api.auth.patch<Medicao>(
+      `/api/obras/${obraId}/medicoes/${medicaoId}`,
+      {
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(
+          clean(parsed.data as unknown as Record<string, unknown>),
+        ),
+      },
+    );
+    updateTag(tagMedicoes(obraId));
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function excluirMedicaoAction(
+  obraId: string,
+  medicaoId: string,
+): Promise<ServerActionResult<void>> {
+  try {
+    await api.auth.delete(`/api/obras/${obraId}/medicoes/${medicaoId}`);
+    updateTag(tagMedicoes(obraId));
+    return { success: true, data: undefined as void, error: null };
   } catch (error) {
     return fail(error);
   }
