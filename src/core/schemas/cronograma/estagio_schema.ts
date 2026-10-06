@@ -22,6 +22,34 @@ export const estagioSchema = z
   .passthrough();
 export type Estagio = z.infer<typeof estagioSchema>;
 
+export const estagioAcompanhamentoSchema = z
+  .object({
+    id: z.string(),
+    tenantId: z.string().optional(),
+    obraId: z.string(),
+    estagioId: z.string(),
+    percentual: z.number(),
+    data: z.string(),
+    observacao: z.string().nullable().optional(),
+    autorUsuarioId: z.string().optional(),
+    criadoEm: z.string().or(z.date()).optional(),
+  })
+  .passthrough();
+export type EstagioAcompanhamento = z.infer<typeof estagioAcompanhamentoSchema>;
+
+export const estagioComentarioSchema = z
+  .object({
+    id: z.string(),
+    tenantId: z.string().optional(),
+    obraId: z.string(),
+    estagioId: z.string(),
+    texto: z.string(),
+    autorUsuarioId: z.string().optional(),
+    criadoEm: z.string().or(z.date()).optional(),
+  })
+  .passthrough();
+export type EstagioComentario = z.infer<typeof estagioComentarioSchema>;
+
 export const criarEstagioSchema = z.object({
   nome: z.string().min(1, "Informe o nome da etapa."),
   posicao: z.number().int().min(0).optional(),
@@ -39,4 +67,22 @@ export const criarAcompanhamentoSchema = z.object({
   data: z.string().min(1, "Informe a data."),
   observacao: z.string().optional(),
 });
-export type CriarAcompanhamentoInput = z.infer<typeof criarAcompanhamentoSchema>;
+export type CriarAcompanhamentoInput = z.infer<
+  typeof criarAcompanhamentoSchema
+>;
+
+export const atualizarAcompanhamentoSchema =
+  criarAcompanhamentoSchema.partial();
+export type AtualizarAcompanhamentoInput = z.infer<
+  typeof atualizarAcompanhamentoSchema
+>;
+
+export const criarComentarioSchema = z.object({
+  texto: z.string().min(1, "Informe o comentário."),
+});
+export type CriarComentarioInput = z.infer<typeof criarComentarioSchema>;
+
+export const atualizarComentarioSchema = criarComentarioSchema;
+export type AtualizarComentarioInput = z.infer<
+  typeof atualizarComentarioSchema
+>;
