@@ -2,8 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
-import { useRef, useState, useTransition, type ComponentProps } from "react";
-import { useForm } from "react-hook-form";
+import { useState, useTransition, type ComponentProps } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { criarEmpresaAction } from "@/core/actions/empresas/create_empresa_action";
 import {
   criarEmpresaSchema,
@@ -12,6 +12,7 @@ import {
 } from "@/core/schemas/empresas/create_empresa_schema";
 import { useToast } from "@/core/hooks/useToast";
 import { Button } from "@/core/ui/atoms/button";
+import { InputPattern } from "@/core/ui/atoms/input-pattern";
 import { cn } from "@/core/ui/cn";
 import { InputForm } from "@/core/ui/molecules/input-form";
 import { Modal } from "@/core/ui/molecules/modal";
@@ -76,12 +77,13 @@ export function CriarEmpresaModal() {
     },
   });
 
-  const telefoneId = useRef(0);
-  const [telefones, setTelefones] = useState([{ id: telefoneId.current, value: "" }]);
+  const [telefones, setTelefones] = useState([{ id: 0, value: "" }]);
 
   function addTelefone() {
-    telefoneId.current += 1;
-    setTelefones((atual) => [...atual, { id: telefoneId.current, value: "" }]);
+    setTelefones((atual) => [
+      ...atual,
+      { id: Math.max(...atual.map((item) => item.id)) + 1, value: "" },
+    ]);
   }
 
   function setTelefone(id: number, value: string) {
@@ -109,7 +111,6 @@ export function CriarEmpresaModal() {
       uf: "",
       telefones: [""],
     });
-    telefoneId.current = 0;
     setTelefones([{ id: 0, value: "" }]);
     setStep(0);
   }
@@ -206,14 +207,40 @@ export function CriarEmpresaModal() {
                     error={form.formState.errors.razaoSocial?.message}
                   />
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <InputForm
-                      label="CNPJ"
-                      required
-                      inputMode="numeric"
-                      placeholder="00.000.000/0000-00"
-                      {...form.register("cnpj")}
-                      error={form.formState.errors.cnpj?.message}
-                    />
+                    <label className="grid gap-2 text-sm font-semibold text-foreground">
+                      CNPJ
+                      <Controller
+                        name="cnpj"
+                        control={form.control}
+                        render={({ field }) => (
+                          <InputPattern
+                            name={field.name}
+                            ref={field.ref}
+                            value={field.value ?? ""}
+                            required
+                            onBlur={field.onBlur}
+                            onValueChange={({ raw }) => field.onChange(raw)}
+                            pattern={/\d/g}
+                            htmlPattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}"
+                            mask="99.999.999/9999-99"
+                            maxLength={14}
+                            inputMode="numeric"
+                            placeholder="00.000.000/0000-00"
+                            aria-invalid={
+                              form.formState.errors.cnpj ? true : undefined
+                            }
+                          />
+                        )}
+                      />
+                      {form.formState.errors.cnpj?.message ? (
+                        <span
+                          className="text-xs font-normal text-[var(--cor-perigo)]"
+                          role="alert"
+                        >
+                          {form.formState.errors.cnpj.message}
+                        </span>
+                      ) : null}
+                    </label>
                     <InputForm
                       label="Nome fantasia"
                       {...form.register("nomeFantasia")}
@@ -247,13 +274,21 @@ export function CriarEmpresaModal() {
                     {telefones.map((telefone, index) => (
                       <div key={telefone.id} className="flex items-end gap-2">
                         <div className="flex-1">
-                          <InputForm
-                            label={index === 0 ? "Telefone" : `Telefone ${index + 1}`}
-                            inputMode="tel"
-                            placeholder="(00) 00000-0000"
-                            value={telefone.value}
-                            onChange={(event) => setTelefone(telefone.id, event.target.value)}
-                          />
+                          <label className="grid gap-2 text-sm font-semibold text-foreground">
+                            {index === 0 ? "Telefone" : `Telefone ${index + 1}`}
+                            <InputPattern
+                              value={telefone.value}
+                              onValueChange={({ raw }) =>
+                                setTelefone(telefone.id, raw)
+                              }
+                              pattern={/\d/g}
+                              htmlPattern="\(\d{2}\) \d{5}-\d{4}"
+                              mask="(99) 99999-9999"
+                              maxLength={11}
+                              inputMode="tel"
+                              placeholder="(00) 00000-0000"
+                            />
+                          </label>
                         </div>
                         {telefones.length > 1 ? (
                           <Button
