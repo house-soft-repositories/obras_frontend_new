@@ -41,3 +41,17 @@ describe("dashboard — visível no modo público e privado", () => {
     }
   });
 });
+
+describe("cadastros de obras públicas", () => {
+  it("expõe empresas contratadas para administradores", () => {
+    for (const role of ["SUPERADMIN", "ADMIN"] as const) {
+      const grupos = privateRouteGroupsForRole(role);
+      const cadastros = grupos.find((group) => group.label === "Cadastros");
+
+      expect(cadastros?.type).toBe("OBRA_PUBLIC");
+      expect(cadastros?.routes.map((route) => route.path)).toContain(
+        "/cadastros/empresas-contratadas",
+      );
+    }
+  });
+});

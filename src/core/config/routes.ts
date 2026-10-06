@@ -207,6 +207,12 @@ export const privateRouteGroups: RouteGroup[] = [
         roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.ADMIN],
       },
       {
+        path: "/cadastros/empresas-contratadas",
+        label: "Empresas contratadas",
+        icon: "Building2",
+        roles: [userRoleSchema.enum.SUPERADMIN, userRoleSchema.enum.ADMIN],
+      },
+      {
         path: "/cadastros/eixos",
         label: "Eixos",
         icon: "Layers",
