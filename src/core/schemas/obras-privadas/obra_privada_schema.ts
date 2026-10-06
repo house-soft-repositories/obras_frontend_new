@@ -151,6 +151,12 @@ export interface Paginated<T> {
   meta: ObraPrivadaList["meta"];
 }
 
+export interface ArquivoUploadResposta {
+  arquivoId: string;
+  nome: string;
+  urlUpload: string;
+}
+
 export interface AlvaraPrivado {
   id: string;
   numero?: string | null;
@@ -164,6 +170,7 @@ export interface AlvaraPrivado {
   uso?: string | null;
   processoAdministrativo?: string | null;
   observacoes?: string | null;
+  arquivoUpload?: ArquivoUploadResposta | null;
 }
 
 export interface FiscalizacaoPrivada {
@@ -203,6 +210,7 @@ export interface HabiteSePrivado {
   divergenciaProjeto?: boolean | null;
   divergenciaDescricao?: string | null;
   parecer?: string | null;
+  arquivoUpload?: ArquivoUploadResposta | null;
 }
 
 export interface ResponsavelPrivado {
