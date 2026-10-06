@@ -60,7 +60,7 @@ export function DadosTab({ obra }: { obra: Obra }) {
       : text(extra.orgaoNome);
 
   return (
-    <div role="tabpanel" className="grid gap-4 p-5">
+    <div role="tabpanel" className="mt-5 grid gap-4">
       <div>
         <Body className="font-semibold">{text(obra.nome, "Obra sem nome")}</Body>
         <Caption>

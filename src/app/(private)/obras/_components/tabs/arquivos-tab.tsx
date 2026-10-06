@@ -36,6 +36,7 @@ import { Button } from "@/core/ui/atoms/button";
 import { Input } from "@/core/ui/atoms/input";
 import { Textarea } from "@/core/ui/atoms/textarea";
 import { Tooltip } from "@/core/ui/atoms/tooltip";
+import { ActionButton } from "@/core/ui/molecules/action-button";
 import { Body, Caption } from "@/core/ui/atoms/typography";
 import { Modal } from "@/core/ui/molecules/modal";
 
@@ -398,22 +399,33 @@ export function ArquivosTab({ obraId }: { obraId: string }) {
   const currentFolderHasFiles = Boolean(meta && meta.itemCount > 0);
 
   return (
-    <div role="tabpanel" className="grid gap-5 p-5">
+    <div role="tabpanel" className="mt-5 grid gap-5">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h2 className="font-display text-xl font-semibold">Arquivos da obra</h2>
           <Caption>Organize documentos em pastas e envie arquivos por upload assinado.</Caption>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" size="sm" onClick={refresh} disabled={pending || loading}>
-            <RefreshCw className="size-4" /> Atualizar
-          </Button>
+          <ActionButton
+            variant="secondary"
+            icon={<RefreshCw aria-hidden="true" className="size-4 shrink-0" />}
+            label="Atualizar"
+            onClick={refresh}
+            disabled={pending || loading}
+          />
           {content?.pasta && content.pasta.pastaPaiId !== null && (
-            <Tooltip content={currentFolderHasFiles ? "Não é possível excluir pasta com arquivos" : "Excluir pasta vazia"}>
-              <Button variant="destructive" size="sm" onClick={() => askToRemoveFolder(content.pasta)} disabled={pending || loading || currentFolderHasFiles}>
-                <Trash2 className="size-4" /> Excluir pasta
-              </Button>
-            </Tooltip>
+            <ActionButton
+              variant="destructive"
+              icon={<Trash2 aria-hidden="true" className="size-4 shrink-0" />}
+              label="Excluir pasta"
+              tooltip={
+                currentFolderHasFiles
+                  ? "Não é possível excluir pasta com arquivos"
+                  : "Excluir pasta vazia"
+              }
+              onClick={() => askToRemoveFolder(content.pasta)}
+              disabled={pending || loading || currentFolderHasFiles}
+            />
           )}
           <label className="inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-app bg-primary px-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90">
             <Upload className="size-4" /> Enviar arquivos
@@ -447,9 +459,12 @@ export function ArquivosTab({ obraId }: { obraId: string }) {
             if (event.key === "Enter") createFolder();
           }}
         />
-        <Button disabled={pending || !content || !newFolderName.trim()} onClick={createFolder}>
-          <FolderPlus className="size-4" /> Criar pasta
-        </Button>
+        <ActionButton
+          icon={<FolderPlus aria-hidden="true" className="size-4 shrink-0" />}
+          label="Criar pasta"
+          disabled={pending || !content || !newFolderName.trim()}
+          onClick={createFolder}
+        />
       </section>
 
       {uploads.length > 0 && (

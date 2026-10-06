@@ -51,7 +51,7 @@ type Props = {
   tipologias: Option[];
   onSuccess: () => void;
 };
-const steps = [
+export const steps = [
   "Identificação",
   "Organização",
   "Classificação",
@@ -59,23 +59,23 @@ const steps = [
   "Orçamentos",
   "Revisão",
 ];
-const TIPO_FINANCIAMENTO_LABELS = {
+export const TIPO_FINANCIAMENTO_LABELS = {
   COM_OGU: "Com OGU",
   SEM_OGU: "Sem OGU",
   INVESTIMENTO_PRIVADO: "Investimento privado",
 } as const;
-const MODO_DURACAO_LABELS = {
+export const MODO_DURACAO_LABELS = {
   DEFINIDO_PELO_USUARIO: "Definido pelo usuário",
   ESTAGIO_ATUAL: "Estágio atual",
   TOTAL_ATIVIDADES: "Total de atividades",
   EXECUCAO_CONTRATO: "Execução do contrato",
 } as const;
-const ACAO_CONVENIADA_LABELS = {
+export const ACAO_CONVENIADA_LABELS = {
   NAO: "Não",
   FEDERAL: "Federal",
   ESTADUAL: "Estadual",
 } as const;
-const initialValues: CriarObraFormularioInput = {
+export const initialValues: CriarObraFormularioInput = {
   nome: "",
   tipo: "OBRA",
   descricao: "",
@@ -102,6 +102,38 @@ const initialValues: CriarObraFormularioInput = {
   dataPactuada: "",
   orcamentos: [{ fonteId: "", valorCentavos: 0 }],
 };
+export const fieldsByStep: (keyof CriarObraFormularioInput)[][] = [
+  ["nome", "tipo", "descricao"],
+  [
+    "responsavelUsuarioId",
+    "orgaoId",
+    "setorId",
+    "localidadeId",
+    "seguirAutomatico",
+  ],
+  [
+    "eixoId",
+    "classificacaoId",
+    "subclassificacaoId",
+    "tipologiaId",
+    "subtipologiaId",
+  ],
+  [
+    "tipoFinanciamento",
+    "modoDuracao",
+    "dataInicio",
+    "dataPrazo",
+    "acaoConveniada",
+    "prioritaria",
+    "unidadeMedida",
+    "quantidade",
+    "programaPpa",
+    "secretario",
+    "dataPactuada",
+  ],
+  ["orcamentos"],
+  [],
+];
 
 
 
@@ -203,38 +235,6 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
 
     close();
   };
-  const fieldsByStep: (keyof CriarObraFormularioInput)[][] = [
-    ["nome", "tipo", "descricao"],
-    [
-      "responsavelUsuarioId",
-      "orgaoId",
-      "setorId",
-      "localidadeId",
-      "seguirAutomatico",
-    ],
-    [
-      "eixoId",
-      "classificacaoId",
-      "subclassificacaoId",
-      "tipologiaId",
-      "subtipologiaId",
-    ],
-    [
-      "tipoFinanciamento",
-      "modoDuracao",
-      "dataInicio",
-      "dataPrazo",
-      "acaoConveniada",
-      "prioritaria",
-      "unidadeMedida",
-      "quantidade",
-      "programaPpa",
-      "secretario",
-      "dataPactuada",
-    ],
-    ["orcamentos"],
-    [],
-  ];
   async function next() {
     const valid = await form.trigger(fieldsByStep[step]);
     if (valid) setStep((value) => value + 1);

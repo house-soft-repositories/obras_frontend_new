@@ -48,6 +48,7 @@ import {
 } from "@/core/schemas/financeiro";
 import type { ObraOrcamentoReadModel } from "@/core/schemas/obras/orcamento_read_model_schema";
 import { Button } from "@/core/ui/atoms/button";
+import { ActionButton } from "@/core/ui/molecules/action-button";
 import { DataTable } from "@/core/ui/atoms/data-table";
 import { Body, Caption } from "@/core/ui/atoms/typography";
 import { InputForm } from "@/core/ui/molecules/input-form";
@@ -177,7 +178,7 @@ export function FinanceiroTab({ obraId }: { obraId: string }) {
   );
 
   return (
-    <div role="tabpanel" className="grid gap-5 p-5" data-obra-id={obraId}>
+    <div role="tabpanel" className="mt-5 grid gap-5" data-obra-id={obraId}>
       <section className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {(
           [
@@ -363,14 +364,14 @@ function LancamentosSection<
             cell: (row) => (
               <div className="flex justify-end gap-2">
                 {renderEdit(row)}
-                <Button
+                <ActionButton
                   type="button"
-                  size="sm"
                   variant="destructive"
+                  icon={<Trash2 aria-hidden="true" className="size-4 shrink-0" />}
+                  label="Excluir"
+                  tooltip="Excluir este lançamento"
                   onClick={() => void remove(row.id)}
-                >
-                  <Trash2 className="size-4" /> Excluir
-                </Button>
+                />
               </div>
             ),
             numeric: true,
@@ -432,17 +433,14 @@ function EmpenhoModal({
       title={registro ? "Editar empenho" : "Novo empenho"}
       open={open}
       setOpen={setOpen}
-      trigger={
+      triggerIcon={
         registro ? (
-          <>
-            <Edit2 className="size-4" /> Editar
-          </>
+          <Edit2 aria-hidden="true" className="size-4 shrink-0" />
         ) : (
-          <>
-            <Plus className="size-4" /> Novo empenho
-          </>
+          <Plus aria-hidden="true" className="size-4 shrink-0" />
         )
       }
+      triggerLabel={registro ? "Editar" : "Novo empenho"}
       onSubmit={form.handleSubmit(onSubmit)}
       submitting={form.formState.isSubmitting}
     >
@@ -520,17 +518,14 @@ function LiquidacaoModal({
       title={registro ? "Editar liquidação" : "Nova liquidação"}
       open={open}
       setOpen={setOpen}
-      trigger={
+      triggerIcon={
         registro ? (
-          <>
-            <Edit2 className="size-4" /> Editar
-          </>
+          <Edit2 aria-hidden="true" className="size-4 shrink-0" />
         ) : (
-          <>
-            <Plus className="size-4" /> Nova liquidação
-          </>
+          <Plus aria-hidden="true" className="size-4 shrink-0" />
         )
       }
+      triggerLabel={registro ? "Editar" : "Nova liquidação"}
       onSubmit={form.handleSubmit(onSubmit)}
       submitting={form.formState.isSubmitting}
     >
@@ -624,17 +619,14 @@ function PagamentoModal({
       title={registro ? "Editar pagamento" : "Novo pagamento"}
       open={open}
       setOpen={setOpen}
-      trigger={
+      triggerIcon={
         registro ? (
-          <>
-            <Edit2 className="size-4" /> Editar
-          </>
+          <Edit2 aria-hidden="true" className="size-4 shrink-0" />
         ) : (
-          <>
-            <Plus className="size-4" /> Novo pagamento
-          </>
+          <Plus aria-hidden="true" className="size-4 shrink-0" />
         )
       }
+      triggerLabel={registro ? "Editar" : "Novo pagamento"}
       onSubmit={form.handleSubmit(onSubmit)}
       submitting={form.formState.isSubmitting}
     >
@@ -666,7 +658,8 @@ function LancamentoModal({
   title,
   open,
   setOpen,
-  trigger,
+  triggerIcon,
+  triggerLabel,
   onSubmit,
   submitting,
   children,
@@ -674,7 +667,8 @@ function LancamentoModal({
   title: string;
   open: boolean;
   setOpen: (open: boolean) => void;
-  trigger: React.ReactNode;
+  triggerIcon: React.ReactNode;
+  triggerLabel: string;
   onSubmit: React.FormEventHandler<HTMLFormElement>;
   submitting: boolean;
   children: React.ReactNode;
@@ -682,13 +676,13 @@ function LancamentoModal({
   return (
     <Modal.Root open={open} onOpenChange={setOpen}>
       <Modal.Trigger asChild>
-        <Button
+        <ActionButton
           type="button"
-          size={title.startsWith("Editar") ? "sm" : undefined}
           variant={title.startsWith("Editar") ? "secondary" : undefined}
-        >
-          {trigger}
-        </Button>
+          icon={triggerIcon}
+          label={triggerLabel}
+          tooltip={title}
+        />
       </Modal.Trigger>
       <Modal.Portal>
         <Modal.Backdrop />
