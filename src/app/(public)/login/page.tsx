@@ -2,7 +2,7 @@
 
 import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { Controller, useForm, type FieldErrors } from "react-hook-form";
 import { Button } from "@/core/ui/atoms/button";
@@ -21,8 +21,24 @@ type LoginFormData = {
   remember: boolean;
 };
 
+function getSafeNextPath(next?: string | null): string | null {
+  if (!next || !next.startsWith("/") || next.startsWith("//")) {
+    return null;
+  }
+
+  if (next === "/login" || next.startsWith("/login?")) {
+    return null;
+  }
+
+  return next;
+}
+
 function FormularioLogin() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = getSafeNextPath(
+    searchParams.get("next") ?? searchParams.get("callbackUrl"),
+  );
   const toast = useToast();
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const {
@@ -54,7 +70,7 @@ function FormularioLogin() {
       return;
     }
 
-    router.push("/home");
+    router.push(nextPath ?? "/home");
     router.refresh();
   }
 

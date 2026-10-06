@@ -23,7 +23,11 @@ export default async function SelecionarTenancyPage({
   const safeNextPath = getSafeNextPath((await searchParams).next);
 
   if (!session?.user) {
-    redirect("/login");
+    redirect(
+      safeNextPath
+        ? `/login?next=${encodeURIComponent(safeNextPath)}`
+        : "/login",
+    );
   }
 
   if (session.user.tenant) {
