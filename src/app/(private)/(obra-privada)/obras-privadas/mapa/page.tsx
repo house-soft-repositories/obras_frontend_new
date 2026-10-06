@@ -4,7 +4,7 @@ import { MapaClient } from "./_components/mapa-client";
 export default async function MapaPage() {
   const obras = await listObrasPrivadasAction({
     page: 1,
-    take: 100,
+    take: 50,
     order: "DESC",
   });
 

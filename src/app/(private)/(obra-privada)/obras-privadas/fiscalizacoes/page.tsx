@@ -1,5 +1,6 @@
 import { listFiscalizacoesGlobaisPrivadasAction } from "@/core/actions/obras-privadas/obra_privada_recursos_actions";
 import { FiscalizacoesTable } from "../_components/tabelas-simples";
+import { CriarFiscalizacaoBar } from "../_components/criar-fiscalizacao-bar";
 
 export default async function FiscalizacoesPage() {
   const fiscalizacoes = await listFiscalizacoesGlobaisPrivadasAction({
@@ -7,6 +8,19 @@ export default async function FiscalizacoesPage() {
     take: 50,
     order: "DESC",
   });
+
+  const obras = Array.from(
+    new Map(
+      fiscalizacoes.data.map((item) => [
+        item.obraPrivadaId,
+        {
+          id: item.obraPrivadaId,
+          codigo: item.obraCodigo,
+          endereco: item.obraEndereco,
+        },
+      ]),
+    ).values(),
+  );
 
   return (
     <main className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
@@ -19,6 +33,9 @@ export default async function FiscalizacoesPage() {
           Obras já visitadas pela equipe de fiscalização.
         </p>
       </section>
+      <div className="mb-5">
+        <CriarFiscalizacaoBar obras={obras} />
+      </div>
       <FiscalizacoesTable data={fiscalizacoes.data} />
     </main>
   );

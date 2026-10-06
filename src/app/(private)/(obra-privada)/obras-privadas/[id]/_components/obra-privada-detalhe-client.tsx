@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -17,6 +18,11 @@ import {
   baixarRelatorioFiscalizacaoPrivadaAction,
 } from "@/core/actions/obras-privadas/download_obras_privadas_report_action";
 import { useToast } from "@/core/hooks/useToast";
+import { CriarAlvaraModal } from "../../_components/criar-alvara-modal";
+import { CriarAutoModal } from "../../_components/criar-auto-modal";
+import { CriarFiscalizacaoModal } from "../../_components/criar-fiscalizacao-modal";
+import { CriarHabiteSeModal } from "../../_components/criar-habite-se-modal";
+import type { VistoriadorOpcao } from "../../_components/criar-habite-se-modal";
 import { Button } from "@/core/ui/atoms/button";
 import { DataTable } from "@/core/ui/atoms/data-table";
 import {
@@ -68,6 +74,7 @@ type Props = {
   observacoes: ObservacaoPrivada[];
   arquivos: ArquivoPrivado[];
   timeline: Record<string, unknown>[];
+  vistoriadores: VistoriadorOpcao[];
 };
 
 function baixarBase64(base64: string, fileName: string, contentType: string) {
@@ -157,10 +164,13 @@ export function ObraPrivadaDetalheClient({
   observacoes,
   arquivos,
   timeline,
+  vistoriadores,
 }: Props) {
   const [tab, setTab] = useState<TabId>("dados");
   const [baixando, setBaixando] = useState<string | null>(null);
   const toast = useToast();
+  const router = useRouter();
+  const refresh = () => router.refresh();
   const endereco = [obra.logradouro, obra.numero, obra.bairro]
     .filter((part) => typeof part === "string" && part.trim())
     .join(", ");
@@ -340,6 +350,19 @@ export function ObraPrivadaDetalheClient({
 
       {tab === "licenciamento" ? (
         <section className="mt-5 grid gap-5">
+          <div className="flex flex-wrap gap-2">
+            <CriarAlvaraModal
+              obraPrivadaId={obra.id}
+              alvarasAnteriores={alvaras}
+              onSuccess={refresh}
+            />
+            <CriarHabiteSeModal
+              obraPrivadaId={obra.id}
+              fiscalizacoes={fiscalizacoes}
+              vistoriadores={vistoriadores}
+              onSuccess={refresh}
+            />
+          </div>
           {alvaras.length === 0 ? (
             <EmptyState
               icon={FileText}
@@ -440,6 +463,17 @@ export function ObraPrivadaDetalheClient({
 
       {tab === "fiscalizacoes" ? (
         <section className="mt-5 grid gap-5">
+          <div className="flex flex-wrap gap-2">
+            <CriarFiscalizacaoModal
+              obraPrivadaId={obra.id}
+              onSuccess={refresh}
+            />
+            <CriarAutoModal
+              obraPrivadaId={obra.id}
+              fiscalizacoes={fiscalizacoes}
+              onSuccess={refresh}
+            />
+          </div>
           <DataTable<FiscalizacaoPrivada>
             title="Visitas de fiscalização"
             data={fiscalizacoes}

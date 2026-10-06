@@ -1,4 +1,5 @@
 import getObraPrivadaAction from "@/core/actions/obras-privadas/get_obra_privada_action";
+import listUsuariosPaginationAction from "@/core/actions/usuarios/list_usuarios_pagination_action";
 import {
   listAlvarasObraPrivadaAction,
   listArquivosObraPrivadaAction,
@@ -27,6 +28,7 @@ export default async function ObraPrivadaDetailPage({
     observacoes,
     arquivos,
     timeline,
+    usuarios,
   ] = await Promise.all([
     getObraPrivadaAction(id),
     listAlvarasObraPrivadaAction(id),
@@ -37,6 +39,9 @@ export default async function ObraPrivadaDetailPage({
     listObservacoesObraPrivadaAction(id),
     listArquivosObraPrivadaAction(id),
     listTimelineObraPrivadaAction(id),
+    listUsuariosPaginationAction({ page: 1, order: "ASC", take: 50 }).catch(
+      () => ({ data: [] }),
+    ),
   ]);
   if (!obra) {
     return (
@@ -50,6 +55,12 @@ export default async function ObraPrivadaDetailPage({
       </main>
     );
   }
+  const vistoriadores = (usuarios?.data ?? [])
+    .filter((usuario) => usuario.role !== "USER")
+    .map((usuario) => ({
+      id: usuario.id,
+      nome: usuario.email ? `${usuario.name} — ${usuario.email}` : usuario.name,
+    }));
   return (
     <ObraPrivadaDetalheClient
       obra={obra}
@@ -61,6 +72,7 @@ export default async function ObraPrivadaDetailPage({
       observacoes={observacoes}
       arquivos={arquivos}
       timeline={timeline}
+      vistoriadores={vistoriadores}
     />
   );
 }
