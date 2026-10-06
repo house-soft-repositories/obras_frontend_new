@@ -26,6 +26,16 @@ export async function proxy(request: NextRequest) {
     secureCookie: cookieSessao.seguro,
   });
 
+  // Sessão marcada com erro pelo callback jwt (ex.: RefreshTokenError após o
+  // backend devolver AUTH_INVALID_REFRESH_TOKEN): equivale a deslogado. Faz o
+  // logout aqui — apaga o cookie de sessão na resposta — além de redirecionar
+  // ao login com ?next=. Sem apagar o cookie, o token morto faria este proxy
+  // mandar o usuário de volta para "/" e o app entraria em loop de redirect.
+  const sessionError = (token as { error?: unknown } | null)?.error;
+  if (token && typeof sessionError === "string" && sessionError) {
+    return redirectExpiredSession(request);
+  }
+
   if (
     token &&
     currentRoute?.roles === null &&
@@ -74,6 +84,14 @@ export async function proxy(request: NextRequest) {
   function redirectUserNotAuthenticated(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED;
+    const nextPath = getSafeNextPath(
+      `${request.nextUrl.pathname}${request.nextUrl.search}`,
+    );
+    if (nextPath) {
+      redirectUrl.search = `?next=${encodeURIComponent(nextPath)}`;
+    } else {
+      redirectUrl.search = "";
+    }
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -81,6 +99,39 @@ export async function proxy(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = REDIRECT_WHEN_NOT_PERMISSION;
     return NextResponse.redirect(redirectUrl);
+  }
+
+  function redirectExpiredSession(request: NextRequest) {
+    const onLoginPage =
+      request.nextUrl.pathname === REDIRECT_WHEN_NOT_AUTHENTICATED;
+    const response = onLoginPage
+      ? nextWithCurrentPath()
+      : redirectUserNotAuthenticated(request);
+    clearSessionCookie(response);
+    return response;
+  }
+
+  function clearSessionCookie(response: NextResponse) {
+    // Apaga nas duas variantes de nome (com e sem prefixo __Secure-) para
+    // garantir o logout independente de como o cookie foi emitido.
+    response.cookies.delete(cookieSessao.nome);
+    response.cookies.delete("authjs.session-token");
+    response.cookies.delete("__Secure-authjs.session-token");
+  }
+
+  function getSafeNextPath(path: string | null): string | null {
+    if (!path || !path.startsWith("/") || path.startsWith("//")) {
+      return null;
+    }
+
+    if (
+      path === REDIRECT_WHEN_NOT_AUTHENTICATED ||
+      path.startsWith(`${REDIRECT_WHEN_NOT_AUTHENTICATED}?`)
+    ) {
+      return null;
+    }
+
+    return path;
   }
 }
 

@@ -1,5 +1,6 @@
 import { env } from "@/core/config/enviroment_variables";
 import {
+  AuthExpiredInterceptor,
   AuthInterceptor,
   LogInterceptor,
   TenantContextInterceptor,
@@ -18,5 +19,6 @@ api.addInterceptor(
 api.addInterceptor(new AuthInterceptor());
 api.addInterceptor(new ApiKeyInterceptor());
 api.addInterceptor(new TenantContextInterceptor());
+api.addInterceptor(new AuthExpiredInterceptor());
 
 export default api;

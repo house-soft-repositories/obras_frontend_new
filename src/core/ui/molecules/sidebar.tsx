@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { HardHat, LogOut } from "lucide-react";
 import { auth, signOut } from "@/core/config/auth_options";
@@ -29,7 +30,20 @@ export async function Sidebar() {
     auth(),
     getObraNavigationTypeAction(),
   ]);
-  if (!session?.user) redirect("/login");
+  if (!session?.user) {
+    const currentPath = (await headers()).get("x-obras-current-path");
+    const nextPath =
+      currentPath &&
+      currentPath.startsWith("/") &&
+      !currentPath.startsWith("//") &&
+      currentPath !== "/login" &&
+      !currentPath.startsWith("/login?")
+        ? currentPath
+        : null;
+    redirect(
+      nextPath ? `/login?next=${encodeURIComponent(nextPath)}` : "/login",
+    );
+  }
   const { name, email, role } = session.user;
 
   return (
