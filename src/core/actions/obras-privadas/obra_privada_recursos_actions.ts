@@ -1,6 +1,9 @@
 "use server";
 
+import { updateTag } from "next/cache";
 import api from "@/core/rest_client/api";
+import HttpClientException from "@/core/exceptions/http_client_exception";
+import { obraPrivadaErrorTranslator } from "@/core/errors/obra_privada_error_translator";
 import type {
   AlvaraPrivado,
   ArquivoPrivado,
@@ -14,6 +17,26 @@ import type {
   Paginated,
   ResponsavelPrivado,
 } from "@/core/schemas/obras-privadas/obra_privada_schema";
+import {
+  criarAlvaraSchema,
+  criarAutoSchema,
+  criarFiscalizacaoSchema,
+  criarHabiteSeSchema,
+  toCriarAlvaraPayload,
+  toCriarAutoPayload,
+  toCriarFiscalizacaoPayload,
+  toCriarHabiteSePayload,
+  type CriarAlvaraInput,
+  type CriarAutoInput,
+  type CriarFiscalizacaoInput,
+  type CriarHabiteSeInput,
+} from "@/core/schemas/obras-privadas/create_obra_privada_recursos_schema";
+import type ServerActionResult from "@/core/types/server_action_result";
+import { confirmarUploadArquivoObraPrivadaAction } from "@/core/actions/obras-privadas/obra_privada_arquivo_actions";
+import {
+  categoriaPorMime,
+  type UploadPreparado,
+} from "@/core/schemas/obras-privadas/obra_privada_arquivo_schema";
 
 const FALLBACK_META = {
   page: 1,
@@ -190,5 +213,267 @@ export async function listLicenciamentoPrivadasAction(params: {
     return normalizePage<LicenciamentoPrivado>(res.data, take);
   } catch {
     return { data: [], meta: { ...FALLBACK_META } };
+  }
+}
+
+function translateRecursoError(error: unknown, fallback: string): string {
+  if (error instanceof HttpClientException) {
+    return obraPrivadaErrorTranslator.translate(error);
+  }
+  return fallback;
+}
+
+function revalidateRecursoTags(obraPrivadaId: string, recurso: string) {
+  updateTag(`obra-privada-${obraPrivadaId}-${recurso}`);
+  updateTag(`obra-privada-${obraPrivadaId}-timeline`);
+}
+
+export type AlvaraCriado = AlvaraPrivado & {
+  arquivoUpload?: UploadPreparado;
+};
+
+export type HabiteSeCriado = HabiteSePrivado & {
+  arquivoUpload?: UploadPreparado;
+};
+
+function metadataArquivoDoFile(file: File): Record<string, unknown> {
+  return {
+    nomeOriginal: file.name,
+    categoria: categoriaPorMime(file.type || "application/octet-stream"),
+    ...(file.type ? { mimeType: file.type } : {}),
+  };
+}
+
+/**
+ * Envia o binário para a URL pré-assinada devolvida na criação e confirma o
+ * upload. O recurso já foi criado neste ponto; em falha retorna mensagem
+ * orientando novo anexo pela aba de arquivos (sem recriar o recurso).
+ */
+async function enviarEConfirmarArquivoCriacao(
+  obraPrivadaId: string,
+  recursoLabel: string,
+  upload: UploadPreparado,
+  file: File,
+): Promise<string | null> {
+  const contentType = file.type || "application/octet-stream";
+  let resposta: Response;
+  try {
+    resposta = await fetch(upload.urlUpload, {
+      method: "PUT",
+      body: file,
+      headers: { "content-type": contentType },
+    });
+  } catch {
+    return (
+      `${recursoLabel} registrado, mas não foi possível enviar o arquivo ` +
+      `para o armazenamento. Anexe novamente pela aba de arquivos.`
+    );
+  }
+  if (!resposta.ok) {
+    return (
+      `${recursoLabel} registrado, mas o envio do arquivo falhou ` +
+      `(HTTP ${resposta.status}). Anexe novamente pela aba de arquivos.`
+    );
+  }
+  const confirmado = await confirmarUploadArquivoObraPrivadaAction(
+    obraPrivadaId,
+    upload.arquivoId,
+    {
+      tamanhoBytes: file.size,
+      ...(file.type ? { mimeType: file.type } : {}),
+    },
+  );
+  if (!confirmado.success) {
+    return (
+      `${recursoLabel} registrado e arquivo enviado, mas não foi possível ` +
+      `confirmar o upload (${confirmado.error}).`
+    );
+  }
+  return null;
+}
+
+export async function createAlvaraObraPrivadaAction(
+  obraPrivadaId: string,
+  input: CriarAlvaraInput,
+  file?: File,
+): Promise<ServerActionResult<AlvaraCriado>> {
+  const payload = toCriarAlvaraPayload(input);
+  if (file && !payload.arquivo) {
+    payload.arquivo = metadataArquivoDoFile(file);
+  }
+  const parsed = criarAlvaraSchema.safeParse(payload);
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "Dados inválidos.";
+    return { success: false, data: null, error: message };
+  }
+
+  try {
+    const res = await api.auth.post<AlvaraCriado>(
+      `/api/obras-privadas/${obraPrivadaId}/alvaras`,
+      {
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      },
+    );
+    revalidateRecursoTags(obraPrivadaId, "alvaras");
+    updateTag("list-obras-privadas-licenciamento");
+    if (file && res.data.arquivoUpload?.urlUpload) {
+      const falha = await enviarEConfirmarArquivoCriacao(
+        obraPrivadaId,
+        "O alvará foi",
+        res.data.arquivoUpload,
+        file,
+      );
+      if (falha) return { success: false, data: null, error: falha };
+    }
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) {
+      throw error;
+    }
+    if (error instanceof HttpClientException) {
+      return {
+        success: false,
+        data: null,
+        error: translateRecursoError(
+          error,
+          "Não foi possível registrar o alvará. Os dados foram preservados.",
+        ),
+      };
+    }
+    throw error;
+  }
+}
+
+export async function createHabiteSeObraPrivadaAction(
+  obraPrivadaId: string,
+  input: CriarHabiteSeInput,
+  file?: File,
+): Promise<ServerActionResult<HabiteSeCriado>> {
+  const payload = toCriarHabiteSePayload(input);
+  if (file && !payload.arquivo) {
+    payload.arquivo = metadataArquivoDoFile(file);
+  }
+  const parsed = criarHabiteSeSchema.safeParse(payload);
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "Dados inválidos.";
+    return { success: false, data: null, error: message };
+  }
+
+  try {
+    const res = await api.auth.post<HabiteSeCriado>(
+      `/api/obras-privadas/${obraPrivadaId}/habite-se`,
+      {
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      },
+    );
+    revalidateRecursoTags(obraPrivadaId, "habite-se");
+    updateTag("list-obras-privadas-licenciamento");
+    if (file && res.data.arquivoUpload?.urlUpload) {
+      const falha = await enviarEConfirmarArquivoCriacao(
+        obraPrivadaId,
+        "O habite-se foi",
+        res.data.arquivoUpload,
+        file,
+      );
+      if (falha) return { success: false, data: null, error: falha };
+    }
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) {
+      throw error;
+    }
+    if (error instanceof HttpClientException) {
+      return {
+        success: false,
+        data: null,
+        error: translateRecursoError(
+          error,
+          "Não foi possível registrar o habite-se. Os dados foram preservados.",
+        ),
+      };
+    }
+    throw error;
+  }
+}
+
+export async function createFiscalizacaoObraPrivadaAction(
+  obraPrivadaId: string,
+  input: CriarFiscalizacaoInput,
+): Promise<ServerActionResult<FiscalizacaoPrivada>> {
+  const parsed = criarFiscalizacaoSchema.safeParse(
+    toCriarFiscalizacaoPayload(input),
+  );
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "Dados inválidos.";
+    return { success: false, data: null, error: message };
+  }
+
+  try {
+    const res = await api.auth.post<FiscalizacaoPrivada>(
+      `/api/obras-privadas/${obraPrivadaId}/fiscalizacoes`,
+      {
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      },
+    );
+    revalidateRecursoTags(obraPrivadaId, "fiscalizacoes");
+    updateTag("list-obras-privadas-fiscalizacoes");
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) {
+      throw error;
+    }
+    if (error instanceof HttpClientException) {
+      return {
+        success: false,
+        data: null,
+        error: translateRecursoError(
+          error,
+          "Não foi possível registrar a fiscalização. Os dados foram preservados.",
+        ),
+      };
+    }
+    throw error;
+  }
+}
+
+export async function createAutoObraPrivadaAction(
+  obraPrivadaId: string,
+  input: CriarAutoInput,
+): Promise<ServerActionResult<AutoInfracaoPrivado>> {
+  const parsed = criarAutoSchema.safeParse(toCriarAutoPayload(input));
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "Dados inválidos.";
+    return { success: false, data: null, error: message };
+  }
+
+  try {
+    const res = await api.auth.post<AutoInfracaoPrivado>(
+      `/api/obras-privadas/${obraPrivadaId}/autos`,
+      {
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      },
+    );
+    revalidateRecursoTags(obraPrivadaId, "autos");
+    updateTag("list-obras-privadas-autos");
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) {
+      throw error;
+    }
+    if (error instanceof HttpClientException) {
+      return {
+        success: false,
+        data: null,
+        error: translateRecursoError(
+          error,
+          "Não foi possível registrar o auto. Os dados foram preservados.",
+        ),
+      };
+    }
+    throw error;
   }
 }
