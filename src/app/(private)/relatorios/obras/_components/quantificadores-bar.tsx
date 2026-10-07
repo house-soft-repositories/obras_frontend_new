@@ -1,10 +1,10 @@
-import type { QuantificadoresObras } from "@/core/actions/relatorios/obras_relatorio_action";
+import type { QuantificadoresObras } from "@/core/schemas/relatorios/obras_relatorio_schema";
 import { Caption } from "@/core/ui/atoms/typography";
 
 const CARDS = [
-  { chave: "emDesenvolvimento", titulo: "Em desenvolvimento", cor: "text-emerald-600", borda: "border-emerald-500" },
-  { chave: "concluidas", titulo: "Concluídas", cor: "text-cyan-700", borda: "border-cyan-600" },
-  { chave: "paralisadas", titulo: "Paralisadas", cor: "text-red-600", borda: "border-red-500" },
+  { chave: "acimaMeta", titulo: "Acima da meta", cor: "text-emerald-600", borda: "border-emerald-500" },
+  { chave: "prazoVencido", titulo: "Prazo vencido", cor: "text-red-600", borda: "border-red-500" },
+  { chave: "abaixoMeta", titulo: "Abaixo da meta", cor: "text-amber-600", borda: "border-amber-500" },
   { chave: "semStatus", titulo: "Sem status", cor: "text-muted", borda: "border-border" },
 ] as const;
 

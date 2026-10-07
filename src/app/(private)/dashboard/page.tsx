@@ -31,7 +31,7 @@ export default async function DashboardPage({
     listOrgaosPaginationAction({ page: 1, order: "ASC", take: 50 }),
   ]);
 
-  const { contagem, obrasPorOrgao, fluxoFinanceiro, fisicoVsFinanceiro } = resumo;
+  const { contagemPorStatus: contagem, obrasPorOrgao, fluxoFinanceiro, fisicoVsFinanceiro } = resumo;
   const orgaoAtivo = orgaos.data.find((o) => o.id === orgaoId);
   const maxOrgao = Math.max(1, ...obrasPorOrgao.map((o) => o.total));
   const maxFluxo = Math.max(1, ...fluxoFinanceiro.map((f) => f.valor));
@@ -247,13 +247,12 @@ export default async function DashboardPage({
                 Execução financeira (R$)
               </Heading>
               <Caption className="mt-1">
-                Agregado local das obras listadas. Integração ao endpoint
-                financeiro pendente.
+                Agregado do backend (GET /api/relatorios/dashboard).
               </Caption>
               {fluxoFinanceiro.every((f) => f.valor === 0) ? (
                 <p className="mt-4 rounded-app border border-dashed border-border p-6 text-center text-sm text-muted">
-                  Sem valores financeiros nas obras carregadas. Assim que o
-                  backend expor o fluxo agregado, os totais aparecem aqui.
+                  Sem valores financeiros no período. Ajuste o filtro ou
+                  aguarde novas medições.
                 </p>
               ) : (
                 <ul className="mt-4 grid gap-3">

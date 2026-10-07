@@ -37,6 +37,11 @@ export function FiltrosObras({
     if (status) usp.set("status", status);
     if (tipo) usp.set("tipo", tipo);
     if (orgaoId) usp.set("orgaoId", orgaoId);
+    // Troca de filtro volta para a primeira página (paginação server-side);
+    // mantém o tamanho de página atual quando houver.
+    const atual = new URLSearchParams(window.location.search);
+    const tamanho = atual.get("tamanho");
+    if (tamanho) usp.set("tamanho", tamanho);
     const qs = usp.toString();
     router.push(`/relatorios/obras${qs ? `?${qs}` : ""}`);
   }
