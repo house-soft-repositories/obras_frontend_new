@@ -18,9 +18,15 @@ import { cn } from "@/core/ui/cn";
 import { InputForm } from "@/core/ui/molecules/input-form";
 import { Modal } from "@/core/ui/molecules/modal";
 
-const steps = ["Dados", "Contato", "Endereço"] as const;
+export const steps = ["Dados", "Contato", "Endereço"] as const;
 
 type StepIndex = 0 | 1 | 2;
+
+export const fieldsByStep: (keyof CreatePessoaInput)[][] = [
+  ["tipo", "nome", "documento", "nomeFantasia", "rg", "orgaoExpedidor"],
+  ["email", "telefone"],
+  ["cep", "uf", "logradouro", "numero", "complemento", "bairro", "cidade"],
+];
 
 const UFS = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS",
@@ -106,12 +112,16 @@ export function CriarPessoaModal() {
 
   async function nextStep(event?: React.SyntheticEvent) {
     event?.preventDefault();
+    if (step >= steps.length - 1) return;
     const fields =
       step === 0
         ? (["tipo", "nome", "documento", "nomeFantasia", "rg", "orgaoExpedidor"] as const)
         : (["email", "telefone"] as const);
     const valid = await form.trigger(fields);
-    if (valid) setStep((previous) => (previous + 1) as StepIndex);
+    if (valid)
+      setStep(
+        (previous) => Math.min(previous + 1, steps.length - 1) as StepIndex,
+      );
   }
 
   function previousStep() {

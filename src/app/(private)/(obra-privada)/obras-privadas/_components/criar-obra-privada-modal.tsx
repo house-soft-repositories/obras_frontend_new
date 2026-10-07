@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm, type FieldErrors } from "react-hook-form";
 import { Check, ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
 import { Button } from "@/core/ui/atoms/button";
@@ -29,7 +29,7 @@ type Props = {
   onSuccess: () => void;
 };
 
-const steps = [
+export const steps = [
   "Proprietário",
   "Imóvel",
   "Localização",
@@ -67,6 +67,32 @@ const initialValues: CriarObraPrivadaFormularioInput = {
   dataPrevistaConclusao: "",
 };
 
+export const fieldsByStep: (keyof CriarObraPrivadaFormularioInput)[][] = [
+  ["proprietarioPessoaId"],
+  ["inscricaoImobiliaria", "matriculaRgi", "cartorio"],
+  [
+    "cep",
+    "logradouro",
+    "numero",
+    "complemento",
+    "bairro",
+    "uf",
+    "localidadeId",
+    "latitude",
+    "longitude",
+  ],
+  [
+    "descricao",
+    "observacoes",
+    "andamento",
+    "habiteSe",
+    "dataInicio",
+    "dataPrevistaConclusao",
+    "orgaoId",
+  ],
+  [],
+];
+
 const selectClassName =
   "h-11 rounded-app border border-input bg-surface px-3 text-sm text-foreground";
 
@@ -85,6 +111,10 @@ export function CriarObraPrivadaModal({
   const [step, setStep] = useState(0);
   const [apiError, setApiError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // Instante do último avanço de etapa: cliques que caem no botão de submit
+  // logo após a troca (duplo-clique no Continuar) são ignorados. Ref não
+  // gera re-render — não é estado novo.
+  const lastAdvanceRef = useRef(0);
   const toast = useToast();
   const form = useForm<
     CriarObraPrivadaFormularioInput,
@@ -114,35 +144,23 @@ export function CriarObraPrivadaModal({
     close();
   };
 
-  const fieldsByStep: (keyof CriarObraPrivadaFormularioInput)[][] = [
-    ["proprietarioPessoaId"],
-    ["inscricaoImobiliaria", "matriculaRgi", "cartorio"],
-    [
-      "cep",
-      "logradouro",
-      "numero",
-      "complemento",
-      "bairro",
-      "uf",
-      "localidadeId",
-      "latitude",
-      "longitude",
-    ],
-    [
-      "descricao",
-      "observacoes",
-      "andamento",
-      "habiteSe",
-      "dataInicio",
-      "dataPrevistaConclusao",
-      "orgaoId",
-    ],
-    [],
-  ];
-
   async function next() {
+    if (step >= steps.length - 1) return;
     const valid = await form.trigger(fieldsByStep[step]);
-    if (valid) setStep((value) => value + 1);
+    if (valid) {
+      lastAdvanceRef.current = Date.now();
+      setStep((value) => Math.min(value + 1, steps.length - 1));
+    }
+  }
+
+  function guardedSubmit(event: React.FormEvent<HTMLFormElement>) {
+    // Ignora o submit que chega colado no avanço de etapa: é o segundo
+    // clique de um duplo-clique no Continuar, não uma confirmação.
+    if (Date.now() - lastAdvanceRef.current < 1000) {
+      event.preventDefault();
+      return;
+    }
+    void form.handleSubmit(submit, submitInvalid)(event);
   }
 
   function submitInvalid(errors: FieldErrors<CriarObraPrivadaFormularioInput>) {
@@ -187,7 +205,7 @@ export function CriarObraPrivadaModal({
         <Modal.Backdrop />
         <Modal.Popup className="max-h-[95vh] max-w-4xl overflow-y-auto p-5 sm:p-7">
           <form
-            onSubmit={form.handleSubmit(submit, submitInvalid)}
+            onSubmit={guardedSubmit}
             noValidate
           >
             <div className="flex items-start justify-between gap-4">

@@ -218,12 +218,14 @@ function ContratoModal({ obraId, onSaved }: { obraId: string; onSaved: () => voi
   }
 
   async function nextStep() {
+    if (step >= contratoSteps.length - 1) return;
     const fieldsToValidate =
       step === 0
         ? (["numero", "empresaContratadaId"] as const)
         : (["dataOs", "fontes"] as const);
     const valid = await form.trigger(fieldsToValidate);
-    if (valid) setStep((current) => current + 1);
+    if (valid)
+      setStep((current) => Math.min(current + 1, contratoSteps.length - 1));
   }
 
   return (

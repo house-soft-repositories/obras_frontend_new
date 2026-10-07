@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   useFieldArray,
   useForm,
@@ -143,6 +143,10 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
   const [step, setStep] = useState(0);
   const [apiError, setApiError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // Instante do último avanço de etapa: cliques que caem no botão de submit
+  // logo após a troca (duplo-clique no Continuar) são ignorados. Ref não
+  // gera re-render — não é estado novo.
+  const lastAdvanceRef = useRef(0);
   const [loading, setLoading] = useState(false);
   const [tags, setTags] = useState("");
   const [subclassificacoes, setSubclassificacoes] = useState<Option[]>([]);
@@ -236,8 +240,21 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
     close();
   };
   async function next() {
+    if (step >= steps.length - 1) return;
     const valid = await form.trigger(fieldsByStep[step]);
-    if (valid) setStep((value) => value + 1);
+    if (valid) {
+      lastAdvanceRef.current = Date.now();
+      setStep((value) => Math.min(value + 1, steps.length - 1));
+    }
+  }
+  function guardedSubmit(event: React.FormEvent<HTMLFormElement>) {
+    // Ignora o submit que chega colado no avanço de etapa: é o segundo
+    // clique de um duplo-clique no Continuar, não uma confirmação.
+    if (Date.now() - lastAdvanceRef.current < 1000) {
+      event.preventDefault();
+      return;
+    }
+    void form.handleSubmit(submit, submitInvalid)(event);
   }
   function submitInvalid(errors: FieldErrors<CriarObraFormularioInput>) {
     const firstInvalidStep = fieldsByStep.findIndex((fields) =>
@@ -338,7 +355,7 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
       <Modal.Portal>
         <Modal.Backdrop />
         <Modal.Popup className="max-h-[95vh] max-w-4xl overflow-y-auto p-5 sm:p-7">
-          <form onSubmit={form.handleSubmit(submit, submitInvalid)}>
+          <form onSubmit={guardedSubmit}>
             <div className="mb-6 flex items-center justify-between">
               <Modal.Header>
                 <Modal.Title className="text-2xl">{steps[step]}</Modal.Title>

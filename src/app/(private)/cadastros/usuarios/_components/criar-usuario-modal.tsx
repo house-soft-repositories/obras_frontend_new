@@ -20,14 +20,20 @@ import type { TenantType } from "@/core/schemas/tenants/tenant_schema";
 import { useToast } from "@/core/hooks/useToast";
 import { Modal } from "@/core/ui/molecules/modal";
 
-const roleLabels: Record<UserRole, string> = {
+export const roleLabels: Record<UserRole, string> = {
   SUPERADMIN: "Superadmin",
   ADMIN: "Administrador",
   STAFF: "Equipe",
   USER: "Usuário",
 };
 
-const steps = ["Acesso", "Dados", "Organização"] as const;
+export const steps = ["Acesso", "Dados", "Organização"] as const;
+
+export const fieldsByStep: (keyof CreateUserInput)[][] = [
+  ["role", "tenantId", "actorRole", "actorTenantId"],
+  ["name", "email", "password"],
+  ["localidadeId", "orgaoId", "setorId"],
+];
 
 type StepIndex = 0 | 1 | 2;
 
@@ -40,7 +46,7 @@ type CriarUsuarioModalProps = {
   setores: SetorWithOrgaoSchema[];
 };
 
-function allowedRoles(
+export function allowedRoles(
   actorRole: CriarUsuarioModalProps["actorRole"],
 ): UserRole[] {
   if (actorRole === "SUPERADMIN")
@@ -171,6 +177,7 @@ export function CriarUsuarioModal({
   async function nextStep(event?: React.SyntheticEvent) {
     event?.preventDefault();
     event?.stopPropagation();
+    if (step >= steps.length - 1) return;
     const valid = await validateStep(step);
     if (!valid) return;
     setStep((current) => Math.min(current + 1, 2) as StepIndex);

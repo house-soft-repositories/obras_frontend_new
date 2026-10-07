@@ -195,7 +195,12 @@ function EstagioModal({
                 </Button>
               )}
               {step < steps.length - 1 ? (
-                <Button type="button" onClick={() => setStep(step + 1)}>
+                <Button
+                  type="button"
+                  onClick={() =>
+                    setStep((value) => Math.min(value + 1, steps.length - 1))
+                  }
+                >
                   Avançar
                 </Button>
               ) : (

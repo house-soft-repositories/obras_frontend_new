@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 vi.mock("@/core/actions/obras/create_obra_action", () => ({
@@ -161,7 +161,7 @@ describe("obra pública — wizard no DOM", () => {
     ).toBeInTheDocument();
   });
 
-  it("chega na Revisão sem enviar; só 'Criar obra' envia o payload transformado", async () => {
+  it("chega na Revisão sem enviar; só 'Criar obra' envia o payload transformado", { timeout: 20000 }, async () => {
     const { user, onSuccess } = await abrirModal();
     await preencherAteOrcamentos(user);
 
@@ -186,7 +186,8 @@ describe("obra pública — wizard no DOM", () => {
     expect(dialogo).toHaveTextContent(/R\$\s?1\.500,00/);
     expect(dialogo).toHaveTextContent("01/02/2026");
 
-    // Só o submit cria a obra.
+    // Só o submit cria a obra (após a leitura da revisão).
+    await new Promise((resolve) => setTimeout(resolve, 1100));
     await user.click(screen.getByRole("button", { name: /criar obra/i }));
 
     await waitFor(() => expect(createObraAction).toHaveBeenCalledTimes(1));
@@ -209,5 +210,52 @@ describe("obra pública — wizard no DOM", () => {
     expect(aplicarTagsAction).toHaveBeenCalledWith(OBRA_ID, "urgente");
     await waitFor(() => expect(onSuccess).toHaveBeenCalledTimes(1));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("duplo clique no Continuar não pula a Revisão nem envia", async () => {
+    const { user } = await abrirModal();
+    await preencherAteOrcamentos(user);
+
+    await user.selectOptions(
+      screen.getByLabelText(/fonte/i),
+      OBRA_FORM_UUIDS.fonteA,
+    );
+    await user.type(screen.getByLabelText(/valor/i), "150000");
+
+    const continuar = screen.getByRole("button", { name: /continuar/i });
+    fireEvent.click(continuar);
+    fireEvent.click(continuar);
+
+    expect(
+      await screen.findByRole("heading", { name: "Revisão" }),
+    ).toBeInTheDocument();
+    expect(createObraAction).not.toHaveBeenCalled();
+  });
+
+  it("submit colado no avanço é ignorado; confirmação posterior envia", { timeout: 20000 }, async () => {
+    const { user } = await abrirModal();
+    await preencherAteOrcamentos(user);
+
+    await user.selectOptions(
+      screen.getByLabelText(/fonte/i),
+      OBRA_FORM_UUIDS.fonteA,
+    );
+    await user.type(screen.getByLabelText(/valor/i), "150000");
+    await user.click(screen.getByRole("button", { name: /continuar/i }));
+
+    expect(
+      await screen.findByRole("heading", { name: "Revisão" }),
+    ).toBeInTheDocument();
+
+    // Segundo clique imediato (duplo-clique) cai na janela anti-disparo.
+    await user.click(screen.getByRole("button", { name: /criar obra/i }));
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(createObraAction).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    // Fora da janela, a confirmação deliberada vale.
+    await new Promise((resolve) => setTimeout(resolve, 900));
+    await user.click(screen.getByRole("button", { name: /criar obra/i }));
+    await waitFor(() => expect(createObraAction).toHaveBeenCalledTimes(1));
   });
 });

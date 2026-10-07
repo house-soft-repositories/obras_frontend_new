@@ -17,9 +17,15 @@ import { cn } from "@/core/ui/cn";
 import { InputForm } from "@/core/ui/molecules/input-form";
 import { Modal } from "@/core/ui/molecules/modal";
 
-const steps = ["Empresa", "Contato", "Endereço"] as const;
+export const steps = ["Empresa", "Contato", "Endereço"] as const;
 
 type StepIndex = 0 | 1 | 2;
+
+export const fieldsByStep: (keyof CriarEmpresaInput)[][] = [
+  ["razaoSocial", "cnpj", "nomeFantasia"],
+  ["responsavel", "cargoResponsavel", "email", "telefones"],
+  ["cep", "uf", "logradouro", "numero", "complemento", "bairro", "cidade"],
+];
 
 const UFS = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS",
@@ -117,12 +123,16 @@ export function CriarEmpresaModal() {
 
   async function nextStep(event?: React.SyntheticEvent) {
     event?.preventDefault();
+    if (step >= steps.length - 1) return;
     const fieldsToValidate =
       step === 0
         ? (["razaoSocial", "cnpj", "nomeFantasia"] as const)
         : (["responsavel", "cargoResponsavel", "email"] as const);
     const valid = await form.trigger(fieldsToValidate);
-    if (valid) setStep((previous) => (previous + 1) as StepIndex);
+    if (valid)
+      setStep(
+        (previous) => Math.min(previous + 1, steps.length - 1) as StepIndex,
+      );
   }
 
   function previousStep() {
