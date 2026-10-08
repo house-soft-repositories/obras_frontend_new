@@ -1,16 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
+  agruparPorDia,
   apenasUuids,
   corSemaforo,
   dashboardSchema,
+  diasNoMes,
   itemListaObrasSchema,
   lerFiltro,
+  lerModo,
   montarConsultaObras,
   normalizarPaginacao,
   paginaObrasSchema,
   serializarFiltro,
   totalPaginas,
   type FiltroObras,
+  type ItemListaObras,
 } from "@/core/schemas/relatorios/obras_relatorio_schema";
 
 describe("serializarFiltro — 6 grupos (RN-REL-06..12)", () => {
@@ -118,6 +122,59 @@ describe("paginacao", () => {
     expect(totalPaginas(0)).toBe(1);
     expect(totalPaginas(8, 50)).toBe(1);
     expect(totalPaginas(51, 50)).toBe(2);
+  });
+});
+
+describe("modo de exibição + calendário", () => {
+  const obra = (obraId: string, prazoConclusaoEstagio: string | null) =>
+    ({
+      obraId,
+      codigo: obraId,
+      nome: obraId,
+      tipo: "OBRA",
+      statusObra: "EM_DESENVOLVIMENTO",
+      estagioAtualNome: null,
+      prazoConclusaoEstagio,
+      percentualRealizado: 0,
+      percentualFinanceiro: 0,
+      semaforo: null,
+      orgaoId: null,
+      orgaoNome: null,
+      localidadeNome: null,
+      responsavelNome: null,
+      tags: [],
+      acaoConveniada: null,
+      prioritaria: false,
+      empresaExecutora: null,
+      numeroContrato: null,
+      localizacoes: [],
+      dataCriacao: "",
+      ultimaAtualizacao: null,
+    }) as ItemListaObras;
+
+  it("lerModo aceita só valores do contrato (default lista)", () => {
+    expect(lerModo("calendario")).toBe("calendario");
+    expect(lerModo("lista")).toBe("lista");
+    expect(lerModo("MAPA")).toBe("lista");
+    expect(lerModo(undefined)).toBe("lista");
+  });
+
+  it("agruparPorDia filtra pelo mês do prazo do estágio", () => {
+    const obras = [
+      obra("a", "2026-11-05"),
+      obra("b", "2026-11-05T10:00:00.000Z"),
+      obra("c", "2026-12-01"),
+      obra("d", null),
+    ];
+    const porDia = agruparPorDia(obras, 2026, 11);
+    expect([...porDia.keys()]).toEqual([5]);
+    expect(porDia.get(5)?.map((o) => o.obraId)).toEqual(["a", "b"]);
+  });
+
+  it("diasNoMes respeita ano bissexto", () => {
+    expect(diasNoMes(2026, 2)).toBe(28);
+    expect(diasNoMes(2024, 2)).toBe(29);
+    expect(diasNoMes(2026, 11)).toBe(30);
   });
 });
 
