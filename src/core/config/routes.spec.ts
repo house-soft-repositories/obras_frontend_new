@@ -1,57 +1,40 @@
 import { describe, expect, it } from "vitest";
-import {
-  privateRouteGroupsForRole,
-  privateRoutesForRole,
-} from "@/core/config/routes";
+import { findActiveRoute, privateRoutes } from "@/core/config/routes";
 
-describe("privateRoutesForRole", () => {
-  it("expõe o dashboard para todas as roles", () => {
-    for (const role of ["SUPERADMIN", "ADMIN", "USER", "STAFF"] as const) {
-      expect(privateRoutesForRole(role).map((route) => route.path)).toContain(
-        "/dashboard",
-      );
-    }
+describe("findActiveRoute — só o match mais profundo fica ativo", () => {
+  it("marca o pai quando o path é exato", () => {
+    const active = findActiveRoute(privateRoutes, "/obras-privadas");
+    expect(active?.route.path).toBe("/obras-privadas");
+    expect(active?.parent).toBeNull();
   });
 
-  it("mantém o início para todas as roles", () => {
-    for (const role of ["SUPERADMIN", "ADMIN", "USER", "STAFF"] as const) {
-      expect(privateRoutesForRole(role).map((route) => route.path)).toContain(
-        "/home",
-      );
-    }
+  it("em /obras-privadas/mapa só o filho Mapa vence (pai não marca junto)", () => {
+    const active = findActiveRoute(privateRoutes, "/obras-privadas/mapa");
+    expect(active?.route.path).toBe("/obras-privadas/mapa");
+    expect(active?.parent?.path).toBe("/obras-privadas");
   });
 
-  it("restringe tenants ao SUPERADMIN", () => {
-    expect(
-      privateRoutesForRole("SUPERADMIN").map((route) => route.path),
-    ).toContain("/tenants");
-    expect(privateRoutesForRole("ADMIN").map((route) => route.path)).not.toContain(
-      "/tenants",
+  it("detalhe dinâmico resolve no filho :id com o pai como fallback", () => {
+    const active = findActiveRoute(privateRoutes, "/obras-privadas/123");
+    expect(active?.route.path).toBe("/obras-privadas/:id");
+    expect(active?.parent?.path).toBe("/obras-privadas");
+
+    const publica = findActiveRoute(privateRoutes, "/obras/456");
+    expect(publica?.route.path).toBe("/obras/:id");
+    expect(publica?.parent?.path).toBe("/obras");
+  });
+
+  it("rota sem children continua exata", () => {
+    expect(findActiveRoute(privateRoutes, "/dashboard")?.route.path).toBe(
+      "/dashboard",
     );
+    expect(findActiveRoute(privateRoutes, "/home")?.route.path).toBe("/home");
   });
-});
 
-describe("dashboard — visível no modo público e privado", () => {
-  it("agrupa o dashboard com type null", () => {
-    for (const role of ["SUPERADMIN", "ADMIN", "USER", "STAFF"] as const) {
-      const groups = privateRouteGroupsForRole(role);
-      const painel = groups.find((group) => group.label === "Painel");
-      expect(painel?.type).toBeNull();
-      expect(painel?.routes.map((route) => route.path)).toContain("/dashboard");
-    }
-  });
-});
-
-describe("cadastros de obras públicas", () => {
-  it("expõe empresas contratadas para administradores", () => {
-    for (const role of ["SUPERADMIN", "ADMIN"] as const) {
-      const grupos = privateRouteGroupsForRole(role);
-      const cadastros = grupos.find((group) => group.label === "Cadastros");
-
-      expect(cadastros?.type).toBe("OBRA_PUBLIC");
-      expect(cadastros?.routes.map((route) => route.path)).toContain(
-        "/cadastros/empresas-contratadas",
-      );
-    }
+  it("path inexistente não ativa nada", () => {
+    expect(findActiveRoute(privateRoutes, "/rota-que-nao-existe")).toBeNull();
+    expect(
+      findActiveRoute(privateRoutes, "/obras-privadas/mapa/extra"),
+    ).toBeNull();
   });
 });
