@@ -44,7 +44,7 @@ export function TextareaForm({
         aria-invalid={error ? true : props["aria-invalid"]}
         aria-describedby={describedBy}
         className={cn(
-          Boolean(error) && "!border-[var(--cor-perigo)] focus-visible:!ring-[var(--cor-perigo-borda)]",
+          Boolean(error) && "border-[var(--cor-perigo)] focus-visible:ring-[var(--cor-perigo-borda)]",
           className,
         )}
         {...props}

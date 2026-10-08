@@ -54,7 +54,7 @@ export function InputForm({
         aria-describedby={describedBy}
         className={cn(
           Boolean(error) &&
-            "!border-[var(--cor-perigo)] focus-visible:!ring-[var(--cor-perigo-borda)]",
+            "border-[var(--cor-perigo)] focus-visible:ring-[var(--cor-perigo-borda)]",
           className,
         )}
         {...props}

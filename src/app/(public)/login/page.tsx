@@ -13,7 +13,7 @@ import { authErrorTranslator } from "@/core/errors/auth_error_translator";
 import { useToast } from "@/core/hooks/useToast";
 
 const fieldClassName =
-  "!h-[50px] !rounded-lg !border-login-line !bg-white !py-0 !pr-3.5 !pl-11 text-login-ink transition-[border-color,box-shadow] placeholder:!text-login-placeholder focus:!border-login-accent focus-visible:!ring-3 focus-visible:!ring-login-accent/20 focus-visible:!ring-offset-0";
+  "h-[50px] rounded-lg border-login-line bg-white py-0 pr-3.5 pl-11 text-login-ink transition-[border-color,box-shadow] placeholder:text-login-placeholder focus:border-login-accent focus-visible:ring-3 focus-visible:ring-login-accent/20 focus-visible:ring-offset-0";
 
 type LoginFormData = {
   email: string;
@@ -180,7 +180,7 @@ function FormularioLogin() {
                   className="pointer-events-none absolute top-1/2 left-3.5 size-[18px] -translate-y-1/2 text-login-muted"
                 />
                 <Input
-                  className={`${fieldClassName} !pr-12`}
+                  className={`${fieldClassName} pr-12`}
                   type={mostrarSenha ? "text" : "password"}
                   aria-invalid={errors.password ? true : undefined}
                   placeholder="Digite sua senha"
