@@ -20,6 +20,7 @@ import {
   type FiltroRelatorioObras,
   type FluxoFisicoFinanceiro,
   type ItemListaObras,
+  type QuantificadoresObras,
   type RelatorioObrasPagina,
   type ReportDownload,
   type ResumoDashboard,
@@ -35,6 +36,36 @@ function traduzirErro(error: unknown, fallback: string): string {
 function numero(valor: unknown): number {
   const n = Number(valor);
   return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+
+const QUANTIFICADORES_ZERADOS = {
+  acimaMeta: 0,
+  prazoVencido: 0,
+  abaixoMeta: 0,
+  semStatus: 0,
+  totalObras: 0,
+  dataReferencia: "",
+};
+
+/**
+ * Normaliza a entrada da tela para o FiltroObras do backend: aliases legados
+ * do formulário (`q` -> `buscaTextual`, `status` -> `statusObra`) resolvidos
+ * e paginação (`pagina`/`tamanho`) descartada (endpoints agregados não paginam).
+ */
+function normalizarFiltroAgregado(filtro: FiltroRelatorioObras): FiltroObras {
+  const { q, status, ...restante } = filtro;
+  delete restante.pagina;
+  delete restante.tamanho;
+  const buscaTextual = restante.buscaTextual?.trim() || q?.trim() || undefined;
+  const statusObra = [
+    ...(restante.statusObra ?? []),
+    ...(status?.trim() ? [status.trim()] : []),
+  ];
+  return {
+    ...restante,
+    ...(buscaTextual ? { buscaTextual } : {}),
+    ...(statusObra.length > 0 ? { statusObra } : {}),
+  };
 }
 
 /**
@@ -102,22 +133,12 @@ export async function obterResumoDashboard(
 export async function listarObrasRelatorio(
   filtro: FiltroRelatorioObras = {},
 ): Promise<RelatorioObrasPagina> {
-  const { q, status, pagina, tamanho, ...restante } = filtro;
+  const { pagina, tamanho } = filtro;
   const { pagina: paginaAtual, tamanho: tamanhoAtual } = normalizarPaginacao(
     pagina,
     tamanho,
   );
-  const buscaTextual =
-    restante.buscaTextual?.trim() || q?.trim() || undefined;
-  const statusObra = [
-    ...(restante.statusObra ?? []),
-    ...(status?.trim() ? [status.trim()] : []),
-  ];
-  const consulta: FiltroObras = {
-    ...restante,
-    ...(buscaTextual ? { buscaTextual } : {}),
-    ...(statusObra.length > 0 ? { statusObra } : {}),
-  };
+  const consulta = normalizarFiltroAgregado(filtro);
   try {
     const qsQuant = serializarFiltro(consulta).toString();
     const [listaRes, quantRes] = await Promise.all([
@@ -141,14 +162,7 @@ export async function listarObrasRelatorio(
       total: paginaBruta.total,
       quantificadores: quant.success
         ? quant.data
-        : {
-            acimaMeta: 0,
-            prazoVencido: 0,
-            abaixoMeta: 0,
-            semStatus: 0,
-            totalObras: 0,
-            dataReferencia: "",
-          },
+        : { ...QUANTIFICADORES_ZERADOS },
       pagina: paginaAtual,
       tamanho: tamanhoAtual,
     };
@@ -212,18 +226,8 @@ async function download(
 export async function exportarObrasRelatorioAction(
   filtro: FiltroAgregado & { q?: string; status?: string; formato: "CSV" | "PDF" },
 ): Promise<ServerActionResult<ReportDownload>> {
-  const { formato, q, status, ...restante } = filtro;
-  const buscaTextual =
-    restante.buscaTextual?.trim() || q?.trim() || undefined;
-  const statusObra = [
-    ...(restante.statusObra ?? []),
-    ...(status?.trim() ? [status.trim()] : []),
-  ];
-  const consulta: FiltroObras = {
-    ...restante,
-    ...(buscaTextual ? { buscaTextual } : {}),
-    ...(statusObra.length > 0 ? { statusObra } : {}),
-  };
+  const { formato, ...restante } = filtro;
+  const consulta = normalizarFiltroAgregado(restante);
   return download(
     `/api/relatorios/obras/exportar?${serializarFiltro(consulta, { formato }).toString()}`,
   );
@@ -263,6 +267,19 @@ async function obterAgregado(
   }
 }
 
+/** GET /api/relatorios/quantificadores (cards do relatório, sem paginação). */
+export async function obterQuantificadoresObras(
+  filtro: FiltroRelatorioObras = {},
+): Promise<QuantificadoresObras> {
+  const qs = serializarFiltro(normalizarFiltroAgregado(filtro)).toString();
+  const data = await obterAgregado(
+    `/api/relatorios/quantificadores${qs ? `?${qs}` : ""}`,
+    "Não foi possível carregar os quantificadores.",
+  );
+  const parsed = quantificadoresObrasSchema.safeParse(data);
+  return parsed.success ? parsed.data : { ...QUANTIFICADORES_ZERADOS };
+}
+
 /** GET /api/relatorios/obras/mapa (quando a tela existir). */
 export async function obterMapaObrasRelatorio(
   filtro: FiltroAgregado = {},
@@ -279,11 +296,11 @@ export async function obterMapaObrasRelatorio(
   });
 }
 
-/** GET /api/relatorios/obras/calendario (quando a tela existir). */
+/** GET /api/relatorios/obras/calendario (obras com prazo do estágio). */
 export async function obterCalendarioObrasRelatorio(
-  filtro: FiltroAgregado = {},
+  filtro: FiltroRelatorioObras = {},
 ): Promise<ItemListaObras[]> {
-  const qs = serializarFiltro(filtro).toString();
+  const qs = serializarFiltro(normalizarFiltroAgregado(filtro)).toString();
   const data = await obterAgregado(
     `/api/relatorios/obras/calendario${qs ? `?${qs}` : ""}`,
     "Não foi possível carregar o calendário de obras.",

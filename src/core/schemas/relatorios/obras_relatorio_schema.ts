@@ -407,3 +407,42 @@ export function totalPaginas(
 ): number {
   return Math.max(1, Math.ceil(total / tamanho));
 }
+
+/** Modos de exibição do relatório (query string `?modo=`). */
+export const MODOS_EXIBICAO = ["lista", "calendario"] as const;
+
+export type ModoExibicaoObras = (typeof MODOS_EXIBICAO)[number];
+
+/** Lê o modo da query string; qualquer valor fora do contrato cai em "lista". */
+export function lerModo(valor: unknown): ModoExibicaoObras {
+  return valor === "calendario" ? "calendario" : "lista";
+}
+
+/**
+ * Agrupa obras pelo dia do prazo de conclusão do estágio atual (modo
+ * calendário). Função pura — paridade com o legado
+ * (`lib/relatorios/calendario.ts`): `ano`/`mes` 1-based; devolve só as obras
+ * cujo prazo cai no mês informado.
+ */
+export function agruparPorDia(
+  obras: ItemListaObras[],
+  ano: number,
+  mes: number,
+): Map<number, ItemListaObras[]> {
+  const porDia = new Map<number, ItemListaObras[]>();
+  for (const obra of obras) {
+    const prazo = obra.prazoConclusaoEstagio?.slice(0, 10);
+    if (!prazo) continue;
+    const [a, m, d] = prazo.split("-").map(Number);
+    if (a !== ano || m !== mes || !Number.isInteger(d) || d < 1) continue;
+    const lista = porDia.get(d) ?? [];
+    lista.push(obra);
+    porDia.set(d, lista);
+  }
+  return porDia;
+}
+
+/** Número de dias no mês (mês 1-based). */
+export function diasNoMes(ano: number, mes: number): number {
+  return new Date(ano, mes, 0).getDate();
+}

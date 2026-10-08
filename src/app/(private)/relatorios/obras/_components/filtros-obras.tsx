@@ -38,10 +38,12 @@ export function FiltrosObras({
     if (tipo) usp.set("tipo", tipo);
     if (orgaoId) usp.set("orgaoId", orgaoId);
     // Troca de filtro volta para a primeira página (paginação server-side);
-    // mantém o tamanho de página atual quando houver.
+    // mantém o tamanho de página e o modo de exibição atuais quando houver.
     const atual = new URLSearchParams(window.location.search);
     const tamanho = atual.get("tamanho");
     if (tamanho) usp.set("tamanho", tamanho);
+    const modo = atual.get("modo");
+    if (modo) usp.set("modo", modo);
     const qs = usp.toString();
     router.push(`/relatorios/obras${qs ? `?${qs}` : ""}`);
   }
@@ -51,7 +53,9 @@ export function FiltrosObras({
     setStatus("");
     setTipo("");
     setOrgaoId("");
-    router.push("/relatorios/obras");
+    // Limpar volta para a lista sem filtros, mas mantém o modo calendário.
+    const modo = new URLSearchParams(window.location.search).get("modo");
+    router.push(modo ? `/relatorios/obras?modo=${modo}` : "/relatorios/obras");
   }
 
   return (
