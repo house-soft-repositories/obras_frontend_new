@@ -66,6 +66,17 @@ export const privateRouteGroups: RouteGroup[] = [
           userRoleSchema.enum.ADMIN,
           userRoleSchema.enum.STAFF,
         ],
+        children: [
+          {
+            path: "/obras/:id",
+            label: "Detalhe da obra",
+            roles: [
+              userRoleSchema.enum.SUPERADMIN,
+              userRoleSchema.enum.ADMIN,
+              userRoleSchema.enum.STAFF,
+            ],
+          },
+        ],
       },
     ],
   },
@@ -92,6 +103,46 @@ export const privateRouteGroups: RouteGroup[] = [
               userRoleSchema.enum.STAFF,
             ],
           },
+          {
+            path: "/obras-privadas/autos",
+            label: "Autos",
+            icon: "Gavel",
+            roles: [
+              userRoleSchema.enum.SUPERADMIN,
+              userRoleSchema.enum.ADMIN,
+              userRoleSchema.enum.STAFF,
+            ],
+          },
+          {
+            path: "/obras-privadas/fiscalizacoes",
+            label: "Fiscalizações",
+            icon: "HardHat",
+            roles: [
+              userRoleSchema.enum.SUPERADMIN,
+              userRoleSchema.enum.ADMIN,
+              userRoleSchema.enum.STAFF,
+            ],
+          },
+          {
+            path: "/obras-privadas/licenciamento",
+            label: "Licenciamento",
+            icon: "FileText",
+            roles: [
+              userRoleSchema.enum.SUPERADMIN,
+              userRoleSchema.enum.ADMIN,
+              userRoleSchema.enum.STAFF,
+            ],
+          },
+          {
+            path: "/obras-privadas/mapa",
+            label: "Mapa",
+            icon: "MapPinned",
+            roles: [
+              userRoleSchema.enum.SUPERADMIN,
+              userRoleSchema.enum.ADMIN,
+              userRoleSchema.enum.STAFF,
+            ],
+          },
         ],
       },
       {
@@ -108,46 +159,6 @@ export const privateRouteGroups: RouteGroup[] = [
         path: "/profissionais-tecnicos",
         label: "Profissionais técnicos",
         icon: "HardHat",
-        roles: [
-          userRoleSchema.enum.SUPERADMIN,
-          userRoleSchema.enum.ADMIN,
-          userRoleSchema.enum.STAFF,
-        ],
-      },
-      {
-        path: "/obras-privadas/autos",
-        label: "Autos",
-        icon: "Gavel",
-        roles: [
-          userRoleSchema.enum.SUPERADMIN,
-          userRoleSchema.enum.ADMIN,
-          userRoleSchema.enum.STAFF,
-        ],
-      },
-      {
-        path: "/obras-privadas/fiscalizacoes",
-        label: "Fiscalizações",
-        icon: "HardHat",
-        roles: [
-          userRoleSchema.enum.SUPERADMIN,
-          userRoleSchema.enum.ADMIN,
-          userRoleSchema.enum.STAFF,
-        ],
-      },
-      {
-        path: "/obras-privadas/licenciamento",
-        label: "Licenciamento",
-        icon: "FileText",
-        roles: [
-          userRoleSchema.enum.SUPERADMIN,
-          userRoleSchema.enum.ADMIN,
-          userRoleSchema.enum.STAFF,
-        ],
-      },
-      {
-        path: "/obras-privadas/mapa",
-        label: "Mapa",
-        icon: "MapPinned",
         roles: [
           userRoleSchema.enum.SUPERADMIN,
           userRoleSchema.enum.ADMIN,
@@ -306,6 +317,45 @@ export function findRoute(routes: Route[], currentPath: string): Route | null {
     if (route.children) {
       const found = findRoute(route.children, currentPath);
       if (found) return found;
+    }
+  }
+
+  return null;
+}
+
+export interface ActiveRoute {
+  route: Route;
+  parent: Route | null;
+}
+
+/**
+ * Resolve a rota ativa para a sidebar: o match mais profundo vence, então uma
+ * sub-rota em `children` nunca deixa o pai marcado junto. A precedência é:
+ * exato no nível, depois `children` (recursivo) e só então segmento dinâmico
+ * (`:id`) — um detalhe como `/obras-privadas/123` resolve no filho dinâmico
+ * e a sidebar usa o pai como fallback.
+ */
+export function findActiveRoute(
+  routes: Route[],
+  currentPath: string,
+  parent: Route | null = null,
+): ActiveRoute | null {
+  for (const route of routes) {
+    if (!route.path.includes(":") && matchPath(route.path, currentPath)) {
+      return { route, parent };
+    }
+  }
+
+  for (const route of routes) {
+    if (route.children) {
+      const found = findActiveRoute(route.children, currentPath, route);
+      if (found) return found;
+    }
+  }
+
+  for (const route of routes) {
+    if (route.path.includes(":") && matchPath(route.path, currentPath)) {
+      return { route, parent };
     }
   }
 
