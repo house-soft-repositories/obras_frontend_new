@@ -175,6 +175,11 @@
   color: var(--chip-teal-tx, #0f766e);
 }
 
+/* Resets e estilos de elementos nus (sem classe) — legado Claude Design.
+ * Ficam em @layer base para que os utilities do Tailwind (atoms em
+ * core/ui) vençam no cascade: sem isso, o CSS sem camada ganha do
+ * @layer utilities e paddings como pl-9 dos inputs com ícone perdem. */
+@layer base {
 * {
   box-sizing: border-box;
 }
@@ -308,6 +313,7 @@ th {
   font-weight: 600;
   color: var(--cor-texto-fraco);
   background: #f7f8fa;
+}
 }
 
 /* ---- Utilitarios reaproveitaveis (Claude Design) ---- */
