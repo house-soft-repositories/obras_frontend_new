@@ -5,6 +5,12 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { Controller, useForm, type FieldErrors } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  credentialsSchema,
+  type CredentialsInput,
+} from "@/core/schemas/auth/credentials";
 import { Button } from "@/core/ui/atoms/button";
 import { Checkbox } from "@/core/ui/atoms/checkbox";
 import { Input } from "@/core/ui/atoms/input";
@@ -15,11 +21,11 @@ import { useToast } from "@/core/hooks/useToast";
 const fieldClassName =
   "h-[50px] rounded-lg border-login-line bg-white py-0 pr-3.5 pl-11 text-login-ink transition-[border-color,box-shadow] placeholder:text-login-placeholder focus:border-login-accent focus-visible:ring-3 focus-visible:ring-login-accent/20 focus-visible:ring-offset-0";
 
-type LoginFormData = {
-  email: string;
-  password: string;
-  remember: boolean;
-};
+const loginFormSchema = credentialsSchema.extend({
+  remember: z.boolean(),
+});
+
+type LoginFormData = z.infer<typeof loginFormSchema>;
 
 function getSafeNextPath(next?: string | null): string | null {
   if (!next || !next.startsWith("/") || next.startsWith("//")) {
@@ -47,6 +53,8 @@ function FormularioLogin() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
+    resolver: zodResolver(loginFormSchema),
+    mode: "onTouched",
     defaultValues: {
       email: "",
       password: "",
@@ -55,9 +63,12 @@ function FormularioLogin() {
   });
 
   async function aoEnviar(data: LoginFormData) {
-    const resultado = await signIn("credentials", {
+    const credenciais: CredentialsInput = {
       email: data.email.trim().toLowerCase(),
       password: data.password,
+    };
+    const resultado = await signIn("credentials", {
+      ...credenciais,
       redirect: false,
     });
 
@@ -161,13 +172,7 @@ function FormularioLogin() {
                   aria-invalid={errors.email ? true : undefined}
                   placeholder="voce@prefeitura.gov.br"
                   autoComplete="email"
-                  {...register("email", {
-                    required: "Informe seu e-mail.",
-                    pattern: {
-                      value: /^\S+@\S+\.\S+$/,
-                      message: "Informe um e-mail válido.",
-                    },
-                  })}
+                  {...register("email")}
                 />
               </span>
             </label>
@@ -185,9 +190,7 @@ function FormularioLogin() {
                   aria-invalid={errors.password ? true : undefined}
                   placeholder="Digite sua senha"
                   autoComplete="current-password"
-                  {...register("password", {
-                    required: "Informe sua senha.",
-                  })}
+                  {...register("password")}
                 />
                 <Button
                   type="button"

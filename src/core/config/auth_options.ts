@@ -5,7 +5,6 @@ import { CredentialsSignin } from "next-auth";
 import type { User } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import HttpClientException from "@/core/exceptions/http_client_exception";
-import api from "@/core/rest_client/api";
 import {
   authTokensSchema,
   type AuthTokens,
@@ -28,6 +27,12 @@ interface CredenciaisRenovadas {
 const switchTenancyResponseSchema = authTokensSchema.extend({
   tenancy: authenticatedUserSchema.shape.tenant.unwrap(),
 });
+
+// Margem para renovar o access antes do vencimento real: o backend faz rotação
+// single-use do refresh (revoga a sessão antiga ao emitir a nova), então
+// renovar exatamente no limite do `exp` faz requisições SSR concorrentes
+// disputarem o mesmo refresh e a perdedora recebe AUTH_INVALID_REFRESH_TOKEN.
+const SKEW_RENOVACAO_MS = 60_000;
 
 
 class AuthCredentialsError extends CredentialsSignin {
@@ -90,21 +95,22 @@ function extrairMensagemErroAutenticacao(error: unknown): string {
 }
 
 async function buscarUsuario(accessToken: string): Promise<AuthenticatedUser> {
-  const resposta = await api.unauth.get<unknown>("/api/auth/me", {
+  const resposta = await fetchSemInterceptors("/api/auth/me", {
     headers: { authorization: `Bearer ${accessToken}` },
   });
 
-  return authenticatedUserSchema.parse(resposta.data);
+  return authenticatedUserSchema.parse(resposta);
 }
 
 async function renovarCredenciais(
   refreshToken: string,
 ): Promise<CredenciaisRenovadas> {
-  const resposta = await api.unauth.post<unknown>("/api/auth/refresh", {
+  const data = await fetchSemInterceptors("/api/auth/refresh", {
+    method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ refreshToken }),
   });
-  const tokens = authTokensSchema.parse(resposta.data);
+  const tokens = authTokensSchema.parse(data);
   const payload = validarPayloadAccess(tokens.accessToken);
   if (!payload) {
     throw new Error("Access token inválido no refresh");
@@ -113,8 +119,78 @@ async function renovarCredenciais(
   return { tokens, payload, usuario: await buscarUsuario(tokens.accessToken) };
 }
 
+// Chamadas internas do NextAuth (login/refresh/switch-tenancy) usam `fetch`
+// direto em vez de `api.unauth`: o HttpClient carrega o
+// AuthExpiredInterceptor, que chama `redirect()` em 401 de sessão expirada.
+// Dentro do callback `jwt` isso dispararia NEXT_REDIRECT no meio do refresh —
+// a origem do loop de redirects quando o access expira. Aqui queremos o erro
+// puro (HttpClientException) para marcar a sessão com RefreshTokenError; o
+// redirect para /login fica com o interceptor das chamadas de página (que já
+// roda fora do `jwt`) e com o proxy, que limpa o cookie.
+async function fetchSemInterceptors(
+  path: string,
+  init?: RequestInit,
+): Promise<unknown> {
+  const resposta = await fetch(`${env.NEXT_API_URL}${path}`, init);
+
+  let data: unknown = null;
+  try {
+    data = await resposta.json();
+  } catch {
+    data = null;
+  }
+
+  if (!resposta.ok) {
+    const rawMessage =
+      typeof data === "object" && data !== null && "message" in data
+        ? (data as { message?: unknown }).message
+        : undefined;
+    const code =
+      typeof data === "object" &&
+      data !== null &&
+      "code" in data &&
+      typeof (data as { code?: unknown }).code === "string"
+        ? (data as { code: string }).code
+        : undefined;
+    const message = Array.isArray(rawMessage)
+      ? rawMessage.join(", ")
+      : typeof rawMessage === "string"
+        ? rawMessage
+        : "Request failed";
+    throw new HttpClientException(code ?? message, resposta.status, data);
+  }
+
+  return data;
+}
+
+function relancarRedirectSeNecessario(error: unknown): void {
+  const digest =
+    typeof error === "object" && error !== null && "digest" in error
+      ? (error as { digest?: unknown }).digest
+      : undefined;
+  if (typeof digest === "string" && digest.startsWith("NEXT_REDIRECT")) {
+    throw error;
+  }
+}
+
+// Refresh inválido (backend: 401 AUTH_INVALID_REFRESH_TOKEN — JWT vencido,
+// sessão revogada ou hash divergente) equivale a logout: limpa os tokens do
+// JWT do NextAuth em vez de manter o access morto. Manter o token morto faria
+// as chamadas SSR seguintes saírem com 401 "Unauthorized", o interceptor
+// mandaria para /login e o proxy (que vê o cookie ainda válido) devolveria
+// para "/" em loop.
+function marcarSessaoComoExpirada(token: JWT): JWT {
+  return {
+    ...token,
+    accessToken: undefined,
+    refreshToken: undefined,
+    accessTokenExpiresAt: undefined,
+    error: "RefreshTokenError",
+  };
+}
+
 async function renovarToken(token: JWT): Promise<JWT> {
-  if (!token.refreshToken) return { ...token, error: "RefreshTokenError" };
+  if (!token.refreshToken) return marcarSessaoComoExpirada(token);
 
   try {
     const { tokens, payload, usuario } = await renovarCredenciais(
@@ -132,8 +208,9 @@ async function renovarToken(token: JWT): Promise<JWT> {
       role: usuario.role,
       error: undefined,
     };
-  } catch {
-    return { ...token, error: "RefreshTokenError" };
+  } catch (error) {
+    relancarRedirectSeNecessario(error);
+    return marcarSessaoComoExpirada(token);
   }
 }
 
@@ -141,37 +218,39 @@ async function trocarTenancyNoBackend(
   token: JWT,
   tenantId: string,
 ): Promise<JWT> {
-  if (!token.accessToken) return { ...token, error: "RefreshTokenError" };
+  if (!token.accessToken) return marcarSessaoComoExpirada(token);
 
   try {
-    const resposta = await api.unauth.post<unknown>("/api/auth/switch-tenancy", {
+    const data = await fetchSemInterceptors("/api/auth/switch-tenancy", {
+      method: "POST",
       headers: {
         "content-type": "application/json",
         authorization: `Bearer ${token.accessToken}`,
       },
       body: JSON.stringify({ tenantId }),
     });
-    const data = switchTenancyResponseSchema.parse(resposta.data);
-    const payload = validarPayloadAccess(data.accessToken);
+    const parsed = switchTenancyResponseSchema.parse(data);
+    const payload = validarPayloadAccess(parsed.accessToken);
     if (!payload) {
       throw new Error("Access token inválido no switch de tenancy");
     }
 
     if (token.sub && token.sub !== payload.sub) {
-      return { ...token, error: "RefreshTokenError" };
+      return marcarSessaoComoExpirada(token);
     }
 
     return {
       ...token,
-      accessToken: data.accessToken,
-      refreshToken: data.refreshToken,
+      accessToken: parsed.accessToken,
+      refreshToken: parsed.refreshToken,
       accessTokenExpiresAt: payload.exp * 1000,
       sub: payload.sub,
-      tenant: data.tenancy,
+      tenant: parsed.tenancy,
       error: undefined,
     };
-  } catch {
-    return { ...token, error: "RefreshTokenError" };
+  } catch (error) {
+    relancarRedirectSeNecessario(error);
+    return marcarSessaoComoExpirada(token);
   }
 }
 
@@ -192,7 +271,8 @@ export const { handlers, auth, signIn, signOut, unstable_update: updateSession }
         }
 
         try {
-          const resposta = await api.unauth.post<unknown>("/api/auth/login", {
+          const data = await fetchSemInterceptors("/api/auth/login", {
+            method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
               email: credentials.email,
@@ -200,7 +280,7 @@ export const { handlers, auth, signIn, signOut, unstable_update: updateSession }
             }),
           });
 
-          const tokens = authTokensSchema.safeParse(resposta.data);
+          const tokens = authTokensSchema.safeParse(data);
 
           if (!tokens.success) {
             throw new AuthCredentialsError("AUTH_INVALID_CREDENTIALS");
@@ -250,6 +330,7 @@ export const { handlers, auth, signIn, signOut, unstable_update: updateSession }
             role: usuario.role,
           };
         } catch (error) {
+          relancarRedirectSeNecessario(error);
           throw new AuthCredentialsError(
             extrairMensagemErroAutenticacao(error),
           );
@@ -303,7 +384,7 @@ export const { handlers, auth, signIn, signOut, unstable_update: updateSession }
       if (
         token.accessToken &&
         typeof token.accessTokenExpiresAt === "number" &&
-        Date.now() < token.accessTokenExpiresAt
+        Date.now() < token.accessTokenExpiresAt - SKEW_RENOVACAO_MS
       ) {
         return token;
       }
