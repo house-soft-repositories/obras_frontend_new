@@ -112,11 +112,18 @@ export async function proxy(request: NextRequest) {
   }
 
   function clearSessionCookie(response: NextResponse) {
-    // Apaga nas duas variantes de nome (com e sem prefixo __Secure-) para
-    // garantir o logout independente de como o cookie foi emitido.
-    response.cookies.delete(cookieSessao.nome);
-    response.cookies.delete("authjs.session-token");
-    response.cookies.delete("__Secure-authjs.session-token");
+    // Expira nas duas variantes de nome (com e sem prefixo __Secure-) com
+    // `path: "/"` explícito: `delete()` sozinho pode não cobrir o cookie
+    // httpOnly emitido pelo Auth.js com Path=/, e o cookie morto faria este
+    // proxy mandar o usuário de volta para "/" em loop de redirect.
+    const nomes = [
+      cookieSessao.nome,
+      "authjs.session-token",
+      "__Secure-authjs.session-token",
+    ];
+    for (const nome of new Set(nomes)) {
+      response.cookies.set(nome, "", { expires: new Date(0), path: "/" });
+    }
   }
 
   function getSafeNextPath(path: string | null): string | null {

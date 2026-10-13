@@ -23,7 +23,7 @@ function getErrorDataField(error: HttpClientException, field: string): unknown {
   return (data as Record<string, unknown>)[field];
 }
 
-function isAuthInvalidRefreshToken(error: unknown): boolean {
+function isSessionExpiredError(error: unknown): boolean {
   if (
     !(error instanceof HttpClientException) ||
     error.statusCode !== 401
@@ -46,6 +46,34 @@ function isAuthInvalidRefreshToken(error: unknown): boolean {
   );
 }
 
+// O 401 "Unauthorized" genérico tem dois significados distintos e o redirect
+// cego para /login causava o loop: com a sessão marcada com erro (refresh
+// inválido), a requisição SSR sai sem Authorization e o redirect é correto —
+// o proxy limpa o cookie e não há bounce. Mas com a sessão válida e o access
+// morto (ex.: revogado no backend com `exp` ainda futuro), o proxy vê o cookie
+// válido e devolve /login → "/" em loop. Por isso só redireciona quando a
+// sessão está marcada com erro; senão o erro propaga e a Server Action
+// retorna `{ success: false }` (sem redirect, sem loop).
+// Import dinâmico para não criar ciclo estático com `auth_options`
+// (que não passa mais pelo HttpClient, então `auth()` aqui não recai
+// neste interceptor).
+async function hasSessionErrorSafe(): Promise<boolean> {
+  try {
+    const { auth } = await import("@/core/config/auth_options");
+    const session = await auth();
+    return Boolean(session?.error);
+  } catch (error) {
+    const digest =
+      typeof error === "object" && error !== null && "digest" in error
+        ? (error as { digest?: unknown }).digest
+        : undefined;
+    if (typeof digest === "string" && digest.startsWith("NEXT_REDIRECT")) {
+      throw error;
+    }
+    return true;
+  }
+}
+
 async function getCurrentPathSafe(): Promise<string | null> {
   try {
     return (await headers()).get(CURRENT_PATH_HEADER);
@@ -58,11 +86,16 @@ async function getCurrentPathSafe(): Promise<string | null> {
 
 export class AuthExpiredInterceptor implements Interceptor {
   async error(error: unknown): Promise<unknown> {
-    if (typeof window === "undefined" && isAuthInvalidRefreshToken(error)) {
-      // Só redireciona: o logout (apagar o cookie de sessão) acontece no
-      // proxy, que detecta o token com erro e limpa o cookie na resposta.
-      // Sem isso, o cookie morto faria o proxy mandar de volta para "/" e o
-      // app entraria em loop de redirect.
+    if (typeof window === "undefined" && isSessionExpiredError(error)) {
+      // Só redireciona quando a sessão está marcada com erro (refresh
+      // inválido): o logout (apagar o cookie de sessão) acontece no proxy,
+      // que detecta o token com erro e limpa o cookie na resposta.
+      // Sem sessão em erro, devolver o 401 sem redirect evita o loop
+      // /login ↔ "/" (o proxy veria o cookie ainda válido e devolveria
+      // para "/").
+      if (!(await hasSessionErrorSafe())) {
+        return error;
+      }
       const currentPath = await getCurrentPathSafe();
       const nextPath = getSafeNextPath(currentPath);
       const redirectTo = nextPath
