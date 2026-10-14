@@ -115,14 +115,20 @@ export async function proxy(request: NextRequest) {
     // Expira nas duas variantes de nome (com e sem prefixo __Secure-) com
     // `path: "/"` explícito: `delete()` sozinho pode não cobrir o cookie
     // httpOnly emitido pelo Auth.js com Path=/, e o cookie morto faria este
-    // proxy mandar o usuário de volta para "/" em loop de redirect.
+    // proxy mandar o usuário de volta para "/" em loop de redirect. Cookies
+    // com prefixo `__Secure-` também precisam sair com `Secure`, senão o
+    // navegador ignora o Set-Cookie de expiração e mantém a sessão morta.
     const nomes = [
       cookieSessao.nome,
       "authjs.session-token",
       "__Secure-authjs.session-token",
     ];
     for (const nome of new Set(nomes)) {
-      response.cookies.set(nome, "", { expires: new Date(0), path: "/" });
+      response.cookies.set(nome, "", {
+        expires: new Date(0),
+        path: "/",
+        secure: nome.startsWith("__Secure-"),
+      });
     }
   }
 

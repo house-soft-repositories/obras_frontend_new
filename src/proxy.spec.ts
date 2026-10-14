@@ -55,6 +55,9 @@ describe("proxy — sessão expirada não entra em loop", () => {
     );
     const cookie = resposta.cookies.get("authjs.session-token");
     expect(cookie?.value).toBe("");
+    const cookieSeguro = resposta.cookies.get("__Secure-authjs.session-token");
+    expect(cookieSeguro?.value).toBe("");
+    expect(cookieSeguro?.secure).toBe(true);
     const expiracao = cookie?.expires;
     const expiraEmMs =
       expiracao instanceof Date ? expiracao.getTime() : (expiracao ?? 0);
