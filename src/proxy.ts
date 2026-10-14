@@ -1,13 +1,14 @@
 import { findRoute, routes } from "@/core/config/routes";
-import { resolverCookieSessao } from "@/core/config/auth_cookie";
-import { getToken } from "next-auth/jwt";
+import { auth } from "@/core/config/auth_options";
+import type { Session } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { env } from "@/core/config/enviroment_variables";
 
 const REDIRECT_WHEN_NOT_AUTHENTICATED = "/login";
 const REDIRECT_WHEN_NOT_PERMISSION = "/";
 
-export async function proxy(request: NextRequest) {
+type RequestWithAuth = NextRequest & { auth: Session | null };
+
+async function handleProxy(request: RequestWithAuth) {
   const path = request.nextUrl.pathname;
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(
@@ -15,29 +16,28 @@ export async function proxy(request: NextRequest) {
     `${request.nextUrl.pathname}${request.nextUrl.search}`,
   );
   const currentRoute = findRoute(routes, path);
-  const cookieSessao = resolverCookieSessao(
-    env.NEXTAUTH_URL,
-    request.headers.get("x-forwarded-proto"),
-  );
-  const token = await getToken({
-    req: request,
-    secret: env.NEXT_AUTH_SECRET,
-    salt: cookieSessao.nome,
-    secureCookie: cookieSessao.seguro,
-  });
+  // A sessão vem do wrapper `auth()` (não de `getToken`): além de
+  // descriptografar o cookie, ele executa o callback `jwt` — que tenta o
+  // refresh do access expirado e marca `error: "RefreshTokenError"` quando o
+  // refresh é rejeitado — e carrega o cookie atualizado na resposta (ver
+  // `handleAuth` no Auth.js). Com `getToken` puro, o cookie morto nunca era
+  // remarcado aqui no edge: o proxy via sempre o JWT antigo sem `error`,
+  // tratava a sessão morta como válida (/login → /) e o SSR marcava o erro
+  // sem conseguir persistir o cookie — loop infinito de redirect.
+  const session = request.auth ?? null;
 
   // Sessão marcada com erro pelo callback jwt (ex.: RefreshTokenError após o
   // backend devolver AUTH_INVALID_REFRESH_TOKEN): equivale a deslogado. Faz o
   // logout aqui — apaga o cookie de sessão na resposta — além de redirecionar
   // ao login com ?next=. Sem apagar o cookie, o token morto faria este proxy
   // mandar o usuário de volta para "/" e o app entraria em loop de redirect.
-  const sessionError = (token as { error?: unknown } | null)?.error;
-  if (token && typeof sessionError === "string" && sessionError) {
+  const sessionError = session?.error;
+  if (session && typeof sessionError === "string" && sessionError) {
     return redirectExpiredSession(request);
   }
 
   if (
-    token &&
+    session &&
     currentRoute?.roles === null &&
     currentRoute.whenAuthenticated === "redirect"
   ) {
@@ -45,33 +45,33 @@ export async function proxy(request: NextRequest) {
   }
 
   if (
-    token &&
+    session &&
     currentRoute?.roles === null &&
     currentRoute.whenAuthenticated === "allow"
   ) {
     return nextWithCurrentPath();
   }
 
-  // if (token && Array.isArray(currentRoute?.roles)) {
-  //   const hasPermission = currentRoute?.roles?.includes(token.user.role);
+  // if (session && Array.isArray(currentRoute?.roles)) {
+  //   const hasPermission = currentRoute?.roles?.includes(session.user.role);
   //   if (hasPermission) {
   //     return NextResponse.next();
   //   }
   //   return redirectUserForNotPermission(request);
   // }
 
-  if (!token && Array.isArray(currentRoute?.roles)) {
+  if (!session && Array.isArray(currentRoute?.roles)) {
     return redirectUserNotAuthenticated(request);
   }
 
-  if (!token && currentRoute?.roles === null) {
+  if (!session && currentRoute?.roles === null) {
     return nextWithCurrentPath();
   }
 
   // Deny-by-default (V-09): uma rota não registrada exige autenticação. Um usuário
   // autenticado navega normalmente (a autorização fina fica nas páginas); um
   // usuário não autenticado é redirecionado ao login em vez de liberado.
-  if (!currentRoute && !token) {
+  if (!currentRoute && !session) {
     return redirectUserNotAuthenticated(request);
   }
 
@@ -98,6 +98,9 @@ export async function proxy(request: NextRequest) {
   function redirectUserForNotPermission(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = REDIRECT_WHEN_NOT_PERMISSION;
+    // A raiz (/) redireciona a si mesma para /home e ignora query: preservar o
+    // ?next= aqui gerava /?next=/home e ?next= aninhado a cada volta do loop.
+    redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -118,11 +121,7 @@ export async function proxy(request: NextRequest) {
     // proxy mandar o usuário de volta para "/" em loop de redirect. Cookies
     // com prefixo `__Secure-` também precisam sair com `Secure`, senão o
     // navegador ignora o Set-Cookie de expiração e mantém a sessão morta.
-    const nomes = [
-      cookieSessao.nome,
-      "authjs.session-token",
-      "__Secure-authjs.session-token",
-    ];
+    const nomes = ["authjs.session-token", "__Secure-authjs.session-token"];
     for (const nome of new Set(nomes)) {
       response.cookies.set(nome, "", {
         expires: new Date(0),
@@ -147,6 +146,13 @@ export async function proxy(request: NextRequest) {
     return path;
   }
 }
+
+// O wrapper `auth()` executa o callback `jwt` no edge e anexa à resposta o
+// cookie de sessão atualizado (refresh bem-sucedido ou marcação de erro).
+// Sem ele, o JWT remarcado com erro nunca chegava ao navegador pela navegação
+// (o SSR marca em memória mas não pode persistir cookies) e o proxy, lendo o
+// cookie velho sem `error`, entrava em loop. Ver `handleAuth` no Auth.js.
+export const proxy = auth((request) => handleProxy(request));
 
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico|public).*)"],

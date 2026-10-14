@@ -1,53 +1,49 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { NextRequest, NextResponse } from "next/server";
 
-vi.mock("@/core/config/enviroment_variables", () => ({
-  env: {
-    NEXT_API_URL: "http://api.test",
-    // http:// → variante sem prefixo __Secure- (cobre o fluxo de localhost).
-    NEXTAUTH_URL: "http://localhost:3001",
-    NEXT_AUTH_SECRET: "segredo-de-teste-com-32-chars!!",
-  },
-  getEnv: () => ({
-    NEXT_API_URL: "http://api.test",
-    NEXTAUTH_URL: "http://localhost:3001",
-    NEXT_AUTH_SECRET: "segredo-de-teste-com-32-chars!!",
-  }),
-}));
-
-vi.mock("next-auth/jwt", () => ({
-  getToken: vi.fn(),
+vi.mock("@/core/config/auth_options", () => ({
+  // Identidade: nos testes o `proxy` exportado já é o handler interno; a
+  // sessão é injetada direto em `req.auth`. O comportamento do wrapper real
+  // (executar o jwt + anexar o cookie atualizado) é do Auth.js, coberto pelo
+  // teste de `auth_options` e pelo teste de fumaça contra o deploy.
+  auth: (fn: (req: unknown) => unknown) => fn,
 }));
 
 const { proxy } = await import("@/proxy");
+// O wrapper `auth()` real tipa o retorno como `Response | void`; aqui o mock
+// é identidade, então o handler resolve sempre `NextResponse`.
+const callProxy = proxy as unknown as (
+  req: NextRequest,
+) => Promise<NextResponse>;
 
-const getTokenMock = vi.mocked(getToken);
-
-function requisicao(path: string) {
-  return new NextRequest(`http://localhost:3001${path}`);
+function requisicao(path: string, session: unknown) {
+  const req = new NextRequest(`http://localhost:3001${path}`);
+  (req as unknown as Record<string, unknown>).auth = session;
+  return req;
 }
 
-function tokenValido() {
+function sessaoValida() {
   return {
-    sub: "user-1",
-    accessToken: "access-valido",
-    accessTokenExpiresAt: Date.now() + 3600000,
+    user: {
+      id: "user-1",
+      name: "User",
+      email: "user@test.com",
+      role: "USER",
+      tenant: null,
+    },
+    expires: new Date(Date.now() + 3600000).toISOString(),
   };
 }
 
 describe("proxy — sessão expirada não entra em loop", () => {
   beforeEach(() => {
-    getTokenMock.mockReset();
+    vi.clearAllMocks();
   });
 
   it("token com erro em rota privada: redireciona ao /login com ?next= e expira o cookie", async () => {
-    getTokenMock.mockResolvedValue({
-      ...tokenValido(),
-      error: "RefreshTokenError",
-    });
-
-    const resposta = await proxy(requisicao("/home"));
+    const resposta = await callProxy(
+      requisicao("/home", { ...sessaoValida(), error: "RefreshTokenError" }),
+    );
 
     expect(resposta.status).toBe(307);
     expect(resposta.headers.get("location")).toBe(
@@ -65,30 +61,31 @@ describe("proxy — sessão expirada não entra em loop", () => {
   });
 
   it("token com erro já no /login: deixa renderizar e mesmo assim expira o cookie", async () => {
-    getTokenMock.mockResolvedValue({
-      ...tokenValido(),
-      error: "RefreshTokenError",
-    });
-
-    const resposta = await proxy(requisicao("/login"));
+    const resposta = await callProxy(
+      requisicao("/login", { ...sessaoValida(), error: "RefreshTokenError" }),
+    );
 
     expect(resposta.status).toBe(200);
     expect(resposta.cookies.get("authjs.session-token")?.value).toBe("");
   });
 
   it("token válido no /login: manda para / (sem tocar no cookie)", async () => {
-    getTokenMock.mockResolvedValue(tokenValido());
-
-    const resposta = await proxy(requisicao("/login"));
+    const resposta = await callProxy(requisicao("/login", sessaoValida()));
 
     expect(resposta.headers.get("location")).toBe("http://localhost:3001/");
     expect(resposta.cookies.get("authjs.session-token")).toBeUndefined();
   });
 
-  it("sem token em rota privada: manda ao /login com ?next=", async () => {
-    getTokenMock.mockResolvedValue(null);
+  it("token válido no /login com ?next=: manda para / sem carregar a query", async () => {
+    const resposta = await callProxy(
+      requisicao("/login?next=%2Fhome", sessaoValida()),
+    );
 
-    const resposta = await proxy(requisicao("/obras/123"));
+    expect(resposta.headers.get("location")).toBe("http://localhost:3001/");
+  });
+
+  it("sem token em rota privada: manda ao /login com ?next=", async () => {
+    const resposta = await callProxy(requisicao("/obras/123", null));
 
     expect(resposta.status).toBe(307);
     expect(resposta.headers.get("location")).toBe(
@@ -97,9 +94,7 @@ describe("proxy — sessão expirada não entra em loop", () => {
   });
 
   it("token válido em rota privada: segue com o header de path atual", async () => {
-    getTokenMock.mockResolvedValue(tokenValido());
-
-    const resposta = await proxy(requisicao("/home"));
+    const resposta = await callProxy(requisicao("/home", sessaoValida()));
 
     expect(resposta.status).toBe(200);
   });
