@@ -88,7 +88,7 @@ function medicaoDefaultValues(medicao?: Medicao | null): MedicaoFormInput {
   };
 }
 
-function MedicaoModal({
+export function MedicaoModal({
   obraId,
   medicao,
   onSaved,
@@ -118,6 +118,11 @@ function MedicaoModal({
     (sum, item) => sum + Number(item?.valor || 0),
     0,
   );
+  const fieldsByStep = [
+    ["numero", "tipo", "dataMedicao", "orgaoId"],
+    ["fontes"],
+    [],
+  ] as const;
 
   useEffect(() => {
     if (!open) return;
@@ -188,6 +193,14 @@ function MedicaoModal({
     setStep(0);
     form.reset(medicaoDefaultValues(medicao));
     onSaved();
+  }
+
+  async function nextStep() {
+    if (step >= steps.length - 1) return;
+    const valid = await form.trigger(fieldsByStep[step]);
+    if (valid) {
+      setStep((current) => Math.min(current + 1, steps.length - 1));
+    }
   }
 
   return (
@@ -282,7 +295,9 @@ function MedicaoModal({
                       </option>
                       {orgaos.map((orgao) => (
                         <option key={orgao.id} value={orgao.id}>
-                          {orgao.sigla ? `${orgao.sigla} · ${orgao.nome}` : orgao.nome}
+                          {orgao.sigla
+                            ? `${orgao.sigla} · ${orgao.nome}`
+                            : orgao.nome}
                         </option>
                       ))}
                     </select>
@@ -406,8 +421,7 @@ function MedicaoModal({
               )}
               {step === 2 && (
                 <Body>
-                  Confira antes de salvar:{" "}
-                  Nº {medicaoPreview.numero || "—"} ·{" "}
+                  Confira antes de salvar: Nº {medicaoPreview.numero || "—"} ·{" "}
                   {TIPO_MEDICAO_LABELS[medicaoPreview.tipo ?? "NORMAL"]} ·{" "}
                   {medicaoPreview.dataMedicao || "—"} · Total{" "}
                   {formatCurrency(total)}.
@@ -427,20 +441,23 @@ function MedicaoModal({
                   Voltar
                 </Button>
               )}
-              {step < steps.length - 1 ? (
-                <Button
-                  type="button"
-                  onClick={() =>
-                    setStep((value) => Math.min(value + 1, steps.length - 1))
+              <Button
+                type="button"
+                disabled={form.formState.isSubmitting}
+                onClick={() => {
+                  if (step < steps.length - 1) {
+                    void nextStep();
+                    return;
                   }
-                >
-                  Avançar
-                </Button>
-              ) : (
-                <Button type="submit" disabled={form.formState.isSubmitting}>
-                  {form.formState.isSubmitting ? "Salvando..." : "Salvar"}
-                </Button>
-              )}
+                  void form.handleSubmit(onSubmit)();
+                }}
+              >
+                {step < steps.length - 1
+                  ? "Avançar"
+                  : form.formState.isSubmitting
+                    ? "Salvando..."
+                    : "Salvar"}
+              </Button>
             </Modal.Footer>
           </form>
         </Modal.Popup>
@@ -542,7 +559,9 @@ export function MedicoesTab({ obraId }: { obraId: string }) {
                 />
                 <ActionButton
                   variant="ghost"
-                  icon={<Trash2 aria-hidden="true" className="size-4 shrink-0" />}
+                  icon={
+                    <Trash2 aria-hidden="true" className="size-4 shrink-0" />
+                  }
                   label="Excluir"
                   tooltip={`Excluir medição ${row.numero}`}
                   onClick={() => excluir(row)}

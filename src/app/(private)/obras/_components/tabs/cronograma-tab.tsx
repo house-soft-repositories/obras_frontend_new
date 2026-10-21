@@ -1,7 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Gauge, MessageCircle, Pencil, Plus, Trash2, UserCheck } from "lucide-react";
+import {
+  Gauge,
+  MessageCircle,
+  Pencil,
+  Plus,
+  Trash2,
+  UserCheck,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import {
@@ -71,7 +78,7 @@ function StepIndicator({ step }: { step: number }) {
   );
 }
 
-function EstagioModal({
+export function EstagioModal({
   obraId,
   estagio,
   onSaved,
@@ -100,6 +107,7 @@ function EstagioModal({
     },
   });
   const etapaPreview = useWatch({ control: form.control });
+  const fieldsByStep = [["nome"], ["dataInicio", "dataFim"], []] as const;
 
   async function onSubmit(values: CriarEstagioInput) {
     const payload = {
@@ -120,6 +128,14 @@ function EstagioModal({
     onSaved();
   }
 
+  async function nextStep() {
+    if (step >= steps.length - 1) return;
+    const valid = await form.trigger(fieldsByStep[step]);
+    if (valid) {
+      setStep((current) => Math.min(current + 1, steps.length - 1));
+    }
+  }
+
   return (
     <Modal.Root open={open} onOpenChange={setOpen}>
       <Modal.Trigger asChild>
@@ -133,7 +149,9 @@ function EstagioModal({
             )
           }
           label={estagio ? "Editar" : "Nova etapa"}
-          tooltip={estagio ? `Editar etapa ${estagio.nome}` : "Cadastrar nova etapa"}
+          tooltip={
+            estagio ? `Editar etapa ${estagio.nome}` : "Cadastrar nova etapa"
+          }
         />
       </Modal.Trigger>
       <Modal.Portal>
@@ -194,20 +212,23 @@ function EstagioModal({
                   Voltar
                 </Button>
               )}
-              {step < steps.length - 1 ? (
-                <Button
-                  type="button"
-                  onClick={() =>
-                    setStep((value) => Math.min(value + 1, steps.length - 1))
+              <Button
+                type="button"
+                disabled={form.formState.isSubmitting}
+                onClick={() => {
+                  if (step < steps.length - 1) {
+                    void nextStep();
+                    return;
                   }
-                >
-                  Avançar
-                </Button>
-              ) : (
-                <Button type="submit" disabled={form.formState.isSubmitting}>
-                  {form.formState.isSubmitting ? "Salvando..." : "Salvar"}
-                </Button>
-              )}
+                  void form.handleSubmit(onSubmit)();
+                }}
+              >
+                {step < steps.length - 1
+                  ? "Avançar"
+                  : form.formState.isSubmitting
+                    ? "Salvando..."
+                    : "Salvar"}
+              </Button>
             </Modal.Footer>
           </form>
         </Modal.Popup>
@@ -437,7 +458,9 @@ function ComentarioModal({
       <Modal.Trigger asChild>
         <ActionButton
           variant="ghost"
-          icon={<MessageCircle aria-hidden="true" className="size-4 shrink-0" />}
+          icon={
+            <MessageCircle aria-hidden="true" className="size-4 shrink-0" />
+          }
           label="Comentário"
           tooltip={`Comentar etapa ${estagio.nome}`}
         />
@@ -595,7 +618,9 @@ export function CronogramaTab({ obraId }: { obraId: string }) {
                 />
                 <ActionButton
                   variant="ghost"
-                  icon={<UserCheck aria-hidden="true" className="size-4 shrink-0" />}
+                  icon={
+                    <UserCheck aria-hidden="true" className="size-4 shrink-0" />
+                  }
                   label="Assumir"
                   tooltip={`Assumir etapa ${row.nome}`}
                   onClick={() => assumir(row)}
@@ -607,7 +632,9 @@ export function CronogramaTab({ obraId }: { obraId: string }) {
                 />
                 <ActionButton
                   variant="ghost"
-                  icon={<Trash2 aria-hidden="true" className="size-4 shrink-0" />}
+                  icon={
+                    <Trash2 aria-hidden="true" className="size-4 shrink-0" />
+                  }
                   label="Excluir"
                   tooltip={`Excluir etapa ${row.nome}`}
                   onClick={() => excluir(row.id)}
