@@ -94,6 +94,9 @@ export const criarAditivoSchema = z.object({
 });
 export type CriarAditivoInput = z.infer<typeof criarAditivoSchema>;
 
+export const atualizarAditivoSchema = criarAditivoSchema.partial();
+export type AtualizarAditivoInput = z.infer<typeof atualizarAditivoSchema>;
+
 export const paralisacaoSchema = z
   .object({
     id: z.string(),

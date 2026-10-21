@@ -6,8 +6,10 @@ import { obraErrorTranslator } from "@/core/errors/obra_error_translator";
 import HttpClientException from "@/core/exceptions/http_client_exception";
 import {
   criarAditivoSchema,
+  atualizarAditivoSchema,
   type Aditivo,
   type CriarAditivoInput,
+  type AtualizarAditivoInput,
 } from "@/core/schemas/contratos/contrato_schema";
 import type ServerActionResult from "@/core/types/server_action_result";
 
@@ -71,6 +73,35 @@ export async function excluirAditivoAction(
     await api.auth.delete(`/api/contratos/${contratoId}/aditivos/${aditivoId}`);
     updateTag(`obra-${obraId}-aditivos`);
     return { success: true, data: undefined as void, error: null };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function atualizarAditivoAction(
+  obraId: string,
+  contratoId: string,
+  aditivoId: string,
+  input: AtualizarAditivoInput,
+): Promise<ServerActionResult<Aditivo>> {
+  const parsed = atualizarAditivoSchema.safeParse(input);
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "Dados inválidos.";
+    return { success: false, data: null, error: message };
+  }
+  try {
+    const payload: Record<string, unknown> = { ...parsed.data };
+    for (const key of ["dataAssinatura", "prazoExecucaoData", "vigenciaAditivada", "observacoes"]) {
+      if (payload[key] === "") delete payload[key];
+    }
+    if (payload.prazoExecucaoDias === undefined) delete payload.prazoExecucaoDias;
+    if (payload.tipoPrazoExecucao === undefined) delete payload.tipoPrazoExecucao;
+    const res = await api.auth.patch<Aditivo>(`/api/contratos/${contratoId}/aditivos/${aditivoId}`, {
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    updateTag(`obra-${obraId}-aditivos`);
+    return { success: true, data: res.data, error: null };
   } catch (error) {
     return fail(error);
   }

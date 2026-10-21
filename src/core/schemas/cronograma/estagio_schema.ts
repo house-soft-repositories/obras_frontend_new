@@ -86,3 +86,34 @@ export const atualizarComentarioSchema = criarComentarioSchema;
 export type AtualizarComentarioInput = z.infer<
   typeof atualizarComentarioSchema
 >;
+
+export const tipoFinanciamentoSchema = z.enum([
+  "COM_OGU",
+  "SEM_OGU",
+  "INVESTIMENTO_PRIVADO",
+]);
+export type TipoFinanciamento = z.infer<typeof tipoFinanciamentoSchema>;
+
+export const estagioPredefinidoSchema = z
+  .object({
+    nome: z.string(),
+    posicao: z.number().default(0),
+    dataInicio: z.string().nullable().optional(),
+    dataFim: z.string().nullable().optional(),
+    responsavelUsuarioId: z.string().nullable().optional(),
+    modoDuracao: z.string().optional(),
+  })
+  .passthrough();
+export type EstagioPredefinido = z.infer<typeof estagioPredefinidoSchema>;
+
+export const listaEstagiosPredefinidosSchema = z.array(estagioPredefinidoSchema);
+export type ListaEstagiosPredefinidos = z.infer<
+  typeof listaEstagiosPredefinidosSchema
+>;
+
+export const criarPredefinidosSchema = z.object({
+  confirmar: z.boolean().refine((v) => v === true, {
+    message: "Confirme para adicionar as etapas predefinidas.",
+  }),
+});
+export type CriarPredefinidosInput = z.infer<typeof criarPredefinidosSchema>;

@@ -11,15 +11,18 @@ import {
   criarAcompanhamentoSchema,
   criarComentarioSchema,
   criarEstagioSchema,
+  criarPredefinidosSchema,
   type AtualizarAcompanhamentoInput,
   type AtualizarComentarioInput,
   type AtualizarEstagioInput,
   type CriarComentarioInput,
   type CriarAcompanhamentoInput,
   type CriarEstagioInput,
+  type CriarPredefinidosInput,
   type EstagioAcompanhamento,
   type EstagioComentario,
   type Estagio,
+  type ListaEstagiosPredefinidos,
 } from "@/core/schemas/cronograma/estagio_schema";
 import type ServerActionResult from "@/core/types/server_action_result";
 
@@ -304,6 +307,71 @@ export async function assumirEstagioAction(
   try {
     const res = await api.auth.post<Estagio>(
       `/api/obras/${obraId}/estagios/${estagioId}/assumir`,
+    );
+    updateTag(tagEstagios(obraId));
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function listAcompanhamentosAction(
+  obraId: string,
+  estagioId: string,
+): Promise<ServerActionResult<EstagioAcompanhamento[]>> {
+  try {
+    const res = await api.auth.get<EstagioAcompanhamento[]>(
+      `/api/obras/${obraId}/estagios/${estagioId}/acompanhamentos`,
+    );
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    return fail(error) as ServerActionResult<EstagioAcompanhamento[]>;
+  }
+}
+
+export async function listComentariosAction(
+  obraId: string,
+  estagioId: string,
+): Promise<ServerActionResult<EstagioComentario[]>> {
+  try {
+    const res = await api.auth.get<EstagioComentario[]>(
+      `/api/obras/${obraId}/estagios/${estagioId}/comentarios`,
+    );
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    return fail(error) as ServerActionResult<EstagioComentario[]>;
+  }
+}
+
+export async function getPredefinidosAction(
+  obraId: string,
+): Promise<ServerActionResult<ListaEstagiosPredefinidos>> {
+  try {
+    const res = await api.auth.get<ListaEstagiosPredefinidos>(
+      `/api/obras/${obraId}/estagios/predefinidos`,
+    );
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    return fail(error) as ServerActionResult<ListaEstagiosPredefinidos>;
+  }
+}
+
+export async function criarPredefinidosAction(
+  obraId: string,
+  input: CriarPredefinidosInput,
+): Promise<ServerActionResult<Estagio[]>> {
+  const parsed = criarPredefinidosSchema.safeParse(input);
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "Dados inválidos.";
+    return { success: false, data: null, error: message };
+  }
+  try {
+    const res = await api.auth.post<Estagio[]>(
+      `/api/obras/${obraId}/estagios/predefinidos`,
+      {
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      },
     );
     updateTag(tagEstagios(obraId));
     return { success: true, data: res.data, error: null };

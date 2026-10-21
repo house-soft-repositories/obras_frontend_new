@@ -477,3 +477,30 @@ export async function createAutoObraPrivadaAction(
     throw error;
   }
 }
+
+export async function excluirAutoInfracaoAction(
+  obraPrivadaId: string,
+  autoId: string,
+): Promise<ServerActionResult<void>> {
+  try {
+    await api.auth.delete(`/api/obras-privadas/${obraPrivadaId}/autos/${autoId}`);
+    revalidateRecursoTags(obraPrivadaId, "autos");
+    updateTag("list-obras-privadas-autos");
+    return { success: true, data: undefined, error: null };
+  } catch (error) {
+    if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) {
+      throw error;
+    }
+    if (error instanceof HttpClientException) {
+      return {
+        success: false,
+        data: null,
+        error: translateRecursoError(
+          error,
+          "Não foi possível excluir o auto. Tente novamente.",
+        ),
+      };
+    }
+    throw error;
+  }
+}
