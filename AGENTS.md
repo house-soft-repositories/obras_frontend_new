@@ -19,6 +19,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 > |---|---|
 > | Server Actions | `docs/agent/server-actions.md` |
 > | Toast / Erros | `docs/agent/toast-errors.md` |
+> | Error Handling | `docs/agent/error-handling.md` |
 > | Schemas + React Hook Form | `docs/agent/forms.md` |
 > | UI atoms / molecules / páginas | `docs/agent/ui.md` |
 
@@ -49,6 +50,9 @@ Se o arquivo detalhado não existir localmente, siga o resumo abaixo e o exemplo
 - Nunca duplique tipos manuais — importe o `Infer` do schema. Validação de env em `core/config/enviroment_variables.ts` (`getEnv()` / `env`).
 
 ### 4. React Hook Form — resumo
+- Em wizards multi-etapas, mantenha o formulário estável e não troque dinamicamente um botão `type="button"` por `type="submit"` ao mudar de etapa: navegadores podem disparar submissão quando o submit é montado na transição para a revisão.
+- Use `form.trigger(fieldsByStep[step])` para validar somente a etapa atual e atualize `step` apenas quando retornar `true`.
+- Para evitar o submit automático em wizards de detalhe, mantenha o controle final como `type="button"` e invoque `void form.handleSubmit(onSubmit)()` somente dentro do clique explícito de `Salvar` quando `step` estiver na revisão. Não usar `useRef`, timestamp ou `lastAdvanceRef` para esse caso.
 - Client components apenas (`"use client"` em `app/.../components/*`).
 - ```ts
   const { register, handleSubmit, formState:{errors,isSubmitting} } = useForm<LoginInput>({
@@ -68,5 +72,12 @@ Se o arquivo detalhado não existir localmente, siga o resumo abaixo e o exemplo
 ### 6. UI — atoms vs molecules
 - `core/ui/atoms/*` — puros, reutilizáveis em toda a app, sem regra de negócio. Usam `twMerge` + `tv` + `core/styles/tokens.ts` e `app/globals.css` (ex.: `button.tsx`, `input.tsx`, `input-mask.tsx`, `card.tsx`, `typography.tsx`).
 - `core/ui/molecules/*` — composição maior com contexto/portal/estado (ex.: `modal.tsx` = `Modal` + `ModalContent` + `ModalTitle` + `ModalCloseButton`). Pode usar `createPortal`, `focus-trap`, mas sem regra de domínio.
+
+### 7. Error Handling — resumo
+- **Server Actions**: sempre `try/catch` + retorna `ServerActionResult<T>`. Use `*ErrorTranslator` (`core/errors/*_translator.ts`) para traduzir erros. Re-throw **apenas** `digest?.startsWith("NEXT_REDIRECT")`.
+- **Client Components**: consomem `res.error` e exibem via `useToast().error(res.error)` — nunca `throw` direto.
+- **error.tsx / global-error.tsx**: só para erros **inesperados** (bugs, crashes). Não recebem erros de Server Actions (esses vêm no retorno).
+- **Interceptors**: apenas cross-cutting (auth, logging, tenant, refresh). Não tratam erros de negócio.
+- **Exemplo canônico:** `core/actions/obras/list_obras_action.ts` + `core/errors/obra_error_translator.ts`.
 
 </INSTRUCTIONS>
