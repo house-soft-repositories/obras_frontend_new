@@ -1,6 +1,7 @@
 "use client";
 
 import { Body, Caption } from "@/core/ui/atoms/typography";
+import { isoToBrDisplay } from "@/core/ui/atoms/input-date-iso";
 import type { Obra } from "@/core/schemas/obras/obra_schema";
 import {
   TIPO_OBRA_LABELS,
@@ -17,9 +18,7 @@ const isTipoObra = (value: unknown): value is TipoObra =>
 
 function formatDate(value: unknown) {
   if (typeof value !== "string" || !value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString("pt-BR");
+  return isoToBrDisplay(value.split("T")[0]) || value;
 }
 
 function InfoCard({

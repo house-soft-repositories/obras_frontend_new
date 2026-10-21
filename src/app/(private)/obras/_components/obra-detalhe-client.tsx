@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { ArrowLeft, Copy, MapPin, Trash2 } from "lucide-react";
 import { Button } from "@/core/ui/atoms/button";
 import { ActionButton } from "@/core/ui/molecules/action-button";
 import { Input } from "@/core/ui/atoms/input";
 import { useToast } from "@/core/hooks/useToast";
+import { AlertDialog } from "@/core/ui/molecules/alert-dialog";
 import duplicarObraAction from "@/core/actions/obras/duplicar_obra_action";
 import deleteObraAction from "@/core/actions/obras/delete_obra_action";
 import { aplicarTagsAction } from "@/core/actions/obras/tags_actions";
@@ -18,29 +19,7 @@ import {
   type TipoObra,
 } from "@/core/schemas/obras/tipo_obra";
 import type { Obra } from "@/core/schemas/obras/obra_schema";
-import { DadosTab } from "./tabs/dados-tab";
-import { CronogramaTab } from "./tabs/cronograma-tab";
-import { ContratoTab } from "./tabs/contrato-tab";
-import { MedicoesTab } from "./tabs/medicoes-tab";
-import { FinanceiroTab } from "./tabs/financeiro-tab";
-import { ArquivosTab } from "./tabs/arquivos-tab";
-
-type TabId =
-  | "dados"
-  | "cronograma"
-  | "contrato"
-  | "medicoes"
-  | "financeiro"
-  | "arquivos";
-
-const TABS: Array<{ id: TabId; label: string }> = [
-  { id: "dados", label: "Dados" },
-  { id: "cronograma", label: "Cronograma" },
-  { id: "contrato", label: "Contrato" },
-  { id: "medicoes", label: "Medições" },
-  { id: "financeiro", label: "Financeiro" },
-  { id: "arquivos", label: "Arquivos" },
-];
+import { OBRA_TABS, type ObraTabId } from "@/core/config/obra-tabs";
 
 const text = (value: unknown, fallback = "—") =>
   typeof value === "string" && value ? value : fallback;
@@ -54,29 +33,41 @@ type ObraExtra = Obra & {
   orgaoNome?: string | null;
 };
 
-export function ObraDetalheClient({ obra }: { obra: Obra }) {
+export function ObraDetalheClient({
+  obra,
+  activeTab,
+  children,
+}: {
+  obra: Obra;
+  activeTab: ObraTabId;
+  children: ReactNode;
+}) {
   const router = useRouter();
   const toast = useToast();
   const [pending, startTransition] = useTransition();
-  const [tab, setTab] = useState<TabId>("dados");
   const [tag, setTag] = useState("");
   const [obs, setObs] = useState("");
 
-  const extra = obra as ObraExtra;
+  const tab = activeTab;
   const codigo = text(obra.codigo);
   const nome = text(obra.nome, "Obra sem nome");
   const tipo = isTipoObra(obra.tipo)
     ? TIPO_OBRA_LABELS[obra.tipo]
     : text(obra.tipo);
   const status = text(obra.status);
-  const orgao = text(extra.orgao?.nome ?? extra.orgaoNome, "—");
+  const orgao = text(
+    (obra as ObraExtra).orgao?.nome ?? (obra as ObraExtra).orgaoNome,
+    "—",
+  );
+  function selecionarAba(nextTab: (typeof OBRA_TABS)[number]["id"]) {
+    router.push(`/obras/${obra.id}?tab=${nextTab}`, { scroll: false });
+  }
 
   const executarAcao = (action: () => Promise<unknown>, success: string) =>
     startTransition(async () => {
       try {
         await action();
         toast.success(success);
-        router.refresh();
       } catch (error) {
         toast.error(
           error instanceof Error
@@ -120,18 +111,34 @@ export function ObraDetalheClient({ obra }: { obra: Obra }) {
                 )
               }
             />
-            <ActionButton
-              variant="destructive"
-              icon={<Trash2 aria-hidden="true" className="size-4 shrink-0" />}
-              label="Excluir"
+            <AlertDialog.Confirm
+              title="Excluir obra?"
+              description={`A obra ${nome} será excluída permanentemente.`}
+              tone="danger"
+              confirmLabel="Excluir"
+              confirmingLabel="Excluindo..."
               tooltip={`Excluir ${nome}`}
-              disabled={pending}
-              onClick={() => {
-                if (confirm("Excluir esta obra?"))
-                  executarAcao(
-                    () => deleteObraAction(obra.id),
-                    "Obra excluída.",
-                  );
+              ariaLabel={`Excluir ${nome}`}
+              icon={<Trash2 aria-hidden="true" className="size-5" />}
+              trigger={
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={pending}
+                  aria-label={`Excluir ${nome}`}
+                >
+                  <Trash2 aria-hidden="true" className="size-4" />
+                  Excluir
+                </Button>
+              }
+              onConfirm={async () => {
+                const res = await deleteObraAction(obra.id);
+                if (!res.success) {
+                  toast.error(res.error);
+                  return false;
+                }
+                toast.success("Obra excluída.");
+                router.push("/obras");
               }}
             />
           </div>
@@ -150,24 +157,21 @@ export function ObraDetalheClient({ obra }: { obra: Obra }) {
       </section>
 
       <nav className="mt-6 flex flex-wrap gap-2" aria-label="Abas da obra">
-        {TABS.map((item) => (
+        {OBRA_TABS.map((item) => (
           <Button
             key={item.id}
             type="button"
             variant={tab === item.id ? "primary" : "secondary"}
-            onClick={() => setTab(item.id)}
+            onClick={() => selecionarAba(item.id)}
           >
             {item.label}
           </Button>
         ))}
       </nav>
 
-      {tab === "dados" && <DadosTab obra={obra} />}
-      {tab === "cronograma" && <CronogramaTab obraId={obra.id} />}
-      {tab === "contrato" && <ContratoTab obraId={obra.id} />}
-      {tab === "medicoes" && <MedicoesTab obraId={obra.id} />}
-      {tab === "financeiro" && <FinanceiroTab obraId={obra.id} />}
-      {tab === "arquivos" && <ArquivosTab obraId={obra.id} />}
+      <div role="tabpanel" aria-labelledby={`obra-tab-${tab}`}>
+        {children}
+      </div>
 
       <section className="mt-6 rounded-app border border-border bg-surface p-6 shadow-card">
         <h2 className="font-display text-xl font-semibold">
@@ -182,7 +186,10 @@ export function ObraDetalheClient({ obra }: { obra: Obra }) {
           <Button
             disabled={!tag || pending}
             onClick={() =>
-              executarAcao(() => aplicarTagsAction(obra.id, tag), "Tag aplicada.")
+              executarAcao(
+                () => aplicarTagsAction(obra.id, tag),
+                "Tag aplicada.",
+              )
             }
           >
             Adicionar

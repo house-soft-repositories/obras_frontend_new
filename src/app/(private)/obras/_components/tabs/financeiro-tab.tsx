@@ -51,6 +51,7 @@ import { Button } from "@/core/ui/atoms/button";
 import { ActionButton } from "@/core/ui/molecules/action-button";
 import { DataTable } from "@/core/ui/atoms/data-table";
 import { Body, Caption } from "@/core/ui/atoms/typography";
+import { isoToBrDisplay } from "@/core/ui/atoms/input-date-iso";
 import { InputForm } from "@/core/ui/molecules/input-form";
 import { Modal } from "@/core/ui/molecules/modal";
 
@@ -91,9 +92,7 @@ function formatPercent(value: unknown) {
 
 function formatDate(value: unknown) {
   if (typeof value !== "string" || !value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString("pt-BR");
+  return isoToBrDisplay(value.split("T")[0]) || value;
 }
 
 function text(value: unknown) {
