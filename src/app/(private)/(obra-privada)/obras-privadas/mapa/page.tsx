@@ -8,5 +8,5 @@ export default async function MapaPage() {
     order: "DESC",
   });
 
-  return <MapaClient obras={obras.data} />;
+  return <MapaClient obras={obras.success ? obras.data.data : []} />;
 }

@@ -1,3 +1,4 @@
+import type Pagination from "@/core/types/pagination/pagination";
 import { z } from "zod";
 import { tipoObraSchema } from "./tipo_obra";
 
@@ -25,4 +26,4 @@ export const obraListSchema = z.object({
 });
 
 export type Obra = z.infer<typeof obraSchema>;
-export type ObraList = z.infer<typeof obraListSchema>;
+export type ObraList = Pagination<Obra>;

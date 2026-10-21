@@ -1,3 +1,4 @@
+import type Pagination from "@/core/types/pagination/pagination";
 import { z } from "zod";
 
 export const SITUACAO_ALVARA_VALUES = [
@@ -144,7 +145,7 @@ export const obraPrivadaListSchema = z.object({
 });
 
 export type ObraPrivada = z.infer<typeof obraPrivadaSchema>;
-export type ObraPrivadaList = z.infer<typeof obraPrivadaListSchema>;
+export type ObraPrivadaList = Pagination<ObraPrivada>;
 
 export interface Paginated<T> {
   data: T[];

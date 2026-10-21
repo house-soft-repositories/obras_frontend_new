@@ -17,7 +17,17 @@ export default async function ObrasPage({
   const params = await searchParams;
   const value = (key: string) =>
     typeof params[key] === "string" ? params[key] : undefined;
-  const [obras, orgaos, usuarios, fontes, setores, localidades, eixos, classificacoes, tipologias] = await Promise.all([
+  const [
+    obras,
+    orgaos,
+    usuarios,
+    fontes,
+    setores,
+    localidades,
+    eixos,
+    classificacoes,
+    tipologias,
+  ] = await Promise.all([
     listObrasAction({
       page: Number(value("page") ?? 1),
       take: 20,
@@ -32,21 +42,53 @@ export default async function ObrasPage({
     listFontesPaginationAction({ page: 1, order: "ASC", take: 50 }),
     listSetoresPaginationAction({ page: 1, order: "ASC", take: 50 }),
     listLocalidadesPaginationAction({ page: 1, order: "ASC", take: 50 }),
-    listEixosPaginationAction({ page: 1, order: "ASC", take: 50, apenasAtivos: true }),
-    listClassificacoesPaginationAction({ page: 1, order: "ASC", take: 50, apenasAtivos: true }),
-    listTipologiasPaginationAction({ page: 1, order: "ASC", take: 50, apenasAtivos: true }),
+    listEixosPaginationAction({
+      page: 1,
+      order: "ASC",
+      take: 50,
+      apenasAtivos: true,
+    }),
+    listClassificacoesPaginationAction({
+      page: 1,
+      order: "ASC",
+      take: 50,
+      apenasAtivos: true,
+    }),
+    listTipologiasPaginationAction({
+      page: 1,
+      order: "ASC",
+      take: 50,
+      apenasAtivos: true,
+    }),
   ]);
+  if (!obras.success) {
+    return (
+      <main className="mx-auto max-w-7xl px-5 py-12">
+        Não foi possível carregar as obras: {obras.error}
+      </main>
+    );
+  }
+
   return (
     <ObrasClient
-      obras={obras}
+      obras={obras.data}
       orgaos={orgaos.data.map((item) => ({ id: item.id, nome: item.nome }))}
       usuarios={usuarios.data.map((item) => ({ id: item.id, nome: item.name }))}
       fontes={fontes.data.map((item) => ({ id: item.id, nome: item.nome }))}
       setores={setores.data.map((item) => ({ id: item.id, nome: item.nome }))}
-      localidades={localidades.data.map((item) => ({ id: item.id, nome: item.nome }))}
+      localidades={localidades.data.map((item) => ({
+        id: item.id,
+        nome: item.nome,
+      }))}
       eixos={eixos.data.map((item) => ({ id: item.id, nome: item.nome }))}
-      classificacoes={classificacoes.data.map((item) => ({ id: item.id, nome: item.nome }))}
-      tipologias={tipologias.data.map((item) => ({ id: item.id, nome: item.nome }))}
+      classificacoes={classificacoes.data.map((item) => ({
+        id: item.id,
+        nome: item.nome,
+      }))}
+      tipologias={tipologias.data.map((item) => ({
+        id: item.id,
+        nome: item.nome,
+      }))}
     />
   );
 }
