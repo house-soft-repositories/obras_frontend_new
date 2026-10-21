@@ -6,7 +6,7 @@ import { tv, type VariantProps } from "tailwind-variants";
 import { cn } from "@/core/ui/cn";
 
 export const tooltipPopupVariants = tv({
-  base: "z-50 max-w-64 rounded-app border border-border bg-surface-raised px-2.5 py-1.5 text-xs font-semibold text-foreground shadow-overlay outline-none transition-opacity data-[ending-style]:opacity-0 data-[starting-style]:opacity-0",
+  base: "z-50 max-w-64 rounded-app border border-border bg-surface px-2.5 py-1.5 text-xs font-semibold text-foreground shadow-overlay outline-none transition-opacity data-[ending-style]:opacity-0 data-[starting-style]:opacity-0",
   variants: {
     tone: {
       default: "",

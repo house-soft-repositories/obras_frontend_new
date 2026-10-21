@@ -179,6 +179,30 @@
  * Ficam em @layer base para que os utilities do Tailwind (atoms em
  * core/ui) vençam no cascade: sem isso, o CSS sem camada ganha do
  * @layer utilities e paddings como pl-9 dos inputs com ícone perdem. */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes skeleton-wave {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-skeleton {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  background: linear-gradient(90deg, var(--app-surface-subtle) 25%, var(--app-border) 50%, var(--app-surface-subtle) 75%);
+  background-size: 200% 100%;
+}
+
+.animate-skeleton-wave {
+  animation: skeleton-wave 1.5s ease-in-out infinite;
+}
+
+.animate-pulse {
+  animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 @layer base {
 * {
   box-sizing: border-box;

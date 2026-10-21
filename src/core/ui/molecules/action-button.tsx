@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { Button, type ButtonProps } from "@/core/ui/atoms/button";
 import { Tooltip } from "@/core/ui/atoms/tooltip";
+import { cn } from "@/core/ui/cn";
 
 export interface ActionButtonProps extends ButtonProps {
   /** Ícone exibido sempre (mobile e desktop). */
@@ -11,6 +12,11 @@ export interface ActionButtonProps extends ButtonProps {
   label: string;
   /** Tooltip customizado. Padrão: label. Toda ação deve ter tooltip. */
   tooltip?: string;
+  /**
+   * Mostra o rótulo sempre (sem o modo responsivo de ícone só).
+   * Use dentro de menus/popovers, onde o rótulo é parte da linha.
+   */
+  alwaysShowLabel?: boolean;
 }
 
 /**
@@ -22,6 +28,7 @@ export function ActionButton({
   icon,
   label,
   tooltip,
+  alwaysShowLabel,
   children,
   ...props
 }: ActionButtonProps) {
@@ -29,11 +36,16 @@ export function ActionButton({
     <Tooltip content={tooltip ?? label}>
       <Button
         {...props}
-        size={props.size ?? "action"}
+        size={props.size ?? (alwaysShowLabel ? "sm" : "action")}
         aria-label={props["aria-label"] ?? label}
       >
         {icon}
-        <span className="hidden whitespace-nowrap lg:inline">
+        <span
+          className={cn(
+            "whitespace-nowrap",
+            alwaysShowLabel ? "inline" : "hidden lg:inline",
+          )}
+        >
           {children ?? label}
         </span>
       </Button>
