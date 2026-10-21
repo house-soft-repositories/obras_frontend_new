@@ -75,6 +75,30 @@ function formatMoneyBRL(value: unknown) {
   return num.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function diferencaEmDias(dataInicial: string, dataFinal: string): number | undefined {
+  const dataIso = /^(\d{4})-(\d{2})-(\d{2})$/;
+  const inicioParts = dataIso.exec(dataInicial);
+  const fimParts = dataIso.exec(dataFinal);
+  if (!inicioParts || !fimParts) return undefined;
+
+  const inicio = Date.UTC(
+    Number(inicioParts[1]),
+    Number(inicioParts[2]) - 1,
+    Number(inicioParts[3]),
+  );
+  const fim = Date.UTC(
+    Number(fimParts[1]),
+    Number(fimParts[2]) - 1,
+    Number(fimParts[3]),
+  );
+
+  if (!Number.isFinite(inicio) || !Number.isFinite(fim) || fim < inicio) {
+    return undefined;
+  }
+
+  return Math.round((fim - inicio) / 86_400_000);
+}
+
 function valoresResumo(valores: unknown): Array<[string, string]> {
   if (typeof valores !== "object" || valores === null) return [];
   return Object.entries(valores as Record<string, unknown>)
@@ -165,6 +189,25 @@ function ContratoModal({ obraId, onSaved }: { obraId: string; onSaved: () => voi
   });
   const fontesPreview = useWatch({ control: form.control, name: "fontes" });
   const contratoPreview = useWatch({ control: form.control });
+  const dataOs = useWatch({ control: form.control, name: "dataOs" });
+  useEffect(() => {
+    const prazoEmDias =
+      dataOs && contratoPreview.fimVigencia
+        ? diferencaEmDias(dataOs, contratoPreview.fimVigencia)
+        : undefined;
+
+    if (contratoPreview.prazoExecucaoDias === prazoEmDias) return;
+
+    form.setValue("prazoExecucaoDias", prazoEmDias, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  }, [
+    contratoPreview.fimVigencia,
+    contratoPreview.prazoExecucaoDias,
+    dataOs,
+    form,
+  ]);
 
   useEffect(() => {
     if (!open) return;
@@ -217,15 +260,27 @@ function ContratoModal({ obraId, onSaved }: { obraId: string; onSaved: () => voi
     onSaved();
   }
 
+  const fieldsByStep = [
+    ["numero", "empresaContratadaId"],
+    ["dataOs", "fontes"],
+    [],
+  ] as const;
+
   async function nextStep() {
     if (step >= contratoSteps.length - 1) return;
-    const fieldsToValidate =
-      step === 0
-        ? (["numero", "empresaContratadaId"] as const)
-        : (["dataOs", "fontes"] as const);
-    const valid = await form.trigger(fieldsToValidate);
-    if (valid)
+    const valid = await form.trigger(fieldsByStep[step]);
+    if (valid) {
       setStep((current) => Math.min(current + 1, contratoSteps.length - 1));
+    }
+  }
+
+  function handleFooterAction() {
+    if (step < contratoSteps.length - 1) {
+      void nextStep();
+      return;
+    }
+
+    void form.handleSubmit(onSubmit)();
   }
 
   return (
@@ -260,7 +315,10 @@ function ContratoModal({ obraId, onSaved }: { obraId: string; onSaved: () => voi
               </li>
             ))}
           </ol>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+          <form
+            onSubmit={(event) => event.preventDefault()}
+            className="grid gap-4"
+          >
             <Modal.Body>
               {step === 0 && (
                 <div className="grid gap-4">
@@ -317,6 +375,7 @@ function ContratoModal({ obraId, onSaved }: { obraId: string; onSaved: () => voi
                     <InputForm
                       label="Prazo em dias"
                       type="number"
+                      readOnly
                       {...form.register("prazoExecucaoDias", {
                         setValueAs: (value) =>
                           value === "" ? undefined : Number(value),
@@ -420,15 +479,17 @@ function ContratoModal({ obraId, onSaved }: { obraId: string; onSaved: () => voi
                   Voltar
                 </Button>
               )}
-              {step < contratoSteps.length - 1 ? (
-                <Button type="button" onClick={nextStep}>
-                  Avançar
-                </Button>
-              ) : (
-                <Button type="submit" disabled={form.formState.isSubmitting}>
-                  {form.formState.isSubmitting ? "Salvando..." : "Salvar"}
-                </Button>
-              )}
+              <Button
+                type="button"
+                disabled={form.formState.isSubmitting}
+                onClick={handleFooterAction}
+              >
+                {step < contratoSteps.length - 1
+                  ? "Avançar"
+                  : form.formState.isSubmitting
+                    ? "Salvando..."
+                    : "Salvar"}
+              </Button>
             </Modal.Footer>
           </form>
         </Modal.Popup>
