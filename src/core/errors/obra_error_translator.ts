@@ -22,6 +22,14 @@ export class ObraErrorTranslator extends ErrorTranslator {
       "Não foi possível gerar o código da obra. Tente novamente.",
     OBRA_CREATE_FAILED:
       "Não foi possível criar a obra. Os dados foram preservados.",
+    OBRA_INVALID_STATUS_TRANSITION:
+      "Não é possível alterar para este status. Para concluir, cadastre um recebimento provisório ou definitivo; inauguração não libera a conclusão.",
+    GUIA_INVALID_ENUM: "Selecione um tipo de recebimento válido.",
+    GUIA_INVALID_INPUT: "Revise os dados do recebimento.",
+    RECEBIMENTO_NOT_FOUND: "Recebimento não encontrado.",
+    GUIA_REPOSITORY_FAILED: "Não foi possível acessar os recebimentos.",
+    "503": "Não foi possível conectar ao servidor. Tente novamente.",
+
     TENANT_CONTEXT_REQUIRED: "Selecione uma tenancy antes de continuar.",
     "400": "Revise os dados informados e tente novamente.",
     "401": "Sua sessão expirou. Faça login novamente.",

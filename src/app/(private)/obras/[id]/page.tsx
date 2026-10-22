@@ -6,6 +6,7 @@ import { CronogramaTab } from "../_components/tabs/cronograma-tab";
 import { DadosTab } from "../_components/tabs/dados-tab";
 import { FinanceiroTab } from "../_components/tabs/financeiro-tab";
 import { MedicoesTab } from "../_components/tabs/medicoes-tab";
+import { RecebimentosTab } from "../_components/tabs/recebimentos-tab";
 import { ObraDetalheClient } from "../_components/obra-detalhe-client";
 
 type Obra = NonNullable<Awaited<ReturnType<typeof getObraAction>>>;
@@ -24,6 +25,8 @@ async function ObraTabContent({ tab, obra }: { tab: ObraTabId; obra: Obra }) {
       return <FinanceiroTab obraId={obra.id} />;
     case "arquivos":
       return <ArquivosTab obraId={obra.id} />;
+    case "recebimentos":
+      return <RecebimentosTab obraId={obra.id} />;
   }
 }
 

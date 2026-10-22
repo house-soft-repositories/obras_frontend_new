@@ -19,7 +19,12 @@ import {
   type TipoObra,
 } from "@/core/schemas/obras/tipo_obra";
 import type { Obra } from "@/core/schemas/obras/obra_schema";
-import { OBRA_TABS, type ObraTabId } from "@/core/config/obra-tabs";
+import {
+  OBRA_TABS,
+  obraTabHref,
+  type ObraTabId,
+} from "@/core/config/obra-tabs";
+import { ObraStatusEditor } from "./obra-status-editor";
 
 const text = (value: unknown, fallback = "—") =>
   typeof value === "string" && value ? value : fallback;
@@ -60,7 +65,7 @@ export function ObraDetalheClient({
     "—",
   );
   function selecionarAba(nextTab: (typeof OBRA_TABS)[number]["id"]) {
-    router.push(`/obras/${obra.id}?tab=${nextTab}`, { scroll: false });
+    router.push(obraTabHref(obra.id, nextTab), { scroll: false });
   }
 
   const executarAcao = (action: () => Promise<unknown>, success: string) =>
@@ -143,6 +148,12 @@ export function ObraDetalheClient({
             />
           </div>
         </div>
+        <ObraStatusEditor
+          key={`${obra.id}-${status}`}
+          obraId={obra.id}
+          status={status}
+          onUpdated={() => router.refresh()}
+        />
         <div className="mt-3 flex flex-wrap gap-2 text-xs">
           <span className="rounded-full bg-surface-subtle px-3 py-1 font-medium">
             {status}
@@ -156,11 +167,18 @@ export function ObraDetalheClient({
         </div>
       </section>
 
-      <nav className="mt-6 flex flex-wrap gap-2" aria-label="Abas da obra">
+      <nav
+        className="mt-6 flex flex-wrap gap-2"
+        aria-label="Abas da obra"
+        role="tablist"
+      >
         {OBRA_TABS.map((item) => (
           <Button
             key={item.id}
+            id={`obra-tab-${item.id}`}
             type="button"
+            role="tab"
+            aria-selected={tab === item.id}
             variant={tab === item.id ? "primary" : "secondary"}
             onClick={() => selecionarAba(item.id)}
           >
@@ -169,7 +187,7 @@ export function ObraDetalheClient({
         ))}
       </nav>
 
-      <div role="tabpanel" aria-labelledby={`obra-tab-${tab}`}>
+      <div role="tabpanel" aria-labelledby={`obra-tab-${tab}`} tabIndex={0}>
         {children}
       </div>
 
