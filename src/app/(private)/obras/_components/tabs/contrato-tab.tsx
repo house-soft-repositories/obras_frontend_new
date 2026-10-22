@@ -28,6 +28,7 @@ import {
   criarContratoSchema,
   criarParalisacaoSchema,
   tipoAditivoSchema,
+  tipoPrazoExecucaoSchema,
   type Aditivo,
   type Contrato,
   type CriarAditivoInput,
@@ -180,6 +181,8 @@ function ContratoModal({ obraId, onSaved }: { obraId: string; onSaved: () => voi
       fimVigencia: "",
       dataOs: "",
       tipoPrazoExecucao: "DIAS",
+      prazoExecucaoDias: undefined,
+      prazoExecucaoData: "",
       fontes: [{ fonteId: "", valor: "" }],
     },
   });
@@ -191,12 +194,18 @@ function ContratoModal({ obraId, onSaved }: { obraId: string; onSaved: () => voi
   const contratoPreview = useWatch({ control: form.control });
   const dataOs = useWatch({ control: form.control, name: "dataOs" });
   useEffect(() => {
-    const prazoEmDias =
-      dataOs && contratoPreview.fimVigencia
-        ? diferencaEmDias(dataOs, contratoPreview.fimVigencia)
-        : undefined;
+    if (
+      contratoPreview.tipoPrazoExecucao !== "DIAS" ||
+      !dataOs ||
+      !contratoPreview.fimVigencia
+    ) {
+      return;
+    }
 
-    if (contratoPreview.prazoExecucaoDias === prazoEmDias) return;
+    const prazoEmDias = diferencaEmDias(dataOs, contratoPreview.fimVigencia);
+    if (prazoEmDias === undefined || contratoPreview.prazoExecucaoDias === prazoEmDias) {
+      return;
+    }
 
     form.setValue("prazoExecucaoDias", prazoEmDias, {
       shouldDirty: true,
@@ -205,6 +214,7 @@ function ContratoModal({ obraId, onSaved }: { obraId: string; onSaved: () => voi
   }, [
     contratoPreview.fimVigencia,
     contratoPreview.prazoExecucaoDias,
+    contratoPreview.tipoPrazoExecucao,
     dataOs,
     form,
   ]);
@@ -334,6 +344,19 @@ function ContratoModal({ obraId, onSaved }: { obraId: string; onSaved: () => voi
               )}
               {step === 1 && (
                 <div className="grid gap-4">
+                  <label className="grid gap-2 text-sm font-semibold">
+                    Tipo de prazo de execução
+                    <select
+                      {...form.register("tipoPrazoExecucao")}
+                      className="h-11 rounded-app border border-input bg-surface px-3 text-sm"
+                    >
+                      {tipoPrazoExecucaoSchema.options.map((tipo) => (
+                        <option key={tipo} value={tipo}>
+                          {tipo === "DIAS" ? "Prazo em dias" : "Data final"}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <DateForm
                       label="Data da OS"
@@ -372,15 +395,31 @@ function ContratoModal({ obraId, onSaved }: { obraId: string; onSaved: () => voi
                       }
                       error={form.formState.errors.fimVigencia?.message}
                     />
-                    <InputForm
-                      label="Prazo em dias"
-                      type="number"
-                      readOnly
-                      {...form.register("prazoExecucaoDias", {
-                        setValueAs: (value) =>
-                          value === "" ? undefined : Number(value),
-                      })}
-                    />
+                    {contratoPreview.tipoPrazoExecucao === "DIAS" ? (
+                      <InputForm
+                        label="Prazo em dias"
+                        type="number"
+                        min={1}
+                        error={form.formState.errors.prazoExecucaoDias?.message}
+                        {...form.register("prazoExecucaoDias", {
+                          setValueAs: (value) =>
+                            value === "" ? undefined : Number(value),
+                        })}
+                      />
+                    ) : (
+                      <DateForm
+                        label="Data final da execução"
+                        value={contratoPreview.prazoExecucaoData ?? ""}
+                        onBlur={() => void form.trigger("prazoExecucaoData")}
+                        onIsoChange={(iso) =>
+                          form.setValue("prazoExecucaoData", iso, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          })
+                        }
+                        error={form.formState.errors.prazoExecucaoData?.message}
+                      />
+                    )}
                   </div>
                   <div className="grid gap-3">
                     <Caption className="font-semibold text-foreground">Fontes do contrato</Caption>

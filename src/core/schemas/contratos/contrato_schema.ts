@@ -38,7 +38,12 @@ export const contratoSchema = z
   .passthrough();
 export type Contrato = z.infer<typeof contratoSchema>;
 
-export const criarContratoSchema = z.object({
+const dataIsoSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Informe uma data válida.")
+  .refine((value) => !Number.isNaN(Date.parse(`${value}T00:00:00Z`)), "Informe uma data válida.");
+
+const criarContratoBaseSchema = z.object({
   obraId: z.string().uuid("Obra inválida."),
   empresaContratadaId: z.string().uuid("Escolha a empresa contratada."),
   numero: z.string().min(1, "Informe o número do contrato."),
@@ -58,9 +63,38 @@ export const criarContratoSchema = z.object({
     )
     .min(1, "Vincule ao menos uma fonte."),
 });
+
+export const criarContratoSchema = criarContratoBaseSchema.superRefine((value, ctx) => {
+    if (value.tipoPrazoExecucao === "DIAS" && value.prazoExecucaoDias === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["prazoExecucaoDias"],
+        message: "Informe o prazo de execução em dias.",
+      });
+    }
+
+    if (value.tipoPrazoExecucao === "DATA") {
+      if (!value.prazoExecucaoData) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["prazoExecucaoData"],
+          message: "Informe a data final da execução.",
+        });
+      } else {
+        const result = dataIsoSchema.safeParse(value.prazoExecucaoData);
+        if (!result.success) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["prazoExecucaoData"],
+            message: "Informe uma data final válida.",
+          });
+        }
+      }
+    }
+  });
 export type CriarContratoInput = z.infer<typeof criarContratoSchema>;
 
-export const atualizarContratoSchema = criarContratoSchema
+export const atualizarContratoSchema = criarContratoBaseSchema
   .omit({ obraId: true })
   .partial();
 export type AtualizarContratoInput = z.infer<typeof atualizarContratoSchema>;
