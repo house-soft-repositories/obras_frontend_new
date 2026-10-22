@@ -3,7 +3,10 @@
 import { AlertTriangle, RotateCcw } from "lucide-react";
 import { SessionProvider } from "next-auth/react";
 import { useEffect } from "react";
-import HttpClientException from "@/core/exceptions/http_client_exception";
+import HttpClientException, {
+  isServerUnavailableError,
+} from "@/core/exceptions/http_client_exception";
+import { ServerUnavailableCard } from "@/core/ui/layout/server-unavailable-card";
 import { TenantContextRequiredCard } from "@/core/ui/layout/tenant-context-required-card";
 import "./globals.css";
 
@@ -107,9 +110,12 @@ function GlobalErrorContent({
     console.error(error);
   }, [error]);
 
-
   if (isTenantContextRequired(error)) {
     return <TenantContextRequiredCard onRetry={retry} />;
+  }
+
+  if (isServerUnavailableError(error)) {
+    return <ServerUnavailableCard onRetry={retry} />;
   }
 
   return <ErrorCard error={error} onRetry={retry} />;

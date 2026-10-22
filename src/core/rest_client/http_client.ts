@@ -1,9 +1,54 @@
-import HttpClientException from '@/core/exceptions/http_client_exception';
+import HttpClientException, {
+  SERVER_UNAVAILABLE_CODE,
+  SERVER_UNAVAILABLE_MESSAGE,
+} from "@/core/exceptions/http_client_exception";
 import {
   Interceptor,
   RequestConfig,
   ResponseType,
-} from '@/core/types/http_client';
+} from "@/core/types/http_client";
+
+function isConnectionError(error: unknown): boolean {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === "ECONNREFUSED"
+  ) {
+    return true;
+  }
+
+  return (
+    error instanceof TypeError &&
+    Boolean(error.message) &&
+    [
+      "failed to fetch",
+      "fetch failed",
+      "networkerror",
+      "network request failed",
+    ].some((message) => error.message.toLowerCase().includes(message))
+  );
+}
+
+function trackServerUnavailable(
+  method: string | undefined,
+  path: string,
+): void {
+  console.error({
+    event: "http_client_server_unavailable",
+    code: SERVER_UNAVAILABLE_CODE,
+    statusCode: 503,
+    method: method ?? "GET",
+    path,
+  });
+}
+
+function createServerUnavailableException(): HttpClientException {
+  return new HttpClientException(SERVER_UNAVAILABLE_CODE, 503, {
+    code: SERVER_UNAVAILABLE_CODE,
+    message: SERVER_UNAVAILABLE_MESSAGE,
+  });
+}
 
 export class HttpClient {
   private static instance: HttpClient | null = null;
@@ -12,14 +57,14 @@ export class HttpClient {
 
   private constructor(
     private readonly baseURL: string,
-    private readonly config: RequestConfig = {}
+    private readonly config: RequestConfig = {},
   ) {
     this.baseURL = baseURL;
     this.config = config;
   }
 
   public static getInstance(baseURL: string): HttpClient {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       if (!HttpClient.instance) {
         HttpClient.instance = new HttpClient(baseURL);
       }
@@ -28,7 +73,10 @@ export class HttpClient {
     return new HttpClient(baseURL);
   }
 
-  public static create(baseURL: string, config: RequestConfig = {}): HttpClient {
+  public static create(
+    baseURL: string,
+    config: RequestConfig = {},
+  ): HttpClient {
     return new HttpClient(baseURL, config);
   }
 
@@ -37,39 +85,39 @@ export class HttpClient {
   }
 
   public get auth(): HttpClient {
-    this.extra['AUTH_REQUIRED'] = true;
+    this.extra["AUTH_REQUIRED"] = true;
     return this;
   }
 
   public get unauth(): HttpClient {
-    this.extra['AUTH_REQUIRED'] = false;
+    this.extra["AUTH_REQUIRED"] = false;
     return this;
   }
 
   public get apiKey(): HttpClient {
-    this.extra['API_KEY_REQUIRED'] = true;
+    this.extra["API_KEY_REQUIRED"] = true;
     return this;
   }
 
   public get unApiKey(): HttpClient {
-    this.extra['API_KEY_REQUIRED'] = false;
+    this.extra["API_KEY_REQUIRED"] = false;
     return this;
   }
 
   private async runInterceptors(
-    type: 'request' | 'response' | 'error',
-    value: unknown
+    type: "request" | "response" | "error",
+    value: unknown,
   ): Promise<unknown> {
     let result = value;
 
     for (const interceptor of this.interceptors) {
-      if (type === 'request' && interceptor.request) {
+      if (type === "request" && interceptor.request) {
         result = await interceptor.request(result as RequestConfig);
       }
-      if (type === 'response' && interceptor.response) {
+      if (type === "response" && interceptor.response) {
         result = await interceptor.response(result as Response);
       }
-      if (type === 'error' && interceptor.error) {
+      if (type === "error" && interceptor.error) {
         result = await interceptor.error(result);
       }
     }
@@ -79,7 +127,7 @@ export class HttpClient {
 
   async request<T>(
     url: string,
-    config: RequestConfig = {}
+    config: RequestConfig = {},
   ): Promise<ResponseType<T>> {
     try {
       // Merge configurations
@@ -96,16 +144,16 @@ export class HttpClient {
         },
       };
 
-      const interceptedConfig = await this.runInterceptors(
-        'request',
-        finalConfig
-      ) as RequestConfig;
+      const interceptedConfig = (await this.runInterceptors(
+        "request",
+        finalConfig,
+      )) as RequestConfig;
 
       const fullUrl = this.baseURL + url;
       const response = await fetch(fullUrl, interceptedConfig);
       const responseForInterceptors = response.clone();
 
-      await this.runInterceptors('response', responseForInterceptors);
+      await this.runInterceptors("response", responseForInterceptors);
 
       let data: unknown;
       try {
@@ -116,18 +164,21 @@ export class HttpClient {
 
       if (!response.ok) {
         const rawMessage =
-          typeof data === 'object' && data !== null && 'message' in data
+          typeof data === "object" && data !== null && "message" in data
             ? data.message
             : undefined;
         const code =
-          typeof data === 'object' && data !== null && 'code' in data && typeof data.code === 'string'
+          typeof data === "object" &&
+          data !== null &&
+          "code" in data &&
+          typeof data.code === "string"
             ? data.code
             : undefined;
         const message = Array.isArray(rawMessage)
-          ? rawMessage.join(', ')
-          : typeof rawMessage === 'string'
+          ? rawMessage.join(", ")
+          : typeof rawMessage === "string"
             ? rawMessage
-            : 'Request failed';
+            : "Request failed";
         throw new HttpClientException(code ?? message, response.status, data);
       }
 
@@ -138,28 +189,10 @@ export class HttpClient {
         config: finalConfig,
       };
     } catch (error) {
-      const interceptedError = await this.runInterceptors('error', error);
-      let isConnectionError = false;
-      if (typeof error === 'object' && error !== null && 'code' in error) {
-        if ((error as { code?: unknown }).code === 'ECONNREFUSED') {
-          isConnectionError = true;
-        }
-      }
-      if (
-        error instanceof TypeError &&
-        error.message &&
-        (error.message.toLowerCase().includes('failed to fetch') ||
-          error.message.toLowerCase().includes('fetch failed') ||
-          error.message.toLowerCase().includes('networkerror') ||
-          error.message.toLowerCase().includes('network request failed'))
-      ) {
-        isConnectionError = true;
-      }
-      if (isConnectionError) {
-        throw new HttpClientException(
-          'Desculpe o transtorno mas nosso servidor esta fora do ar',
-          503
-        );
+      const interceptedError = await this.runInterceptors("error", error);
+      if (isConnectionError(error)) {
+        trackServerUnavailable(config.method, url);
+        throw createServerUnavailableException();
       }
 
       if (interceptedError instanceof HttpClientException) {
@@ -167,8 +200,8 @@ export class HttpClient {
       }
       if (interceptedError instanceof Error) {
         throw new HttpClientException(
-          interceptedError.message || 'Unknown error',
-          500
+          interceptedError.message || "Unknown error",
+          500,
         );
       }
       throw interceptedError;
@@ -176,43 +209,43 @@ export class HttpClient {
   }
 
   async get<T>(url: string, config?: RequestConfig): Promise<ResponseType<T>> {
-    return this.request<T>(url, { ...config, method: 'GET' });
+    return this.request<T>(url, { ...config, method: "GET" });
   }
 
   async post<T>(url: string, config?: RequestConfig): Promise<ResponseType<T>> {
     return this.request<T>(url, {
       ...config,
-      method: 'POST',
+      method: "POST",
     });
   }
   async put<T>(url: string, config?: RequestConfig): Promise<ResponseType<T>> {
     return this.request<T>(url, {
       ...config,
-      method: 'PUT',
+      method: "PUT",
     });
   }
   async patch<T>(
     url: string,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<ResponseType<T>> {
     return this.request<T>(url, {
       ...config,
-      method: 'PATCH',
+      method: "PATCH",
     });
   }
   async delete<T>(
     url: string,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<ResponseType<T>> {
     return this.request<T>(url, {
       ...config,
-      method: 'DELETE',
+      method: "DELETE",
     });
   }
 
   async downloadFile(
     url: string,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<{ blob: Blob; fileName: string; headers: Headers }> {
     try {
       // Merge configurations
@@ -229,32 +262,32 @@ export class HttpClient {
         },
       };
 
-      const interceptedConfig = await this.runInterceptors(
-        'request',
-        finalConfig
-      ) as RequestConfig;
+      const interceptedConfig = (await this.runInterceptors(
+        "request",
+        finalConfig,
+      )) as RequestConfig;
 
       const fullUrl = this.baseURL + url;
       const response = await fetch(fullUrl, interceptedConfig);
       const responseForInterceptors = response.clone();
 
-      await this.runInterceptors('response', responseForInterceptors);
+      await this.runInterceptors("response", responseForInterceptors);
 
       if (!response.ok) {
-        throw new HttpClientException('Download failed', response.status);
+        throw new HttpClientException("Download failed", response.status);
       }
 
       // 202: o arquivo ainda não existe (ex.: PDF do boleto sendo gerado
       // async por um worker) — o corpo é JSON, não binário. Tratar como uma
       // falha "ainda processando" em vez de devolver esse JSON como blob.
       if (response.status === 202) {
-        const pendingBody = await response.json().catch(() => ({})) as {
+        const pendingBody = (await response.json().catch(() => ({}))) as {
           message?: string;
         };
         throw new HttpClientException(
-          pendingBody.message || 'Arquivo ainda sendo processado',
+          pendingBody.message || "Arquivo ainda sendo processado",
           202,
-          pendingBody
+          pendingBody,
         );
       }
 
@@ -263,8 +296,8 @@ export class HttpClient {
 
       // Extrair nome do arquivo do header Content-Disposition
       const contentDisposition =
-        response.headers.get('content-disposition') || '';
-      let fileName = 'download';
+        response.headers.get("content-disposition") || "";
+      let fileName = "download";
       const matches = contentDisposition.match(/filename="?([^"]+)"?/);
       if (matches) {
         fileName = matches[1];
@@ -276,15 +309,19 @@ export class HttpClient {
         headers: response.headers,
       };
     } catch (error) {
-      const interceptedError = await this.runInterceptors('error', error);
+      const interceptedError = await this.runInterceptors("error", error);
 
+      if (isConnectionError(error)) {
+        trackServerUnavailable(config?.method, url);
+        throw createServerUnavailableException();
+      }
       if (error instanceof HttpClientException) {
         throw error;
       }
       if (interceptedError instanceof Error) {
         throw new HttpClientException(
-          interceptedError.message || 'Download failed',
-          500
+          interceptedError.message || "Download failed",
+          500,
         );
       }
       throw interceptedError;
