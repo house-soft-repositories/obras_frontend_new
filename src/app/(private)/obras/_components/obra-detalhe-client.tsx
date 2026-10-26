@@ -2,23 +2,32 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type ReactNode } from "react";
+import { useEffect, useState, useTransition, type ReactNode } from "react";
 import { ArrowLeft, Copy, MapPin, Trash2 } from "lucide-react";
 import { Button } from "@/core/ui/atoms/button";
+import { Chip } from "@/core/ui/atoms/chip";
 import { ActionButton } from "@/core/ui/molecules/action-button";
 import { Input } from "@/core/ui/atoms/input";
 import { useToast } from "@/core/hooks/useToast";
 import { AlertDialog } from "@/core/ui/molecules/alert-dialog";
 import duplicarObraAction from "@/core/actions/obras/duplicar_obra_action";
 import deleteObraAction from "@/core/actions/obras/delete_obra_action";
-import { aplicarTagsAction } from "@/core/actions/obras/tags_actions";
-import { criarObservacaoAction } from "@/core/actions/obras/observacoes_actions";
+import { listTagsAction } from "@/core/actions/obras/tags_actions";
+import {
+  criarObservacaoAction,
+  listObservacoesAction,
+  type Observacao,
+} from "@/core/actions/obras/observacoes_actions";
 import {
   TIPO_OBRA_LABELS,
   TIPO_OBRA_VALUES,
   type TipoObra,
 } from "@/core/schemas/obras/tipo_obra";
 import type { Obra } from "@/core/schemas/obras/obra_schema";
+import {
+  statusObraChipVariant,
+  statusObraLabel,
+} from "@/core/utils/status-obra";
 import {
   OBRA_TABS,
   obraTabHref,
@@ -38,6 +47,8 @@ type ObraExtra = Obra & {
   orgaoNome?: string | null;
 };
 
+type Tag = { id: string; nome: string };
+
 export function ObraDetalheClient({
   obra,
   activeTab,
@@ -50,8 +61,9 @@ export function ObraDetalheClient({
   const router = useRouter();
   const toast = useToast();
   const [pending, startTransition] = useTransition();
-  const [tag, setTag] = useState("");
   const [obs, setObs] = useState("");
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [observacoes, setObservacoes] = useState<Observacao[]>([]);
 
   const tab = activeTab;
   const codigo = text(obra.codigo);
@@ -64,6 +76,23 @@ export function ObraDetalheClient({
     (obra as ObraExtra).orgao?.nome ?? (obra as ObraExtra).orgaoNome,
     "—",
   );
+
+  useEffect(() => {
+    let ativo = true;
+    void Promise.all([listTagsAction(obra.id), listObservacoesAction(obra.id)])
+      .then(([tagsAtuais, observacoesAtuais]) => {
+        if (!ativo) return;
+        setTags(tagsAtuais);
+        setObservacoes(observacoesAtuais);
+      })
+      .catch(() => {
+        if (ativo) toast.error("Não foi possível carregar os dados da obra.");
+      });
+    return () => {
+      ativo = false;
+    };
+  }, [obra.id, toast]);
+
   function selecionarAba(nextTab: (typeof OBRA_TABS)[number]["id"]) {
     router.push(obraTabHref(obra.id, nextTab), { scroll: false });
   }
@@ -155,15 +184,20 @@ export function ObraDetalheClient({
           onUpdated={() => router.refresh()}
         />
         <div className="mt-3 flex flex-wrap gap-2 text-xs">
-          <span className="rounded-full bg-surface-subtle px-3 py-1 font-medium">
-            {status}
-          </span>
+          <Chip variant={statusObraChipVariant(status)}>
+            {statusObraLabel(status)}
+          </Chip>
           <span className="rounded-full bg-surface-subtle px-3 py-1 font-medium">
             {tipo}
           </span>
           <span className="rounded-full bg-surface-subtle px-3 py-1 font-medium">
             Órgão: {orgao}
           </span>
+          {tags.map((item) => (
+            <Chip key={item.id} variant="cinza" className="text-xs">
+              Tag: {item.nome}
+            </Chip>
+          ))}
         </div>
       </section>
 
@@ -192,28 +226,8 @@ export function ObraDetalheClient({
       </div>
 
       <section className="mt-6 rounded-app border border-border bg-surface p-6 shadow-card">
-        <h2 className="font-display text-xl font-semibold">
-          Tags e observações
-        </h2>
+        <h2 className="font-display text-xl font-semibold">Observações</h2>
         <div className="mt-4 flex gap-2">
-          <Input
-            placeholder="Aplicar tag"
-            value={tag}
-            onChange={(event) => setTag(event.target.value)}
-          />
-          <Button
-            disabled={!tag || pending}
-            onClick={() =>
-              executarAcao(
-                () => aplicarTagsAction(obra.id, tag),
-                "Tag aplicada.",
-              )
-            }
-          >
-            Adicionar
-          </Button>
-        </div>
-        <div className="mt-3 flex gap-2">
           <Input
             placeholder="Nova observação"
             value={obs}
@@ -222,14 +236,34 @@ export function ObraDetalheClient({
           <Button
             disabled={!obs || pending}
             onClick={() =>
-              executarAcao(
-                () => criarObservacaoAction(obra.id, obs),
-                "Observação adicionada.",
-              )
+              executarAcao(async () => {
+                const observacao = await criarObservacaoAction(obra.id, obs);
+                setObservacoes((current) => [observacao, ...current]);
+                setObs("");
+              }, "Observação adicionada.")
             }
           >
             Registrar
           </Button>
+        </div>
+        <div className="mt-5">
+          <h3 className="text-sm font-semibold">Observações registradas</h3>
+          {observacoes.length > 0 ? (
+            <ul className="mt-2 grid gap-2">
+              {observacoes.map((item) => (
+                <li
+                  key={item.id}
+                  className="rounded-app border border-border bg-surface-subtle px-3 py-2 text-sm"
+                >
+                  {item.texto}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm text-muted">
+              Nenhuma observação registrada.
+            </p>
+          )}
         </div>
       </section>
     </main>

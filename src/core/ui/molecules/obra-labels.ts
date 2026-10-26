@@ -1,33 +1,3 @@
-export function statusObraLabel(status: string): string {
-  switch (status) {
-    case "EM_ABERTO":
-      return "Em aberto";
-    case "EM_DESENVOLVIMENTO":
-      return "Em execução";
-    case "PARALISADO":
-      return "Paralisada";
-    case "CONCLUIDO":
-      return "Concluída";
-    case "CANCELADO":
-      return "Cancelada";
-    default:
-      return status;
-  }
-}
-
-export function statusObraChipClasse(status: string): string {
-  switch (status) {
-    case "EM_DESENVOLVIMENTO":
-      return "chip-azul";
-    case "CONCLUIDO":
-      return "chip-verde";
-    case "PARALISADO":
-      return "chip-vermelho";
-    default:
-      return "chip-cinza";
-  }
-}
-
 export interface SemaforoInfo {
   rotulo: string;
   cor: string;

@@ -3,6 +3,7 @@
 import { Body, Caption } from "@/core/ui/atoms/typography";
 import { isoToBrDisplay } from "@/core/ui/atoms/input-date-iso";
 import type { Obra } from "@/core/schemas/obras/obra_schema";
+import { statusObraLabel } from "@/core/utils/status-obra";
 import {
   TIPO_OBRA_LABELS,
   TIPO_OBRA_VALUES,
@@ -61,11 +62,15 @@ export function DadosTab({ obra }: { obra: Obra }) {
   return (
     <div role="tabpanel" className="mt-5 grid gap-4">
       <div>
-        <Body className="font-semibold">{text(obra.nome, "Obra sem nome")}</Body>
+        <Body className="font-semibold">
+          {text(obra.nome, "Obra sem nome")}
+        </Body>
         <Caption>
           Código {text(obra.codigo)} · Tipo{" "}
-          {isTipoObra(obra.tipo) ? TIPO_OBRA_LABELS[obra.tipo] : text(obra.tipo)}{" "}
-          · Situação {text(obra.status)}
+          {isTipoObra(obra.tipo)
+            ? TIPO_OBRA_LABELS[obra.tipo]
+            : text(obra.tipo)}{" "}
+          · Situação {statusObraLabel(text(obra.status))}
         </Caption>
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
@@ -80,7 +85,7 @@ export function DadosTab({ obra }: { obra: Obra }) {
                 ? TIPO_OBRA_LABELS[obra.tipo]
                 : text(obra.tipo),
             ],
-            ["Situação", text(obra.status)],
+            ["Situação", statusObraLabel(text(obra.status))],
             ["Órgão", orgao],
           ]}
         />

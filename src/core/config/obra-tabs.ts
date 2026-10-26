@@ -6,6 +6,7 @@ export const OBRA_TABS = [
   { id: "financeiro", label: "Financeiro" },
   { id: "arquivos", label: "Arquivos" },
   { id: "recebimentos", label: "Recebimentos" },
+  { id: "tags", label: "Tags" },
 ] as const;
 
 export type ObraTabId = (typeof OBRA_TABS)[number]["id"];

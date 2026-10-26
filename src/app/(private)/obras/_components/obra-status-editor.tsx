@@ -4,10 +4,11 @@ import { useState, useTransition } from "react";
 import updateStatusObraAction from "@/core/actions/obras/update_status_obra_action";
 import {
   statusObraLabel,
-  statusObraChipClasse,
-} from "@/core/ui/molecules/obra-labels";
+  statusObraChipVariant,
+} from "@/core/utils/status-obra";
 import type { StatusObra } from "@/core/schemas/obras/update_status_obra_schema";
 import { Button } from "@/core/ui/atoms/button";
+import { Chip } from "@/core/ui/atoms/chip";
 import { useToast } from "@/core/hooks/useToast";
 
 const statuses: StatusObra[] = [
@@ -55,11 +56,9 @@ export function ObraStatusEditor({
           <span className="text-xs font-semibold tracking-wide text-muted uppercase">
             Status da obra
           </span>
-          <span
-            className={`w-fit rounded-full px-3 py-1 text-sm font-semibold ${statusObraChipClasse(status)}`}
-          >
+          <Chip variant={statusObraChipVariant(status)}>
             {statusObraLabel(status)}
-          </span>
+          </Chip>
         </div>
         <div className="flex flex-wrap items-end gap-2">
           <label
