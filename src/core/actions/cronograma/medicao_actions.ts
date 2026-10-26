@@ -36,6 +36,12 @@ function clean(input: Record<string, unknown>) {
   return out;
 }
 
+function fontesPayload(
+  fontes: Array<{ fonteId: string; valor: number | string }>,
+) {
+  return fontes.map(({ fonteId, valor }) => ({ fonteId, valor }));
+}
+
 export async function listMedicoesAction(
   obraId: string,
 ): Promise<ServerActionResult<Medicao[]>> {
@@ -62,9 +68,13 @@ export async function criarMedicaoAction(
     return { success: false, data: null, error: message };
   }
   try {
+    const payload = {
+      ...parsed.data,
+      fontes: fontesPayload(parsed.data.fontes),
+    };
     const res = await api.auth.post<Medicao>(`/api/obras/${obraId}/medicoes`, {
       headers: { "content-type": "application/json" },
-      body: JSON.stringify(parsed.data),
+      body: JSON.stringify(payload),
     });
     updateTag(tagMedicoes(obraId));
     return { success: true, data: res.data, error: null };
@@ -98,13 +108,17 @@ export async function atualizarMedicaoAction(
     return { success: false, data: null, error: message };
   }
   try {
+    const payload = {
+      ...parsed.data,
+      ...(parsed.data.fontes
+        ? { fontes: fontesPayload(parsed.data.fontes) }
+        : {}),
+    };
     const res = await api.auth.patch<Medicao>(
       `/api/obras/${obraId}/medicoes/${medicaoId}`,
       {
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(
-          clean(parsed.data as unknown as Record<string, unknown>),
-        ),
+        body: JSON.stringify(clean(payload as Record<string, unknown>)),
       },
     );
     updateTag(tagMedicoes(obraId));

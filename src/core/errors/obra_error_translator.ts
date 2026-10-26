@@ -18,6 +18,8 @@ export class ObraErrorTranslator extends ErrorTranslator {
     PAGAMENTO_EXCEDE_LIQUIDACAO:
       "A soma dos pagamentos não pode exceder a liquidação.",
     PAGAMENTO_SEM_MEDICAO: "Vincule uma medição para registrar este pagamento.",
+    MEDICAO_ORCAMENTO_EXCEDIDO:
+      "O valor da medição excede o saldo restante do orçamento. Informe um valor igual ou inferior ao saldo disponível.",
     PASTA_DELETE_FORBIDDEN:
       "Não é possível excluir a pasta raiz ou uma pasta que contenha arquivos.",
     OBRA_DUPLICATE_CODIGO:

@@ -17,7 +17,13 @@ export abstract class ErrorTranslator {
   translate(error: unknown): string {
     if (error instanceof HttpClientException) {
       if (typeof error.data === "object" && error.data !== null) {
-        const message = "message" in error.data ? error.data.message : undefined;
+        const code = "code" in error.data ? error.data.code : undefined;
+        if (typeof code === "string") {
+          const translated = this.find(code);
+          if (translated) return translated;
+        }
+        const message =
+          "message" in error.data ? error.data.message : undefined;
         if (typeof message === "string") {
           const translated = this.find(message);
           if (translated) return translated;
