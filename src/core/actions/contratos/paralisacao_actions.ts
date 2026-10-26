@@ -6,10 +6,14 @@ import { obraErrorTranslator } from "@/core/errors/obra_error_translator";
 import HttpClientException from "@/core/exceptions/http_client_exception";
 import {
   criarParalisacaoSchema,
+  iniciarUploadTermoParalisacaoSchema,
   reinicioParalisacaoSchema,
+  uploadTermoParalisacaoResponseSchema,
   type CriarParalisacaoInput,
+  type IniciarUploadTermoParalisacaoInput,
   type Paralisacao,
   type ReinicioParalisacaoInput,
+  type UploadTermoParalisacaoResponse,
 } from "@/core/schemas/contratos/contrato_schema";
 import type ServerActionResult from "@/core/types/server_action_result";
 
@@ -55,6 +59,33 @@ export async function criarParalisacaoAction(
     return { success: true, data: res.data, error: null };
   } catch (error) {
     return fail(error);
+  }
+}
+
+export async function iniciarUploadTermoParalisacaoAction(
+  contratoId: string,
+  input: IniciarUploadTermoParalisacaoInput,
+): Promise<ServerActionResult<UploadTermoParalisacaoResponse>> {
+  const parsed = iniciarUploadTermoParalisacaoSchema.safeParse(input);
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "Dados inválidos.";
+    return { success: false, data: null, error: message };
+  }
+  try {
+    const res = await api.auth.post<UploadTermoParalisacaoResponse>(
+      `/api/contratos/${contratoId}/paralisacoes/termo-upload`,
+      {
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      },
+    );
+    return {
+      success: true,
+      data: uploadTermoParalisacaoResponseSchema.parse(res.data),
+      error: null,
+    };
+  } catch (error) {
+    return fail(error) as ServerActionResult<UploadTermoParalisacaoResponse>;
   }
 }
 

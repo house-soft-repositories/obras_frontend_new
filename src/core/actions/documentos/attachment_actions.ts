@@ -3,7 +3,6 @@
 import { obraErrorTranslator } from "@/core/errors/obra_error_translator";
 import HttpClientException from "@/core/exceptions/http_client_exception";
 import api from "@/core/rest_client/api";
-import type { Attachment } from "@/core/schemas/documentos/attachment_schema";
 import type ServerActionResult from "@/core/types/server_action_result";
 
 function fail(error: unknown): ServerActionResult<never> {
@@ -21,8 +20,14 @@ export async function getAttachmentDownloadUrlAction(
   attachmentId: string,
 ): Promise<ServerActionResult<{ url: string }>> {
   try {
-    const res = await api.auth.get<{ url: string }>(`/api/attachments/${attachmentId}/download`);
-    return { success: true, data: res.data, error: null };
+    const res = await api.auth.get<{ downloadUrl?: string; url?: string }>(
+      `/api/attachments/${attachmentId}/download`,
+    );
+    const url = res.data.downloadUrl ?? res.data.url;
+    if (!url) {
+      return { success: false, data: null, error: "URL de download não encontrada." };
+    }
+    return { success: true, data: { url }, error: null };
   } catch (error) {
     return fail(error) as ServerActionResult<{ url: string }>;
   }
@@ -38,5 +43,3 @@ export async function deleteAttachmentAction(
     return fail(error);
   }
 }
-
-export type { Attachment };

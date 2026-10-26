@@ -19,6 +19,5 @@ export const attachmentSchema = z
     entityId: z.string(),
     createdAt: z.unknown().optional(),
     updatedAt: z.unknown().optional(),
-  })
-  .passthrough();
+  });
 export type Attachment = z.infer<typeof attachmentSchema>;

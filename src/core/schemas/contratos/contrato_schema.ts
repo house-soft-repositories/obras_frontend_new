@@ -116,19 +116,83 @@ export const aditivoSchema = z
   .passthrough();
 export type Aditivo = z.infer<typeof aditivoSchema>;
 
-export const criarAditivoSchema = z.object({
+const criarAditivoBaseSchema = z.object({
   numero: z.string().min(1, "Informe o número do aditivo."),
   tipo: tipoAditivoSchema,
-  dataAssinatura: z.string().optional(),
+  dataAssinatura: z.string().min(1, "Informe a data de assinatura."),
   tipoPrazoExecucao: tipoPrazoExecucaoSchema.optional(),
   prazoExecucaoDias: z.number().int().min(1).optional(),
   prazoExecucaoData: z.string().optional(),
   vigenciaAditivada: z.string().optional(),
   observacoes: z.string().optional(),
+  fontes: z.array(contratoFonteSchema).default([]),
 });
+
+type AditivoPrazoInput = {
+  tipo?: TipoAditivo;
+  tipoPrazoExecucao?: TipoPrazoExecucao;
+  prazoExecucaoDias?: number;
+  prazoExecucaoData?: string;
+  fontes?: ContratoFonte[];
+};
+
+function validarPrazoAditivo(value: AditivoPrazoInput, ctx: z.RefinementCtx) {
+  if (
+    (value.tipo === "VALOR" || value.tipo === "PRAZO_E_VALOR") &&
+    (!value.fontes || value.fontes.length === 0)
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["fontes"],
+      message: "Vincule ao menos uma fonte e informe o valor do aditivo.",
+    });
+  }
+
+  if (value.tipo !== "PRAZO" && value.tipo !== "PRAZO_E_VALOR") return;
+
+    if (!value.tipoPrazoExecucao) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["tipoPrazoExecucao"],
+        message: "Informe se o prazo será em dias ou por data final.",
+      });
+      return;
+    }
+
+    if (value.tipoPrazoExecucao === "DIAS" && value.prazoExecucaoDias === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["prazoExecucaoDias"],
+        message: "Informe o prazo do aditivo em dias.",
+      });
+    }
+
+    if (value.tipoPrazoExecucao === "DATA") {
+      if (!value.prazoExecucaoData) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["prazoExecucaoData"],
+          message: "Informe a data final do prazo aditivado.",
+        });
+      } else if (!dataIsoSchema.safeParse(value.prazoExecucaoData).success) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["prazoExecucaoData"],
+          message: "Informe uma data final válida.",
+        });
+      }
+    }
+
+}
+
+export const criarAditivoSchema = criarAditivoBaseSchema.superRefine(
+  validarPrazoAditivo,
+);
 export type CriarAditivoInput = z.infer<typeof criarAditivoSchema>;
 
-export const atualizarAditivoSchema = criarAditivoSchema.partial();
+export const atualizarAditivoSchema = criarAditivoBaseSchema
+  .partial()
+  .superRefine(validarPrazoAditivo);
 export type AtualizarAditivoInput = z.infer<typeof atualizarAditivoSchema>;
 
 export const paralisacaoSchema = z
@@ -137,6 +201,7 @@ export const paralisacaoSchema = z
     contratoId: z.string().optional(),
     dataParalisacao: z.string(),
     motivo: z.string(),
+    termoParalisacaoArquivoId: z.string().uuid().optional(),
     dataReinicio: z.string().nullable().optional(),
   })
   .passthrough();
@@ -148,6 +213,23 @@ export const criarParalisacaoSchema = z.object({
   termoParalisacaoArquivoId: z.string().uuid("Anexe o termo de paralisação."),
 });
 export type CriarParalisacaoInput = z.infer<typeof criarParalisacaoSchema>;
+
+export const iniciarUploadTermoParalisacaoSchema = z.object({
+  nomeOriginal: z.string().trim().min(1, "Informe o nome do arquivo."),
+  mimeType: z.string().trim().min(1, "Informe o tipo do arquivo."),
+});
+export type IniciarUploadTermoParalisacaoInput = z.infer<
+  typeof iniciarUploadTermoParalisacaoSchema
+>;
+
+export const uploadTermoParalisacaoResponseSchema = z.object({
+  attachmentId: z.string().uuid(),
+  storageKey: z.string(),
+  urlUpload: z.string().url(),
+});
+export type UploadTermoParalisacaoResponse = z.infer<
+  typeof uploadTermoParalisacaoResponseSchema
+>;
 
 export const reinicioParalisacaoSchema = z.object({
   dataReinicio: z.string().min(1, "Informe a data de reinício."),
