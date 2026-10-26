@@ -1,13 +1,21 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRef, useState } from "react";
-import { useForm, type FieldErrors } from "react-hook-form";
+import { useState } from "react";
+import {
+  Controller,
+  useForm,
+  useWatch,
+  type FieldErrors,
+} from "react-hook-form";
 import { Check, ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
 import { Button } from "@/core/ui/atoms/button";
 import { Input } from "@/core/ui/atoms/input";
+import { InputPattern } from "@/core/ui/atoms/input-pattern";
 import { Modal } from "@/core/ui/molecules/modal";
 import { useToast } from "@/core/hooks/useToast";
+import { useCepEndereco } from "@/core/hooks/useCepEndereco";
+import { VisualizarLocalizacaoModal } from "./visualizar-localizacao-modal";
 import createObraPrivadaAction from "@/core/actions/obras-privadas/create_obra_privada_action";
 import {
   ANDAMENTO_VALUES,
@@ -38,9 +46,33 @@ export const steps = [
 ];
 
 const UFS = [
-  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS",
-  "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC",
-  "SP", "SE", "TO",
+  "AC",
+  "AL",
+  "AP",
+  "AM",
+  "BA",
+  "CE",
+  "DF",
+  "ES",
+  "GO",
+  "MA",
+  "MT",
+  "MS",
+  "MG",
+  "PA",
+  "PB",
+  "PR",
+  "PE",
+  "PI",
+  "RJ",
+  "RN",
+  "RS",
+  "RO",
+  "RR",
+  "SC",
+  "SP",
+  "SE",
+  "TO",
 ];
 
 const initialValues: CriarObraPrivadaFormularioInput = {
@@ -111,10 +143,7 @@ export function CriarObraPrivadaModal({
   const [step, setStep] = useState(0);
   const [apiError, setApiError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  // Instante do último avanço de etapa: cliques que caem no botão de submit
-  // logo após a troca (duplo-clique no Continuar) são ignorados. Ref não
-  // gera re-render — não é estado novo.
-  const lastAdvanceRef = useRef(0);
+  const [advanceGuarded, setAdvanceGuarded] = useState(false);
   const toast = useToast();
   const form = useForm<
     CriarObraPrivadaFormularioInput,
@@ -125,7 +154,14 @@ export function CriarObraPrivadaModal({
     defaultValues: initialValues,
     mode: "onBlur",
   });
-  const watched = form.watch();
+  const watched = useWatch({ control: form.control });
+  const cepLookup = useCepEndereco({
+    cep: watched.cep,
+    localidades,
+    setValue: form.setValue,
+    clearErrors: form.clearErrors,
+  });
+  const cepLoading = cepLookup.status === "loading";
 
   const close = () => {
     if (!submitting) {
@@ -148,15 +184,14 @@ export function CriarObraPrivadaModal({
     if (step >= steps.length - 1) return;
     const valid = await form.trigger(fieldsByStep[step]);
     if (valid) {
-      lastAdvanceRef.current = Date.now();
+      setAdvanceGuarded(true);
+      window.setTimeout(() => setAdvanceGuarded(false), 1000);
       setStep((value) => Math.min(value + 1, steps.length - 1));
     }
   }
 
   function guardedSubmit(event: React.FormEvent<HTMLFormElement>) {
-    // Ignora o submit que chega colado no avanço de etapa: é o segundo
-    // clique de um duplo-clique no Continuar, não uma confirmação.
-    if (Date.now() - lastAdvanceRef.current < 1000) {
+    if (advanceGuarded) {
       event.preventDefault();
       return;
     }
@@ -204,13 +239,12 @@ export function CriarObraPrivadaModal({
       <Modal.Portal>
         <Modal.Backdrop />
         <Modal.Popup className="max-h-[95vh] max-w-4xl overflow-y-auto p-5 sm:p-7">
-          <form
-            onSubmit={guardedSubmit}
-            noValidate
-          >
+          <form onSubmit={guardedSubmit} noValidate>
             <div className="flex items-start justify-between gap-4">
               <Modal.Header>
-                <Modal.Title className="text-2xl">{steps[step]}</Modal.Title>
+                <Modal.Title className="text-2xl text-foreground">
+                  {steps[step]}
+                </Modal.Title>
                 <Modal.Description>
                   Cadastre uma nova obra privada. Etapa {step + 1} de{" "}
                   {steps.length}.
@@ -224,7 +258,7 @@ export function CriarObraPrivadaModal({
                   key={label}
                   className={
                     index === step
-                      ? "rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white"
+                      ? "rounded-full bg-accent px-3 py-1 text-xs font-semibold text-foreground"
                       : index < step
                         ? "rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary"
                         : "rounded-full bg-surface-subtle px-3 py-1 text-xs text-muted"
@@ -289,16 +323,54 @@ export function CriarObraPrivadaModal({
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-1 text-sm font-medium">
                   CEP
-                  <Input
-                    inputMode="numeric"
-                    placeholder="00000-000"
-                    {...form.register("cep")}
+                  <Controller
+                    name="cep"
+                    control={form.control}
+                    render={({ field }) => (
+                      <InputPattern
+                        name={field.name}
+                        ref={field.ref}
+                        value={field.value ?? ""}
+                        onBlur={field.onBlur}
+                        onValueChange={({ raw }) => field.onChange(raw)}
+                        pattern={/\d/g}
+                        htmlPattern="\d{8}"
+                        mask="99999-999"
+                        minLength={8}
+                        maxLength={8}
+                        inputMode="numeric"
+                        placeholder="00000-000"
+                        aria-invalid={
+                          form.formState.errors.cep ? true : undefined
+                        }
+                      />
+                    )}
                   />
+                  {cepLookup.message ? (
+                    <span
+                      aria-live="polite"
+                      aria-busy={cepLoading}
+                      className={
+                        cepLookup.status === "error"
+                          ? "inline-flex items-center gap-1 text-xs text-red-700"
+                          : "inline-flex items-center gap-1 text-xs text-muted"
+                      }
+                    >
+                      {cepLoading ? (
+                        <Loader2
+                          aria-hidden="true"
+                          className="size-3 animate-spin"
+                        />
+                      ) : null}
+                      {cepLookup.message}
+                    </span>
+                  ) : null}
                 </label>
                 <label className="grid gap-1 text-sm font-medium">
                   Localidade
                   <select
                     className={selectClassName}
+                    disabled={cepLoading}
                     {...form.register("localidadeId")}
                   >
                     <option value="">Selecione</option>
@@ -311,26 +383,36 @@ export function CriarObraPrivadaModal({
                 </label>
                 <label className="grid gap-1 text-sm font-medium sm:col-span-2">
                   Logradouro
-                  <Input {...form.register("logradouro")} />
+                  <Input
+                    disabled={cepLoading}
+                    {...form.register("logradouro")}
+                  />
                   <FieldError
                     message={form.formState.errors.logradouro?.message}
                   />
                 </label>
                 <label className="grid gap-1 text-sm font-medium">
                   Número
-                  <Input {...form.register("numero")} />
+                  <Input disabled={cepLoading} {...form.register("numero")} />
                 </label>
                 <label className="grid gap-1 text-sm font-medium">
                   Complemento
-                  <Input {...form.register("complemento")} />
+                  <Input
+                    disabled={cepLoading}
+                    {...form.register("complemento")}
+                  />
                 </label>
                 <label className="grid gap-1 text-sm font-medium">
                   Bairro
-                  <Input {...form.register("bairro")} />
+                  <Input disabled={cepLoading} {...form.register("bairro")} />
                 </label>
                 <label className="grid gap-1 text-sm font-medium">
                   UF
-                  <select className={selectClassName} {...form.register("uf")}>
+                  <select
+                    className={selectClassName}
+                    disabled={cepLoading}
+                    {...form.register("uf")}
+                  >
                     <option value="">Selecione</option>
                     {UFS.map((uf) => (
                       <option key={uf} value={uf}>
@@ -340,22 +422,37 @@ export function CriarObraPrivadaModal({
                   </select>
                   <FieldError message={form.formState.errors.uf?.message} />
                 </label>
-                <label className="grid gap-1 text-sm font-medium">
-                  Latitude
-                  <Input
-                    inputMode="decimal"
-                    placeholder="-3,7319"
-                    {...form.register("latitude")}
+                <div className="grid gap-4 sm:col-span-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
+                  <label className="grid gap-1 text-sm font-medium">
+                    Latitude
+                    <Input
+                      disabled={cepLoading}
+                      inputMode="decimal"
+                      placeholder="-3,7319"
+                      {...form.register("latitude")}
+                    />
+                  </label>
+                  <label className="grid gap-1 text-sm font-medium">
+                    Longitude
+                    <Input
+                      disabled={cepLoading}
+                      inputMode="decimal"
+                      placeholder="-38,5267"
+                      {...form.register("longitude")}
+                    />
+                  </label>
+                  <VisualizarLocalizacaoModal
+                    latitude={watched.latitude}
+                    longitude={watched.longitude}
+                    endereco={[
+                      watched.logradouro,
+                      watched.numero,
+                      watched.bairro,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
                   />
-                </label>
-                <label className="grid gap-1 text-sm font-medium">
-                  Longitude
-                  <Input
-                    inputMode="decimal"
-                    placeholder="-38,5267"
-                    {...form.register("longitude")}
-                  />
-                </label>
+                </div>
               </div>
             ) : null}
             {step === 3 ? (
@@ -445,10 +542,7 @@ export function CriarObraPrivadaModal({
                       .join(", ") || "—"
                   }
                 />
-                <Review
-                  label="UF"
-                  value={watched.uf || "—"}
-                />
+                <Review label="UF" value={watched.uf || "—"} />
                 <Review
                   label="Inscrição imobiliária"
                   value={watched.inscricaoImobiliaria || "—"}
@@ -461,7 +555,8 @@ export function CriarObraPrivadaModal({
                   label="Andamento"
                   value={
                     watched.andamento
-                      ? (ANDAMENTO_LABELS[watched.andamento] ?? watched.andamento)
+                      ? (ANDAMENTO_LABELS[watched.andamento] ??
+                        watched.andamento)
                       : "—"
                   }
                 />
@@ -493,7 +588,11 @@ export function CriarObraPrivadaModal({
                 <ChevronLeft className="size-4" /> Voltar
               </Button>
               {step < steps.length - 1 ? (
-                <Button type="button" disabled={submitting} onClick={next}>
+                <Button
+                  type="button"
+                  disabled={submitting || (step === 2 && cepLoading)}
+                  onClick={next}
+                >
                   Continuar <ChevronRight className="size-4" />
                 </Button>
               ) : (

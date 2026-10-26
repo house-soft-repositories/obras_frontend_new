@@ -1,26 +1,22 @@
 import { listAutosGlobaisPrivadasAction } from "@/core/actions/obras-privadas/obra_privada_recursos_actions";
+import listObrasPrivadasAction from "@/core/actions/obras-privadas/list_obras_privadas_action";
 import { AutosTable } from "../_components/tabelas-simples";
 import { CriarAutoBar } from "../_components/criar-auto-bar";
 
 export default async function AutosPage() {
-  const autos = await listAutosGlobaisPrivadasAction({
-    page: 1,
-    take: 50,
-    order: "DESC",
-  });
-
-  const obras = Array.from(
-    new Map(
-      autos.data.map((item) => [
-        item.obraPrivadaId,
-        {
-          id: item.obraPrivadaId,
-          codigo: item.obraCodigo,
-          endereco: item.obraEndereco,
-        },
-      ]),
-    ).values(),
-  );
+  const [autos, obrasResult] = await Promise.all([
+    listAutosGlobaisPrivadasAction({ page: 1, take: 50, order: "DESC" }),
+    listObrasPrivadasAction({ page: 1, take: 50, order: "ASC" }),
+  ]);
+  const obras = obrasResult.success
+    ? obrasResult.data.data.map((obra) => ({
+        id: obra.id,
+        codigo: obra.codigo,
+        endereco: [obra.logradouro, obra.numero, obra.bairro]
+          .filter((part) => typeof part === "string" && part.trim())
+          .join(", "),
+      }))
+    : [];
 
   return (
     <main className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8 sm:py-10">

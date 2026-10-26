@@ -16,6 +16,7 @@ import { useToast } from "@/core/hooks/useToast";
 import { Button } from "@/core/ui/atoms/button";
 import { InputForm } from "@/core/ui/molecules/input-form";
 import { Modal } from "@/core/ui/molecules/modal";
+import { CriarPessoaModal } from "../../pessoas/_components/criar-pessoa-modal";
 
 const CONSELHOS = ["CREA", "CAU", "CFT"] as const;
 const UFS = [
@@ -169,6 +170,7 @@ export function CriarProfissionalTecnicoModal({
                   </option>
                 ))}
               </SelectForm>
+              <CriarPessoaModal onSuccess={() => router.refresh()} />
               <div className="grid gap-4 sm:grid-cols-2">
                 <SelectForm
                   label="Conselho"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import "leaflet/dist/leaflet.css";
 import {
   SITUACAO_ALVARA_LABELS,
   type ObraPrivada,
@@ -45,6 +46,13 @@ function escapar(value: unknown) {
   });
 }
 
+function coordenada(value: unknown) {
+  if (typeof value === "number") return value;
+  if (typeof value !== "string" || !value.trim()) return null;
+  const parsed = Number(value.replace(",", "."));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 export function MapaObrasPrivadas({ obras }: { obras: ObraPrivada[] }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -65,12 +73,9 @@ export function MapaObrasPrivadas({ obras }: { obras: ObraPrivada[] }) {
       const pontos: [number, number][] = [];
       for (const obra of obras) {
         const raw = obra as Record<string, unknown>;
-        if (typeof raw.latitude !== "string" || typeof raw.longitude !== "string") {
-          continue;
-        }
-        const lat = Number(raw.latitude.replace(",", "."));
-        const lng = Number(raw.longitude.replace(",", "."));
-        if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+        const lat = coordenada(raw.latitude);
+        const lng = coordenada(raw.longitude);
+        if (lat === null || lng === null) continue;
         pontos.push([lat, lng]);
 
         const cor = corPino(obra.situacaoAlvara);

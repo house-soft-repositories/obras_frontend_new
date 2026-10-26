@@ -1,26 +1,22 @@
 import { listFiscalizacoesGlobaisPrivadasAction } from "@/core/actions/obras-privadas/obra_privada_recursos_actions";
+import listObrasPrivadasAction from "@/core/actions/obras-privadas/list_obras_privadas_action";
 import { FiscalizacoesTable } from "../_components/tabelas-simples";
 import { CriarFiscalizacaoBar } from "../_components/criar-fiscalizacao-bar";
 
 export default async function FiscalizacoesPage() {
-  const fiscalizacoes = await listFiscalizacoesGlobaisPrivadasAction({
-    page: 1,
-    take: 50,
-    order: "DESC",
-  });
-
-  const obras = Array.from(
-    new Map(
-      fiscalizacoes.data.map((item) => [
-        item.obraPrivadaId,
-        {
-          id: item.obraPrivadaId,
-          codigo: item.obraCodigo,
-          endereco: item.obraEndereco,
-        },
-      ]),
-    ).values(),
-  );
+  const [fiscalizacoes, obrasResult] = await Promise.all([
+    listFiscalizacoesGlobaisPrivadasAction({ page: 1, take: 50, order: "DESC" }),
+    listObrasPrivadasAction({ page: 1, take: 50, order: "ASC" }),
+  ]);
+  const obras = obrasResult.success
+    ? obrasResult.data.data.map((obra) => ({
+        id: obra.id,
+        codigo: obra.codigo,
+        endereco: [obra.logradouro, obra.numero, obra.bairro]
+          .filter((part) => typeof part === "string" && part.trim())
+          .join(", "),
+      }))
+    : [];
 
   return (
     <main className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8 sm:py-10">

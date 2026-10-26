@@ -59,7 +59,7 @@ function SelectForm({
   );
 }
 
-export function CriarPessoaModal() {
+export function CriarPessoaModal({ onSuccess }: { onSuccess?: () => void } = {}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<StepIndex>(0);
@@ -137,6 +137,7 @@ export function CriarPessoaModal() {
         return;
       }
       toast.success("Pessoa criada com sucesso.");
+      onSuccess?.();
       resetForm();
       setOpen(false);
       router.refresh();

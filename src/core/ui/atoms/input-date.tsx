@@ -67,6 +67,7 @@ export function InputDate({
         className={cn("pr-11", className)}
         disabled={disabled}
         inputMode="numeric"
+        htmlPattern="[0-9]{2}/[0-9]{2}/[0-9]{4}"
         mask="99/99/9999"
         maxLength={8}
         onChange={onChange}

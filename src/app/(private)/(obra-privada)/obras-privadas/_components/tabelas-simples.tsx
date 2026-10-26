@@ -223,11 +223,17 @@ export function LicenciamentoTable({ data }: { data: LicenciamentoPrivado[] }) {
 
 export function MapaTable({ data }: { data: ObraPrivada[] }) {
   const comCoordenadas = data.filter(
-    (obra) =>
-      typeof (obra as Record<string, unknown>).latitude === "string" &&
-      ((obra as Record<string, unknown>).latitude as string).trim() &&
-      typeof (obra as Record<string, unknown>).longitude === "string" &&
-      ((obra as Record<string, unknown>).longitude as string).trim(),
+    (obra) => {
+      const raw = obra as Record<string, unknown>;
+      const latitude = String(raw.latitude ?? "").trim();
+      const longitude = String(raw.longitude ?? "").trim();
+      return (
+        latitude !== "" &&
+        longitude !== "" &&
+        Number.isFinite(Number(latitude.replace(",", "."))) &&
+        Number.isFinite(Number(longitude.replace(",", ".")))
+      );
+    },
   );
   return (
     <DataTable<ObraPrivada>

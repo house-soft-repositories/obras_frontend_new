@@ -174,6 +174,12 @@ export function ObraPrivadaDetalheClient({
   const endereco = [obra.logradouro, obra.numero, obra.bairro]
     .filter((part) => typeof part === "string" && part.trim())
     .join(", ");
+  const dadosObra = obra as Record<string, unknown>;
+  const localidade =
+    dadosObra.localidadeNome ??
+    (typeof dadosObra.localidade === "object" && dadosObra.localidade !== null
+      ? (dadosObra.localidade as { nome?: unknown }).nome
+      : dadosObra.cidade);
 
   async function baixarDossie() {
     setBaixando("dossie");
@@ -295,6 +301,7 @@ export function ObraPrivadaDetalheClient({
               <Campo rotulo="Complemento" valor={text(obra.complemento)} />
               <Campo rotulo="Bairro" valor={text(obra.bairro)} />
               <Campo rotulo="UF" valor={text(obra.uf)} />
+              <Campo rotulo="Localização" valor={text(localidade)} />
               <Campo
                 rotulo="CEP"
                 valor={text((obra as Record<string, unknown>).cep)}

@@ -150,6 +150,7 @@ export function InputDateIso({
         maxLength={8}
         onBlur={aoSair}
         onChange={aoDigitar}
+        htmlPattern="[0-9]{2}/[0-9]{2}/[0-9]{4}"
         pattern={/\d/g}
         placeholder={placeholder}
         readOnly={readOnly}

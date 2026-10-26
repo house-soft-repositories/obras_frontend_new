@@ -97,6 +97,17 @@ describe("obra privada — mocks passam no schema do formulário", () => {
       expect(resultado.data).not.toHaveProperty("habiteSe");
     }
   });
+
+  it("normaliza coordenadas digitadas com separador decimal local", () => {
+    const resultado = criarObraPrivadaFormularioSchema.safeParse(
+      buildObraPrivadaFormMock({ latitude: "-3,7319", longitude: "-38,5267" }),
+    );
+    expect(resultado.success).toBe(true);
+    if (resultado.success) {
+      expect(resultado.data.latitude).toBe("-3.7319");
+      expect(resultado.data.longitude).toBe("-38.5267");
+    }
+  });
 });
 
 describe("obra privada — enums dos selects", () => {

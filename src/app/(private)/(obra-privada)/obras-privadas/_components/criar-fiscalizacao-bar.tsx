@@ -26,7 +26,7 @@ function obraLabel(obra: ObraOpcao) {
 
 export function CriarFiscalizacaoBar({ obras }: Props) {
   const router = useRouter();
-  const [obraId, setObraId] = useState(obras[0]?.id ?? "");
+  const [obraId, setObraId] = useState("");
   const refresh = () => router.refresh();
 
   if (obras.length === 0) {
@@ -46,6 +46,7 @@ export function CriarFiscalizacaoBar({ obras }: Props) {
           value={obraId}
           onChange={(event) => setObraId(event.target.value)}
         >
+          <option value="">Selecione uma obra</option>
           {obras.map((obra) => (
             <option key={obra.id} value={obra.id}>
               {obraLabel(obra)}

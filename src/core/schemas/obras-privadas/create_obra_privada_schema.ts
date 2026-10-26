@@ -2,6 +2,7 @@ import { z } from "zod";
 
 const optionalUuid = z.string().uuid().or(z.literal(""));
 const optionalText = z.string();
+const coordinate = (value: string) => value.trim().replace(",", ".");
 
 export const criarObraPrivadaFormularioSchema = z
   .object({
@@ -60,8 +61,10 @@ export const criarObraPrivadaFormularioSchema = z
       ? { complemento: form.complemento.trim() }
       : {}),
     ...(form.bairro.trim() ? { bairro: form.bairro.trim() } : {}),
-    ...(form.latitude.trim() ? { latitude: form.latitude.trim() } : {}),
-    ...(form.longitude.trim() ? { longitude: form.longitude.trim() } : {}),
+    ...(form.latitude.trim() ? { latitude: coordinate(form.latitude) } : {}),
+    ...(form.longitude.trim()
+      ? { longitude: coordinate(form.longitude) }
+      : {}),
     ...(form.geoOrigem.trim() ? { geoOrigem: form.geoOrigem.trim() } : {}),
     ...(form.andamento ? { andamento: form.andamento } : {}),
     ...(form.habiteSe ? { habiteSe: form.habiteSe } : {}),
