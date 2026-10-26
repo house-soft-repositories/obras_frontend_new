@@ -46,8 +46,9 @@ export const createPessoaSchema = z
       documento: data.documento,
       nome: data.nome.trim(),
       nomeFantasia: cleaned(data.nomeFantasia),
-      rg: cleaned(data.rg),
-      orgaoExpedidor: cleaned(data.orgaoExpedidor),
+      rg: data.tipo === "FISICA" ? cleaned(data.rg) : undefined,
+      orgaoExpedidor:
+        data.tipo === "FISICA" ? cleaned(data.orgaoExpedidor) : undefined,
       email: cleaned(data.email),
       telefone: cleaned(data.telefone),
       cep: cleaned(data.cep),

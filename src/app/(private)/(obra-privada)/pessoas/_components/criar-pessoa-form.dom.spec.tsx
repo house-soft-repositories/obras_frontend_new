@@ -139,6 +139,8 @@ describe("pessoa — wizard no DOM", () => {
     expect(screen.getByLabelText(/razão social/i)).toBeInTheDocument();
     expect(screen.queryByLabelText(/nome completo/i)).not.toBeInTheDocument();
     expect(screen.getByLabelText(/cnpj/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/^rg$/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/órgão expedidor/i)).not.toBeInTheDocument();
   });
 
   it("duplo clique no Continuar da etapa Contato para no Endereço", async () => {

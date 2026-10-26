@@ -77,6 +77,24 @@ describe("pessoa — mocks passam no schema do formulário", () => {
       expect(resultado.data.email).toBeUndefined();
     }
   });
+
+  it("remove RG e órgão expedidor da saída de pessoa jurídica", () => {
+    const resultado = createPessoaSchema.safeParse(
+      buildPessoaFormMock({
+        tipo: "JURIDICA",
+        documento: "11222333000181",
+        nome: "Empresa Teste",
+        rg: "1234567",
+        orgaoExpedidor: "SSP/CE",
+      }),
+    );
+
+    expect(resultado.success).toBe(true);
+    if (resultado.success) {
+      expect(resultado.data.rg).toBeUndefined();
+      expect(resultado.data.orgaoExpedidor).toBeUndefined();
+    }
+  });
 });
 
 describe("pessoa — UI barra entradas inválidas", () => {

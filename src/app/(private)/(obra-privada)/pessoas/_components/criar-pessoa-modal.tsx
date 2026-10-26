@@ -227,19 +227,21 @@ export function CriarPessoaModal({ onSuccess }: { onSuccess?: () => void } = {})
                       error={form.formState.errors.nomeFantasia?.message}
                     />
                   </div>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <InputForm
-                      label="RG"
-                      {...form.register("rg")}
-                      error={form.formState.errors.rg?.message}
-                    />
-                    <InputForm
-                      label="Órgão expedidor"
-                      placeholder="Ex: SSP/CE"
-                      {...form.register("orgaoExpedidor")}
-                      error={form.formState.errors.orgaoExpedidor?.message}
-                    />
-                  </div>
+                  {!isJuridica ? (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <InputForm
+                        label="RG"
+                        {...form.register("rg")}
+                        error={form.formState.errors.rg?.message}
+                      />
+                      <InputForm
+                        label="Órgão expedidor"
+                        placeholder="Ex: SSP/CE"
+                        {...form.register("orgaoExpedidor")}
+                        error={form.formState.errors.orgaoExpedidor?.message}
+                      />
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
               {step === 1 ? (
