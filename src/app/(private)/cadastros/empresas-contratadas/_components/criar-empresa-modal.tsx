@@ -1,10 +1,20 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  LoaderCircle,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { useState, useTransition, type ComponentProps } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { criarEmpresaAction } from "@/core/actions/empresas/create_empresa_action";
+import lookupCnpjAction, {
+  type LookupCnpjData,
+} from "@/core/actions/empresas/lookup_cnpj_action";
 import {
   criarEmpresaSchema,
   type CriarEmpresaInput,
@@ -28,9 +38,33 @@ export const fieldsByStep: (keyof CriarEmpresaInput)[][] = [
 ];
 
 const UFS = [
-  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS",
-  "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC",
-  "SP", "SE", "TO",
+  "AC",
+  "AL",
+  "AP",
+  "AM",
+  "BA",
+  "CE",
+  "DF",
+  "ES",
+  "GO",
+  "MA",
+  "MT",
+  "MS",
+  "MG",
+  "PA",
+  "PB",
+  "PR",
+  "PE",
+  "PI",
+  "RJ",
+  "RN",
+  "RS",
+  "RO",
+  "RR",
+  "SC",
+  "SP",
+  "SE",
+  "TO",
 ];
 
 function SelectForm({
@@ -62,6 +96,8 @@ export function CriarEmpresaModal() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<StepIndex>(0);
   const [isPending, startTransition] = useTransition();
+  const [isLookingUpCnpj, setIsLookingUpCnpj] = useState(false);
+  const [cnpjLookupMessage, setCnpjLookupMessage] = useState("");
   const toast = useToast();
   const form = useForm<CriarEmpresaInput, unknown, CriarEmpresaOutput>({
     resolver: zodResolver(criarEmpresaSchema),
@@ -93,7 +129,9 @@ export function CriarEmpresaModal() {
   }
 
   function setTelefone(id: number, value: string) {
-    setTelefones((atual) => atual.map((item) => (item.id === id ? { ...item, value } : item)));
+    setTelefones((atual) =>
+      atual.map((item) => (item.id === id ? { ...item, value } : item)),
+    );
   }
 
   function removeTelefone(id: number) {
@@ -119,6 +157,44 @@ export function CriarEmpresaModal() {
     });
     setTelefones([{ id: 0, value: "" }]);
     setStep(0);
+    setCnpjLookupMessage("");
+  }
+
+  function applyCnpjData(data: LookupCnpjData) {
+    const fields = [
+      ["razaoSocial", data.razaoSocial],
+      ["nomeFantasia", data.nomeFantasia],
+      ["email", data.email],
+      ["cep", data.cep],
+      ["logradouro", data.logradouro],
+      ["numero", data.numero],
+      ["complemento", data.complemento],
+      ["bairro", data.bairro],
+      ["cidade", data.cidade],
+      ["uf", data.uf],
+    ] as const;
+    for (const [name, value] of fields) {
+      if (value) form.setValue(name, value, { shouldDirty: true });
+    }
+    if (data.telefones.length > 0) {
+      setTelefones(data.telefones.map((value, id) => ({ id, value })));
+      form.setValue("telefones", data.telefones, { shouldDirty: true });
+    }
+  }
+
+  async function consultarCnpj() {
+    const valid = await form.trigger("cnpj");
+    if (!valid) return;
+    setIsLookingUpCnpj(true);
+    setCnpjLookupMessage("Consultando CNPJ...");
+    const result = await lookupCnpjAction({ cnpj: form.getValues("cnpj") });
+    setIsLookingUpCnpj(false);
+    if (!result.success) {
+      setCnpjLookupMessage(result.error);
+      return;
+    }
+    applyCnpjData(result.data);
+    setCnpjLookupMessage("Dados preenchidos automaticamente.");
   }
 
   async function nextStep(event?: React.SyntheticEvent) {
@@ -218,7 +294,7 @@ export function CriarEmpresaModal() {
                   />
                   <div className="grid gap-4 sm:grid-cols-2">
                     <label className="grid gap-2 text-sm font-semibold text-foreground">
-                      CNPJ
+                      <span>CNPJ</span>
                       <Controller
                         name="cnpj"
                         control={form.control}
@@ -248,6 +324,32 @@ export function CriarEmpresaModal() {
                           role="alert"
                         >
                           {form.formState.errors.cnpj.message}
+                        </span>
+                      ) : null}
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="w-fit"
+                        disabled={isLookingUpCnpj}
+                        onClick={() => void consultarCnpj()}
+                      >
+                        {isLookingUpCnpj ? (
+                          <LoaderCircle
+                            className="animate-spin"
+                            aria-hidden="true"
+                          />
+                        ) : (
+                          <Search aria-hidden="true" />
+                        )}
+                        Consultar CNPJ
+                      </Button>
+                      {cnpjLookupMessage ? (
+                        <span
+                          className="text-xs font-normal text-muted"
+                          role="status"
+                        >
+                          {cnpjLookupMessage}
                         </span>
                       ) : null}
                     </label>
@@ -313,7 +415,11 @@ export function CriarEmpresaModal() {
                         ) : null}
                       </div>
                     ))}
-                    <Button type="button" variant="secondary" onClick={addTelefone}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={addTelefone}
+                    >
                       <Plus aria-hidden="true" />
                       Adicionar telefone
                     </Button>
@@ -382,7 +488,11 @@ export function CriarEmpresaModal() {
               </Modal.Close>
               <div className="ml-auto flex items-center gap-2">
                 {step > 0 ? (
-                  <Button type="button" variant="secondary" onClick={previousStep}>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={previousStep}
+                  >
                     <ChevronLeft aria-hidden="true" />
                     Voltar
                   </Button>
