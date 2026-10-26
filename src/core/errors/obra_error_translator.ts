@@ -2,6 +2,8 @@ import { ErrorTranslator } from "@/core/errors/error_translator";
 
 export class ObraErrorTranslator extends ErrorTranslator {
   protected readonly messages: Record<string, string> = {
+    ADITIVO_INVALID_INPUT:
+      "Revise o aditivo: informe o número e a data de assinatura. Para aditivos de prazo, informe o tipo de prazo e um prazo em dias ou uma data final.",
     OBRA_INVALID_NOME: "Confira o nome.",
     OBRA_INVALID_TIPO: "Confira o tipo.",
     OBRA_INVALID_RESPONSAVEL: "Confira o responsável.",
@@ -12,7 +14,7 @@ export class ObraErrorTranslator extends ErrorTranslator {
     FONTE_NOT_FOUND: "Fonte não encontrada.",
     FONTE_INATIVA: "Escolha uma fonte ativa.",
     LIQUIDACAO_EXCEDE_EMPENHO:
-      "A soma das liquidações não pode exceder o empenho.",
+      "O valor da liquidação supera o saldo disponível do empenho. Informe um valor igual ou inferior ao saldo empenhado.",
     PAGAMENTO_EXCEDE_LIQUIDACAO:
       "A soma dos pagamentos não pode exceder a liquidação.",
     PAGAMENTO_SEM_MEDICAO: "Vincule uma medição para registrar este pagamento.",
