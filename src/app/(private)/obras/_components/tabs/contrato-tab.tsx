@@ -471,7 +471,7 @@ function ContratoModal({ obraId, onSaved }: { obraId: string; onSaved: () => voi
                               required
                               {...form.register(`fontes.${index}.fonteId` as const)}
                               className="h-11 rounded-app border border-input bg-surface px-3 text-sm"
-                              disabled={loadingFontes || fontes.length === 0}
+                              disabled={loadingFontes}
                             >
                               <option value="">
                                 {loadingFontes ? "Carregando..." : "Selecione"}
@@ -749,7 +749,7 @@ function AditivoModal({ obraId, contratoId, onSaved }: { obraId: string; contrat
                             required
                             {...form.register(`fontes.${index}.fonteId` as const)}
                             className="h-11 rounded-app border border-input bg-surface px-3 text-sm"
-                            disabled={loadingFontes || fontes.length === 0}
+                            disabled={loadingFontes}
                           >
                             <option value="">
                               {loadingFontes ? "Carregando..." : "Selecione"}
