@@ -126,6 +126,54 @@ describe("obra privada — wizard no DOM", () => {
   });
 
   it(
+    "clique em etapa futura valida as etapas intermediárias e para na primeira inválida",
+    async () => {
+      const { user } = await abrirModal();
+      await user.selectOptions(
+        screen.getByRole("combobox", { name: /^proprietário$/i }),
+        OBRA_PRIVADA_FORM_UUIDS.proprietarioId,
+      );
+      await continuar(user);
+      await screen.findByRole("heading", { name: "Imóvel" });
+
+      // Pula direto para a Revisão: a Localização obrigatória deve barrar.
+      await user.click(screen.getByRole("button", { name: /^5\. Revisão$/i }));
+
+      expect(
+        await screen.findByRole("heading", { name: "Localização" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("heading", { name: "Revisão" }),
+      ).not.toBeInTheDocument();
+      expect(createObraPrivadaAction).not.toHaveBeenCalled();
+    },
+  );
+
+  it("permite voltar por clique na etapa mantendo o preenchimento", async () => {
+    const { user } = await abrirModal();
+    await user.selectOptions(
+      screen.getByRole("combobox", { name: /^proprietário$/i }),
+      OBRA_PRIVADA_FORM_UUIDS.proprietarioId,
+    );
+    await continuar(user);
+    await screen.findByRole("heading", { name: "Imóvel" });
+
+    await user.click(screen.getByRole("button", { name: /^1\. Proprietário$/i }));
+
+    expect(
+      screen.getByRole("heading", { name: "Proprietário" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("combobox", { name: /^proprietário$/i }),
+    ).toHaveValue(OBRA_PRIVADA_FORM_UUIDS.proprietarioId);
+
+    await continuar(user);
+    expect(
+      await screen.findByRole("heading", { name: "Imóvel" }),
+    ).toBeInTheDocument();
+  });
+
+  it(
     "chega na Revisão sem enviar; Criar obra privada envia o payload transformado",
     { timeout: 20000 },
     async () => {

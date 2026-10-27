@@ -13,6 +13,7 @@ import { Button } from "@/core/ui/atoms/button";
 import { Input } from "@/core/ui/atoms/input";
 import { InputPattern } from "@/core/ui/atoms/input-pattern";
 import { Modal } from "@/core/ui/molecules/modal";
+import { StepPills } from "@/core/ui/molecules/step-pills";
 import { useToast } from "@/core/hooks/useToast";
 import { useCepEndereco } from "@/core/hooks/useCepEndereco";
 import { VisualizarLocalizacaoModal } from "./visualizar-localizacao-modal";
@@ -156,7 +157,7 @@ export function CriarObraPrivadaModal({
   });
   const watched = useWatch({ control: form.control });
   const cepLookup = useCepEndereco({
-    cep: watched.cep,
+    cep: watched.cep ?? "",
     localidades,
     setValue: form.setValue,
     clearErrors: form.clearErrors,
@@ -180,17 +181,45 @@ export function CriarObraPrivadaModal({
     close();
   };
 
+  function guardAdvance() {
+    setAdvanceGuarded(true);
+    window.setTimeout(() => setAdvanceGuarded(false), 1000);
+  }
+  // Volta para uma etapa anterior livremente; ao avançar, valida os inputs de
+  // cada etapa que está sendo deixada para trás e para na primeira inválida.
+  async function goToStep(target: number) {
+    if (target === step || submitting) return;
+    if (target < step) {
+      setStep(target);
+      return;
+    }
+    // Não avança com a consulta de CEP ainda em andamento.
+    if (step === 2 && cepLoading) return;
+    for (let index = step; index < target; index += 1) {
+      const valid = await form.trigger(fieldsByStep[index]);
+      if (!valid) {
+        setStep(index);
+        return;
+      }
+    }
+    guardAdvance();
+    setStep(target);
+  }
+
   async function next() {
     if (step >= steps.length - 1) return;
-    const valid = await form.trigger(fieldsByStep[step]);
-    if (valid) {
-      setAdvanceGuarded(true);
-      window.setTimeout(() => setAdvanceGuarded(false), 1000);
-      setStep((value) => Math.min(value + 1, steps.length - 1));
-    }
+    await goToStep(step + 1);
+  }
+
+  function confirmar() {
+    // Ignora a confirmação colada no avanço de etapa: é o segundo clique de um
+    // duplo-clique no Continuar, não uma confirmação deliberada.
+    if (advanceGuarded || submitting) return;
+    void form.handleSubmit(submit, submitInvalid)();
   }
 
   function guardedSubmit(event: React.FormEvent<HTMLFormElement>) {
+    // Enter dentro do formulário cai aqui e passa pela mesma janela de guarda.
     if (advanceGuarded) {
       event.preventDefault();
       return;
@@ -252,22 +281,12 @@ export function CriarObraPrivadaModal({
               </Modal.Header>
               <Modal.CloseIcon onClick={close} />
             </div>
-            <ol className="mt-4 flex flex-wrap gap-2">
-              {steps.map((label, index) => (
-                <li
-                  key={label}
-                  className={
-                    index === step
-                      ? "rounded-full bg-accent px-3 py-1 text-xs font-semibold text-foreground"
-                      : index < step
-                        ? "rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary"
-                        : "rounded-full bg-surface-subtle px-3 py-1 text-xs text-muted"
-                  }
-                >
-                  {index + 1}. {label}
-                </li>
-              ))}
-            </ol>
+            <StepPills
+              steps={steps}
+              current={step}
+              onSelect={(index) => void goToStep(index)}
+              disabled={submitting}
+            />
             {apiError ? (
               <p
                 role="alert"
@@ -442,12 +461,12 @@ export function CriarObraPrivadaModal({
                     />
                   </label>
                   <VisualizarLocalizacaoModal
-                    latitude={watched.latitude}
-                    longitude={watched.longitude}
+                    latitude={watched.latitude ?? ""}
+                    longitude={watched.longitude ?? ""}
                     endereco={[
-                      watched.logradouro,
-                      watched.numero,
-                      watched.bairro,
+                      watched.logradouro ?? "",
+                      watched.numero ?? "",
+                      watched.bairro ?? "",
                     ]
                       .filter(Boolean)
                       .join(", ")}
@@ -596,7 +615,11 @@ export function CriarObraPrivadaModal({
                   Continuar <ChevronRight className="size-4" />
                 </Button>
               ) : (
-                <Button type="submit" disabled={submitting}>
+                <Button
+                  type="button"
+                  disabled={submitting}
+                  onClick={confirmar}
+                >
                   {submitting ? (
                     <Loader2 className="size-4 animate-spin" />
                   ) : (

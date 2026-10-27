@@ -212,6 +212,43 @@ describe("obra pública — wizard no DOM", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
+  it("clique em etapa futura valida as etapas intermediárias e para na primeira inválida", async () => {
+    const { user } = await abrirModal();
+    await user.type(
+      screen.getByLabelText(/nome/i),
+      "Reforma da Escola Municipal",
+    );
+
+    await user.click(screen.getByRole("button", { name: /^6\. Revisão$/i }));
+
+    expect(
+      await screen.findByRole("heading", { name: "Organização" }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText(/selecione o responsável/i),
+    ).toBeInTheDocument();
+    expect(createObraAction).not.toHaveBeenCalled();
+  });
+
+  it("permite voltar por clique na etapa mantendo o preenchimento", async () => {
+    const { user } = await abrirModal();
+    await preencherIdentificacao(user);
+
+    await user.click(screen.getByRole("button", { name: /^1\. Identificação$/i }));
+
+    expect(
+      screen.getByRole("heading", { name: "Identificação" }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText(/nome/i)).toHaveValue(
+      "Reforma da Escola Municipal",
+    );
+
+    await continuar(user);
+    expect(
+      await screen.findByRole("heading", { name: "Organização" }),
+    ).toBeInTheDocument();
+  });
+
   it("duplo clique no Continuar não pula a Revisão nem envia", async () => {
     const { user } = await abrirModal();
     await preencherAteOrcamentos(user);

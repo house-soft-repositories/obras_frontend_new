@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   useFieldArray,
   useForm,
@@ -29,6 +29,7 @@ import {
   InputMoney,
 } from "@/core/ui/atoms/input-money";
 import { Modal } from "@/core/ui/molecules/modal";
+import { StepPills } from "@/core/ui/molecules/step-pills";
 import {
   criarObraFormularioSchema,
   type CriarObraFormularioInput,
@@ -143,10 +144,9 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
   const [step, setStep] = useState(0);
   const [apiError, setApiError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  // Instante do último avanço de etapa: cliques que caem no botão de submit
-  // logo após a troca (duplo-clique no Continuar) são ignorados. Ref não
-  // gera re-render — não é estado novo.
-  const lastAdvanceRef = useRef(0);
+  // Janela anti-duplo-clique: logo após avançar de etapa, cliques que caem no
+  // botão de confirmação (duplo-clique no Continuar) são ignorados por 1s.
+  const [advanceGuarded, setAdvanceGuarded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tags, setTags] = useState("");
   const [subclassificacoes, setSubclassificacoes] = useState<Option[]>([]);
@@ -239,18 +239,41 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
 
     close();
   };
+  function guardAdvance() {
+    setAdvanceGuarded(true);
+    window.setTimeout(() => setAdvanceGuarded(false), 1000);
+  }
+  // Volta para uma etapa anterior livremente; ao avançar, valida os inputs de
+  // cada etapa que está sendo deixada para trás e para na primeira inválida.
+  async function goToStep(target: number) {
+    if (target === step || submitting) return;
+    if (target < step) {
+      setStep(target);
+      return;
+    }
+    for (let index = step; index < target; index += 1) {
+      const valid = await form.trigger(fieldsByStep[index]);
+      if (!valid) {
+        setStep(index);
+        return;
+      }
+    }
+    guardAdvance();
+    setStep(target);
+  }
   async function next() {
     if (step >= steps.length - 1) return;
-    const valid = await form.trigger(fieldsByStep[step]);
-    if (valid) {
-      lastAdvanceRef.current = Date.now();
-      setStep((value) => Math.min(value + 1, steps.length - 1));
-    }
+    await goToStep(step + 1);
+  }
+  function confirmar() {
+    // Ignora a confirmação colada no avanço de etapa: é o segundo clique de um
+    // duplo-clique no Continuar, não uma confirmação deliberada.
+    if (advanceGuarded || submitting) return;
+    void form.handleSubmit(submit, submitInvalid)();
   }
   function guardedSubmit(event: React.FormEvent<HTMLFormElement>) {
-    // Ignora o submit que chega colado no avanço de etapa: é o segundo
-    // clique de um duplo-clique no Continuar, não uma confirmação.
-    if (Date.now() - lastAdvanceRef.current < 1000) {
+    // Enter dentro do formulário cai aqui e passa pela mesma janela de guarda.
+    if (advanceGuarded) {
       event.preventDefault();
       return;
     }
@@ -348,43 +371,41 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
   return (
     <Modal.Root open={open} onOpenChange={handleOpenChange}>
       <Modal.Trigger asChild>
-        <Button>
+        <Button type="button">
           <Plus className="size-4" /> Nova obra
         </Button>
       </Modal.Trigger>
       <Modal.Portal>
         <Modal.Backdrop />
         <Modal.Popup className="max-h-[95vh] max-w-4xl overflow-y-auto p-5 sm:p-7">
-          <form onSubmit={guardedSubmit}>
-            <div className="mb-6 flex items-center justify-between">
+          <form onSubmit={guardedSubmit} noValidate>
+            <div className="flex items-start justify-between gap-4">
               <Modal.Header>
-                <Modal.Title className="text-2xl">{steps[step]}</Modal.Title>
-                <Modal.Description>Cadastre uma nova obra.</Modal.Description>
+                <Modal.Title className="text-2xl text-foreground">
+                  {steps[step]}
+                </Modal.Title>
+                <Modal.Description>
+                  Cadastre uma nova obra. Etapa {step + 1} de {steps.length}.
+                </Modal.Description>
               </Modal.Header>
               <Modal.CloseIcon onClick={close} />
             </div>
-            <div className="mb-7 grid grid-cols-6 gap-1">
-              {steps.map((label, index) => (
-                <div key={label}>
-                  <div
-                    className={`h-2 rounded-full ${index <= step ? "bg-primary" : "bg-border"}`}
-                  />
-                  <span className="hidden text-center text-[11px] text-muted sm:block">
-                    {label}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <StepPills
+              steps={steps}
+              current={step}
+              onSelect={(index) => void goToStep(index)}
+              disabled={submitting}
+            />
             {apiError ? (
               <p
-                className="mb-4 rounded-app border border-red-200 bg-red-50 p-3 text-sm text-red-700"
                 role="alert"
+                className="mt-4 rounded-app border border-red-300 bg-red-50 p-3 text-sm text-red-800"
               >
                 {apiError}
               </p>
             ) : null}
             {step === 0 ? (
-              <div className="grid gap-4">
+              <div className="mt-5 grid gap-4">
                 <label className="grid gap-1 text-sm font-medium">
                   Nome
                   <Input {...form.register("nome")} />
@@ -417,7 +438,7 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
               </div>
             ) : null}
             {step === 1 ? (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 {select(
                   "responsavelUsuarioId",
                   "Responsável",
@@ -436,7 +457,7 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
               </div>
             ) : null}
             {step === 2 ? (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 {loading ? (
                   <p className="text-sm text-muted sm:col-span-2">
                     Carregando opções dependentes...
@@ -466,7 +487,7 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
               </div>
             ) : null}
             {step === 3 ? (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 {enumSelect(
                   "tipoFinanciamento",
                   "Financiamento",
@@ -533,7 +554,7 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
               </div>
             ) : null}
             {step === 4 ? (
-              <div className="grid gap-4">
+              <div className="mt-5 grid gap-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold">Fontes de orçamento</h3>
                   <span className="font-semibold text-primary">
@@ -610,7 +631,7 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
               </div>
             ) : null}
             {step === 5 ? (
-              <div className="grid gap-4 text-sm">
+              <div className="mt-5 grid gap-4 text-sm">
                 <Review label="Nome" value={watched.nome ?? ""} />
                 <Review
                   label="Tipo"
@@ -673,7 +694,11 @@ export function CriarObraModal({ onSuccess, ...options }: Props) {
                   Continuar <ChevronRight className="size-4" />
                 </Button>
               ) : (
-                <Button type="submit" disabled={submitting}>
+                <Button
+                  type="button"
+                  disabled={submitting}
+                  onClick={confirmar}
+                >
                   {submitting ? (
                     <Loader2 className="size-4 animate-spin" />
                   ) : (
