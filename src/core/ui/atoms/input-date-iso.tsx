@@ -163,7 +163,7 @@ export function InputDateIso({
       <button
         type="button"
         aria-label="Selecionar data"
-        className="absolute top-1/2 right-2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-app text-muted transition hover:bg-muted/10 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+        className="absolute top-1/2 right-2 inline-flex size-8 shrink-0 -translate-y-1/2 items-center justify-center rounded-app p-0 text-muted transition hover:bg-muted/10 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
         disabled={disabled || readOnly}
         onClick={abrirSeletor}
         tabIndex={-1}
