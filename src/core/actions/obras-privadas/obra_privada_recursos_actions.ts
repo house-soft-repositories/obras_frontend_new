@@ -7,9 +7,7 @@ import { obraPrivadaErrorTranslator } from "@/core/errors/obra_privada_error_tra
 import type {
   AlvaraPrivado,
   ArquivoPrivado,
-  AutoGlobalPrivado,
   AutoInfracaoPrivado,
-  FiscalizacaoGlobalPrivada,
   FiscalizacaoPrivada,
   HabiteSePrivado,
   LicenciamentoPrivado,
@@ -152,47 +150,6 @@ export async function listTimelineObraPrivadaAction(obraPrivadaId: string) {
     `/api/obras-privadas/${obraPrivadaId}/timeline`,
     `obra-privada-${obraPrivadaId}-timeline`,
   );
-}
-
-export async function listFiscalizacoesGlobaisPrivadasAction(params: {
-  page?: number;
-  take?: number;
-  order?: "ASC" | "DESC";
-  busca?: string;
-  tipo?: string;
-  resultado?: string;
-}): Promise<Paginated<FiscalizacaoGlobalPrivada>> {
-  try {
-    const take = params.take ?? 50;
-    const res = await api.auth.get<Paginated<FiscalizacaoGlobalPrivada>>(
-      `/api/obras-privadas/fiscalizacoes${qs({ ...params, take })}`,
-      { next: { tags: ["list-obras-privadas-fiscalizacoes"] } },
-    );
-    return normalizePage<FiscalizacaoGlobalPrivada>(res.data, take);
-  } catch {
-    return { data: [], meta: { ...FALLBACK_META } };
-  }
-}
-
-export async function listAutosGlobaisPrivadasAction(params: {
-  page?: number;
-  take?: number;
-  order?: "ASC" | "DESC";
-  busca?: string;
-  tipo?: string;
-  situacao?: string;
-  vencidos?: boolean;
-}): Promise<Paginated<AutoGlobalPrivado>> {
-  try {
-    const take = params.take ?? 50;
-    const res = await api.auth.get<Paginated<AutoGlobalPrivado>>(
-      `/api/obras-privadas/autos${qs({ ...params, take })}`,
-      { next: { tags: ["list-obras-privadas-autos"] } },
-    );
-    return normalizePage<AutoGlobalPrivado>(res.data, take);
-  } catch {
-    return { data: [], meta: { ...FALLBACK_META } };
-  }
 }
 
 export async function listLicenciamentoPrivadasAction(params: {
@@ -419,7 +376,6 @@ export async function createFiscalizacaoObraPrivadaAction(
       },
     );
     revalidateRecursoTags(obraPrivadaId, "fiscalizacoes");
-    updateTag("list-obras-privadas-fiscalizacoes");
     return { success: true, data: res.data, error: null };
   } catch (error) {
     if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) {
@@ -458,7 +414,6 @@ export async function createAutoObraPrivadaAction(
       },
     );
     revalidateRecursoTags(obraPrivadaId, "autos");
-    updateTag("list-obras-privadas-autos");
     return { success: true, data: res.data, error: null };
   } catch (error) {
     if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) {
@@ -485,7 +440,6 @@ export async function excluirAutoInfracaoAction(
   try {
     await api.auth.delete(`/api/obras-privadas/${obraPrivadaId}/autos/${autoId}`);
     revalidateRecursoTags(obraPrivadaId, "autos");
-    updateTag("list-obras-privadas-autos");
     return { success: true, data: undefined, error: null };
   } catch (error) {
     if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) {

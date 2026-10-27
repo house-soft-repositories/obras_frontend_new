@@ -104,26 +104,6 @@ export const privateRouteGroups: RouteGroup[] = [
             ],
           },
           {
-            path: "/obras-privadas/autos",
-            label: "Autos",
-            icon: "Gavel",
-            roles: [
-              userRoleSchema.enum.SUPERADMIN,
-              userRoleSchema.enum.ADMIN,
-              userRoleSchema.enum.STAFF,
-            ],
-          },
-          {
-            path: "/obras-privadas/fiscalizacoes",
-            label: "Fiscalizações",
-            icon: "HardHat",
-            roles: [
-              userRoleSchema.enum.SUPERADMIN,
-              userRoleSchema.enum.ADMIN,
-              userRoleSchema.enum.STAFF,
-            ],
-          },
-          {
             path: "/obras-privadas/licenciamento",
             label: "Licenciamento",
             icon: "FileText",

@@ -3,16 +3,9 @@
 import Link from "next/link";
 import { DataTable } from "@/core/ui/atoms/data-table";
 import {
-  ANDAMENTO_LABELS,
   HABITE_SE_LABELS,
-  RESULTADO_FISCALIZACAO_LABELS,
   SITUACAO_ALVARA_LABELS,
-  SITUACAO_AUTO_INFRACAO_LABELS,
   TIPO_ALVARA_LABELS,
-  TIPO_AUTO_INFRACAO_LABELS,
-  TIPO_FISCALIZACAO_LABELS,
-  type AutoGlobalPrivado,
-  type FiscalizacaoGlobalPrivada,
   type LicenciamentoPrivado,
   type ObraPrivada,
 } from "@/core/schemas/obras-privadas/obra_privada_schema";
@@ -54,113 +47,6 @@ function ObraLink({
       </Link>
       <div className="text-xs text-muted">{text(endereco)}</div>
     </div>
-  );
-}
-
-export function AutosTable({ data }: { data: AutoGlobalPrivado[] }) {
-  return (
-    <DataTable<AutoGlobalPrivado>
-      title="Autos de fiscalização"
-      data={data}
-      getRowId={(auto) => auto.id}
-      renderCardTitle={(auto) => text(auto.numero)}
-      renderCardStatus={(auto) =>
-        label(SITUACAO_AUTO_INFRACAO_LABELS, auto.situacao)
-      }
-      columns={[
-        {
-          id: "obra",
-          header: "Obra",
-          cell: (auto) => (
-            <ObraLink
-              id={auto.obraPrivadaId}
-              codigo={auto.obraCodigo}
-              endereco={auto.obraEndereco}
-            />
-          ),
-        },
-        { id: "numero", header: "Auto", cell: (auto) => text(auto.numero) },
-        {
-          id: "tipo",
-          header: "Tipo",
-          cell: (auto) => label(TIPO_AUTO_INFRACAO_LABELS, auto.tipo),
-        },
-        {
-          id: "situacao",
-          header: "Situação",
-          cell: (auto) => label(SITUACAO_AUTO_INFRACAO_LABELS, auto.situacao),
-        },
-        {
-          id: "emissao",
-          header: "Emissão",
-          cell: (auto) => formatDate(auto.dataEmissao),
-        },
-        {
-          id: "limite",
-          header: "Limite",
-          cell: (auto) => formatDate(auto.dataLimite),
-        },
-      ]}
-    />
-  );
-}
-
-export function FiscalizacoesTable({
-  data,
-}: {
-  data: FiscalizacaoGlobalPrivada[];
-}) {
-  return (
-    <DataTable<FiscalizacaoGlobalPrivada>
-      title="Visitas de fiscalização"
-      data={data}
-      getRowId={(fiscalizacao) => fiscalizacao.id}
-      renderCardTitle={(fiscalizacao) => text(fiscalizacao.numero)}
-      renderCardStatus={(fiscalizacao) =>
-        label(RESULTADO_FISCALIZACAO_LABELS, fiscalizacao.resultado)
-      }
-      columns={[
-        {
-          id: "obra",
-          header: "Obra",
-          cell: (fiscalizacao) => (
-            <ObraLink
-              id={fiscalizacao.obraPrivadaId}
-              codigo={fiscalizacao.obraCodigo}
-              endereco={fiscalizacao.obraEndereco}
-            />
-          ),
-        },
-        {
-          id: "numero",
-          header: "Fiscalização",
-          cell: (fiscalizacao) => text(fiscalizacao.numero),
-        },
-        {
-          id: "data",
-          header: "Data",
-          cell: (fiscalizacao) => formatDate(fiscalizacao.dataFiscalizacao),
-        },
-        {
-          id: "tipo",
-          header: "Tipo",
-          cell: (fiscalizacao) =>
-            label(TIPO_FISCALIZACAO_LABELS, fiscalizacao.tipo),
-        },
-        {
-          id: "resultado",
-          header: "Resultado",
-          cell: (fiscalizacao) =>
-            label(RESULTADO_FISCALIZACAO_LABELS, fiscalizacao.resultado),
-        },
-        {
-          id: "etapa",
-          header: "Etapa",
-          cell: (fiscalizacao) =>
-            label(ANDAMENTO_LABELS, fiscalizacao.etapaConstatada),
-        },
-      ]}
-    />
   );
 }
 

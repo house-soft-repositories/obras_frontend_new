@@ -113,18 +113,6 @@ export function ObrasPrivadasClient({
       <nav className="mb-5 flex flex-wrap items-center gap-2 text-sm">
         <Link
           className="rounded-full border border-border px-3 py-1 hover:underline"
-          href="/obras-privadas/autos"
-        >
-          Autos
-        </Link>
-        <Link
-          className="rounded-full border border-border px-3 py-1 hover:underline"
-          href="/obras-privadas/fiscalizacoes"
-        >
-          Fiscalizações
-        </Link>
-        <Link
-          className="rounded-full border border-border px-3 py-1 hover:underline"
           href="/obras-privadas/licenciamento"
         >
           Licenciamento
