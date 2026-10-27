@@ -90,7 +90,7 @@ export async function Sidebar() {
         <form action={logout} className="mt-3">
           <button
             type="submit"
-            className="flex min-h-9 w-full items-center gap-2 rounded-app px-2 text-xs font-medium text-sidebar-muted transition-colors hover:bg-sidebar-hover hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex min-h-9 w-full items-center gap-2 rounded-app px-2 text-xs font-medium text-gray-800 transition-colors hover:bg-sidebar-hover hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <LogOut aria-hidden="true" className="size-3.5" />
             Sair

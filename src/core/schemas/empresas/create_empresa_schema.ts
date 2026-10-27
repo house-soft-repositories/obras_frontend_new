@@ -5,7 +5,7 @@ function isValidCnpj(value: string) {
   if (digits.length !== 14 || /^(\d)\1{13}$/.test(digits)) return false;
   let length = digits.length - 2;
   let numbers = digits.substring(0, length);
-  let check = digits.substring(length);
+  const check = digits.substring(length);
   let sum = 0;
   let pos = length - 7;
   for (let i = length; i >= 1; i--) {

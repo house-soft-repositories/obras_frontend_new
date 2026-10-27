@@ -786,11 +786,11 @@ function SelectField({
   children: React.ReactNode;
 }) {
   return (
-    <label className="grid gap-2 text-sm font-semibold">
+    <label className="grid min-w-0 gap-2 text-sm font-semibold">
       {label}
       <select
         {...props}
-        className="h-11 rounded-app border border-input bg-surface px-3 text-sm"
+        className="h-11 w-full min-w-0 max-w-full rounded-app border border-input bg-surface px-3 text-sm"
       >
         {children}
       </select>
