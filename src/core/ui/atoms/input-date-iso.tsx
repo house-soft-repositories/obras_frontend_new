@@ -101,8 +101,9 @@ export function InputDateIso({
   const nativeInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    setTexto(isoToBrDisplay(normalizedValue));
+    // O texto é estado local porque a digitação mantém valores parciais.
     // eslint-disable-next-line react-hooks/set-state-in-effect
+    setTexto(isoToBrDisplay(normalizedValue));
   }, [normalizedValue]);
 
   const abrirSeletor: MouseEventHandler<HTMLButtonElement> = () => {
@@ -135,7 +136,9 @@ export function InputDateIso({
   };
 
   const aoSelecionarData: ChangeEventHandler<HTMLInputElement> = (event) => {
-    onIsoChange?.(event.currentTarget.value);
+    const iso = event.currentTarget.value;
+    setTexto(isoToBrDisplay(iso));
+    onIsoChange?.(iso);
   };
 
   return (
@@ -165,7 +168,7 @@ export function InputDateIso({
         onClick={abrirSeletor}
         tabIndex={-1}
       >
-        <Calendar size={16} aria-hidden="true" />
+        <Calendar size={20} aria-hidden="true" />
       </button>
       <input
         ref={nativeInputRef}
