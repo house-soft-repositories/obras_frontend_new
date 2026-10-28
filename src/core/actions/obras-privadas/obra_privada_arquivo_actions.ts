@@ -63,6 +63,25 @@ export async function iniciarUploadArquivoObraPrivadaAction(
   }
 }
 
+export async function getObraPrivadaArquivoDownloadUrlAction(
+  arquivoId: string,
+): Promise<ServerActionResult<{ url: string }>> {
+  try {
+    const res = await api.auth.get<{ url?: string; downloadUrl?: string }>(
+      `/api/obras-privadas-arquivos/${arquivoId}/url`,
+    );
+    const url = res.data.url ?? res.data.downloadUrl;
+    if (!url) return { success: false, data: null, error: "URL de download não encontrada." };
+    return { success: true, data: { url }, error: null };
+  } catch (error) {
+    if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) throw error;
+    if (error instanceof HttpClientException) {
+      return { success: false, data: null, error: translateArquivoError(error, "Não foi possível obter o arquivo.") };
+    }
+    return { success: false, data: null, error: "Não foi possível obter o arquivo." };
+  }
+}
+
 export async function confirmarUploadArquivoObraPrivadaAction(
   obraPrivadaId: string,
   arquivoId: string,

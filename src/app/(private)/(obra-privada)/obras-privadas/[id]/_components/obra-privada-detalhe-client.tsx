@@ -7,24 +7,37 @@ import {
   ArrowLeft,
   Download,
   FileText,
+  UserRoundX,
   FolderOpen,
   Gavel,
   MapPin,
   NotebookText,
+  Plus,
   Users,
 } from "lucide-react";
 import {
   baixarDossieObraPrivadaAction,
   baixarRelatorioFiscalizacaoPrivadaAction,
 } from "@/core/actions/obras-privadas/download_obras_privadas_report_action";
+import {
+  baixarResponsavelObraPrivadaAction,
+  createObservacaoObraPrivadaAction,
+} from "@/core/actions/obras-privadas/obra_privada_recursos_actions";
 import { useToast } from "@/core/hooks/useToast";
 import { CriarAlvaraModal } from "../../_components/criar-alvara-modal";
 import { CriarAutoModal } from "../../_components/criar-auto-modal";
 import { CriarFiscalizacaoModal } from "../../_components/criar-fiscalizacao-modal";
 import { CriarHabiteSeModal } from "../../_components/criar-habite-se-modal";
+import { CriarResponsavelModal } from "../../_components/criar-responsavel-modal";
+import type { ProfissionalTecnico } from "@/core/schemas/profissionais-tecnicos/profissional_tecnico_schema";
 import type { VistoriadorOpcao } from "../../_components/criar-habite-se-modal";
+import { ArquivosObraPrivada } from "../../_components/arquivos-obra-privada";
+import type { TimelineObraPrivadaItem } from "@/core/actions/obras-privadas/obra_privada_recursos_actions";
 import { Button } from "@/core/ui/atoms/button";
 import { DataTable } from "@/core/ui/atoms/data-table";
+import { Input } from "@/core/ui/atoms/input";
+import { Tooltip } from "@/core/ui/atoms/tooltip";
+import { Modal } from "@/core/ui/molecules/modal";
 import {
   ANDAMENTO_LABELS,
   HABITE_SE_LABELS,
@@ -73,7 +86,8 @@ type Props = {
   responsaveis: ResponsavelPrivado[];
   observacoes: ObservacaoPrivada[];
   arquivos: ArquivoPrivado[];
-  timeline: Record<string, unknown>[];
+  timeline: TimelineObraPrivadaItem[];
+  profissionais: ProfissionalTecnico[];
   vistoriadores: VistoriadorOpcao[];
 };
 
@@ -164,10 +178,18 @@ export function ObraPrivadaDetalheClient({
   observacoes,
   arquivos,
   timeline,
+  profissionais,
   vistoriadores,
 }: Props) {
   const [tab, setTab] = useState<TabId>("dados");
   const [baixando, setBaixando] = useState<string | null>(null);
+  const [responsavelParaBaixa, setResponsavelParaBaixa] = useState<ResponsavelPrivado | null>(null);
+  const [dataBaixa, setDataBaixa] = useState(() => new Date().toISOString().slice(0, 10));
+  const [motivoBaixa, setMotivoBaixa] = useState("");
+  const [salvandoBaixa, setSalvandoBaixa] = useState(false);
+  const [observacao, setObservacao] = useState("");
+  const [salvandoObservacao, setSalvandoObservacao] = useState(false);
+  const [modalObservacaoAberto, setModalObservacaoAberto] = useState(false);
   const toast = useToast();
   const router = useRouter();
   const refresh = () => router.refresh();
@@ -195,6 +217,44 @@ export function ObraPrivadaDetalheClient({
       result.data.contentType,
     );
     toast.success("Dossiê gerado.");
+  }
+
+  async function confirmarBaixaResponsavel() {
+    if (!responsavelParaBaixa) return;
+    setSalvandoBaixa(true);
+    const result = await baixarResponsavelObraPrivadaAction(
+      obra.id,
+      responsavelParaBaixa.id,
+      { dataBaixa, motivoBaixa },
+    );
+    setSalvandoBaixa(false);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    setResponsavelParaBaixa(null);
+    setMotivoBaixa("");
+    toast.success("Responsável técnico baixado.");
+    refresh();
+  }
+
+  async function adicionarObservacao() {
+    setSalvandoObservacao(true);
+    const result = await createObservacaoObraPrivadaAction(obra.id, observacao);
+    setSalvandoObservacao(false);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    setObservacao("");
+    toast.success("Observação adicionada.");
+    refresh();
+  }
+
+  function abrirModalBaixa(responsavel: ResponsavelPrivado) {
+    setDataBaixa(new Date().toISOString().slice(0, 10));
+    setMotivoBaixa("");
+    setResponsavelParaBaixa(responsavel);
   }
 
   async function baixarRelatorioFiscalizacao(id: string) {
@@ -336,6 +396,11 @@ export function ObraPrivadaDetalheClient({
           </div>
           <DataTable<ObservacaoPrivada>
             title="Observações"
+            action={
+              <Button type="button" onClick={() => setModalObservacaoAberto(true)}>
+                <Plus className="size-4" /> Adicionar
+              </Button>
+            }
             data={observacoes}
             getRowId={(observacao) => observacao.id}
             renderCardTitle={(observacao) => text(observacao.texto)}
@@ -354,6 +419,39 @@ export function ObraPrivadaDetalheClient({
           />
         </section>
       ) : null}
+
+      <Modal.Root
+        open={modalObservacaoAberto}
+        onOpenChange={(open) => {
+          setModalObservacaoAberto(open);
+          if (!open) setObservacao("");
+        }}
+      >
+        <Modal.Portal>
+          <Modal.Backdrop />
+          <Modal.Popup className="max-w-lg p-6">
+            <div className="grid gap-4">
+              <div className="flex items-start justify-between">
+                <Modal.Header>
+                  <Modal.Title className="text-2xl">Nova observação</Modal.Title>
+                  <Modal.Description>Registre uma observação para esta obra privada.</Modal.Description>
+                </Modal.Header>
+                <Modal.CloseIcon />
+              </div>
+              <label className="grid gap-1 text-sm font-medium">
+                Observação
+                <Input value={observacao} onChange={(event) => setObservacao(event.target.value)} placeholder="Digite a observação" />
+              </label>
+              <div className="flex justify-end gap-3">
+                <Button type="button" variant="secondary" onClick={() => setModalObservacaoAberto(false)} disabled={salvandoObservacao}>Cancelar</Button>
+                <Button type="button" onClick={() => void adicionarObservacao()} disabled={salvandoObservacao || !observacao.trim()}>
+                  {salvandoObservacao ? "Salvando..." : "Adicionar observação"}
+                </Button>
+              </div>
+            </div>
+          </Modal.Popup>
+        </Modal.Portal>
+      </Modal.Root>
 
       {tab === "licenciamento" ? (
         <section className="mt-5 grid gap-5">
@@ -578,7 +676,14 @@ export function ObraPrivadaDetalheClient({
       ) : null}
 
       {tab === "responsaveis" ? (
-        <section className="mt-5">
+        <section className="mt-5 grid gap-4">
+          <div className="flex justify-end">
+            <CriarResponsavelModal
+              obraPrivadaId={obra.id}
+              profissionais={profissionais}
+              onSuccess={refresh}
+            />
+          </div>
           <DataTable<ResponsavelPrivado>
             title="Responsáveis técnicos"
             data={responsaveis}
@@ -618,49 +723,72 @@ export function ObraPrivadaDetalheClient({
                 header: "Baixa",
                 cell: (responsavel) => formatDate(responsavel.dataBaixa),
               },
+              {
+                id: "acoes",
+                header: "Ações",
+                cell: (responsavel) => responsavel.dataBaixa ? null : (
+                  <Tooltip content="Dar baixa no responsável técnico">
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      aria-label="Dar baixa no responsável técnico"
+                      onClick={() => abrirModalBaixa(responsavel)}
+                    >
+                      <UserRoundX className="size-4" />
+                    </Button>
+                  </Tooltip>
+                ),
+              },
             ]}
           />
         </section>
       ) : null}
 
+      <Modal.Root
+        open={responsavelParaBaixa !== null}
+        onOpenChange={(open) => {
+          if (!open && !salvandoBaixa) setResponsavelParaBaixa(null);
+        }}
+      >
+        <Modal.Portal>
+          <Modal.Backdrop />
+          <Modal.Popup className="max-w-lg p-6">
+            <div className="grid gap-4">
+              <div className="flex items-start justify-between">
+                <Modal.Header>
+                  <Modal.Title className="text-2xl">Dar baixa</Modal.Title>
+                  <Modal.Description>
+                    Informe a data e o motivo da baixa do responsável técnico.
+                  </Modal.Description>
+                </Modal.Header>
+                <Modal.CloseIcon />
+              </div>
+              <label className="grid gap-1 text-sm font-medium">
+                Data da baixa
+                <Input type="date" value={dataBaixa} onChange={(event) => setDataBaixa(event.target.value)} />
+              </label>
+              <label className="grid gap-1 text-sm font-medium">
+                Motivo da baixa
+                <Input value={motivoBaixa} onChange={(event) => setMotivoBaixa(event.target.value)} />
+              </label>
+              <div className="flex justify-end gap-3">
+                <Button type="button" variant="secondary" onClick={() => setResponsavelParaBaixa(null)} disabled={salvandoBaixa}>Cancelar</Button>
+                <Button type="button" onClick={() => void confirmarBaixaResponsavel()} disabled={salvandoBaixa || !motivoBaixa.trim()}>
+                  {salvandoBaixa ? "Salvando..." : "Confirmar baixa"}
+                </Button>
+              </div>
+            </div>
+          </Modal.Popup>
+        </Modal.Portal>
+      </Modal.Root>
+
       {tab === "arquivos" ? (
         <section className="mt-5">
-          <DataTable<ArquivoPrivado>
-            title="Arquivos"
-            data={arquivos}
-            getRowId={(arquivo) => arquivo.id}
-            renderCardTitle={(arquivo) =>
-              text(arquivo.nome, text(arquivo.nomeOriginal))
-            }
-            renderCardStatus={(arquivo) => text(arquivo.categoria)}
-            columns={[
-              {
-                id: "nome",
-                header: "Nome",
-                cell: (arquivo) =>
-                  text(arquivo.nome, text(arquivo.nomeOriginal)),
-              },
-              {
-                id: "categoria",
-                header: "Categoria",
-                cell: (arquivo) => text(arquivo.categoria),
-              },
-              {
-                id: "vinculo",
-                header: "Vínculo",
-                cell: (arquivo) => text(arquivo.vinculo),
-              },
-              {
-                id: "mime",
-                header: "Tipo",
-                cell: (arquivo) => text(arquivo.mimeType),
-              },
-              {
-                id: "capturado",
-                header: "Capturado em",
-                cell: (arquivo) => formatDate(arquivo.capturadoEm),
-              },
-            ]}
+          <ArquivosObraPrivada
+            obraPrivadaId={obra.id}
+            arquivos={arquivos}
+            onSuccess={refresh}
           />
         </section>
       ) : null}
@@ -674,32 +802,18 @@ export function ObraPrivadaDetalheClient({
               text="Eventos de alvarás, fiscalizações, autos, habite-se e observações aparecerão aqui."
             />
           ) : (
-            <DataTable<Record<string, unknown>>
+            <DataTable<TimelineObraPrivadaItem>
               title="Timeline"
               data={timeline}
-              getRowId={(evento) =>
-                text(evento.id, `${text(evento.tipo)}-${text(evento.data)}`)
-              }
-              renderCardTitle={(evento) =>
-                text(evento.titulo, text(evento.tipo))
-              }
-              renderCardStatus={(evento) => text(evento.tipo)}
+              getRowId={(evento) => evento.id}
+              renderCardTitle={(evento) => evento.titulo}
+              renderCardStatus={(evento) => evento.tipo}
               columns={[
-                {
-                  id: "data",
-                  header: "Data",
-                  cell: (evento) => formatDate(evento.data ?? evento.createdAt),
-                },
-                {
-                  id: "tipo",
-                  header: "Tipo",
-                  cell: (evento) => text(evento.tipo),
-                },
-                {
-                  id: "titulo",
-                  header: "Evento",
-                  cell: (evento) => text(evento.titulo, text(evento.descricao)),
-                },
+                { id: "data", header: "Data", cell: (evento) => formatDate(evento.data) },
+                { id: "tipo", header: "Tipo", cell: (evento) => evento.tipo },
+                { id: "titulo", header: "Evento", cell: (evento) => evento.titulo },
+                { id: "situacao", header: "Situação", cell: (evento) => text(evento.situacao) },
+                { id: "observacoes", header: "Observações", cell: (evento) => text(evento.observacoes) },
               ]}
             />
           )}

@@ -104,6 +104,23 @@ function optionalIntField(fieldLabel: string, min = 0) {
   });
 }
 
+function optionalDecimalField(fieldLabel: string) {
+  return optionalText.transform((value, ctx) => {
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+    const normalized = trimmed.replace(",", ".");
+    const parsed = Number(normalized);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      ctx.addIssue({
+        code: "custom",
+        message: `${fieldLabel} deve ser um número decimal maior ou igual a 0.`,
+      });
+      return z.NEVER;
+    }
+    return normalized;
+  });
+}
+
 function optionalUuidField() {
   return optionalUuid.transform((value) => (value ? value : undefined));
 }
@@ -177,8 +194,10 @@ export const criarAlvaraFormularioSchema = z.object({
   dataEmissao: optionalText,
   dataValidade: optionalText,
   alvaraAnteriorId: optionalUuidField(),
-  areaTerrenoM2: optionalText,
-  areaConstruidaAprovadaM2: optionalText,
+  areaTerrenoM2: optionalDecimalField("Área do terreno"),
+  areaConstruidaAprovadaM2: optionalDecimalField(
+    "Área construída aprovada",
+  ),
   uso: optionalEnumField(USO_EDIFICACAO_VALUES),
   pavimentos: optionalIntField("Pavimentos"),
   unidades: optionalIntField("Unidades"),

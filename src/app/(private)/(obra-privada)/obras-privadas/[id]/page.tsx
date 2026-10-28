@@ -1,5 +1,6 @@
 import getObraPrivadaAction from "@/core/actions/obras-privadas/get_obra_privada_action";
 import listUsuariosPaginationAction from "@/core/actions/usuarios/list_usuarios_pagination_action";
+import listProfissionaisTecnicosAction from "@/core/actions/profissionais-tecnicos/list_profissionais_tecnicos_action";
 import {
   listAlvarasObraPrivadaAction,
   listArquivosObraPrivadaAction,
@@ -20,15 +21,16 @@ export default async function ObraPrivadaDetailPage({
   const { id } = await params;
   const [
     obra,
-    alvaras,
-    fiscalizacoes,
-    autos,
-    habiteSe,
-    responsaveis,
-    observacoes,
-    arquivos,
-    timeline,
+    alvarasResult,
+    fiscalizacoesResult,
+    autosResult,
+    habiteSeResult,
+    responsaveisResult,
+    observacoesResult,
+    arquivosResult,
+    timelineResult,
     usuarios,
+    profissionais,
   ] = await Promise.all([
     getObraPrivadaAction(id),
     listAlvarasObraPrivadaAction(id),
@@ -42,6 +44,7 @@ export default async function ObraPrivadaDetailPage({
     listUsuariosPaginationAction({ page: 1, order: "ASC", take: 50 }).catch(
       () => ({ data: [] }),
     ),
+    listProfissionaisTecnicosAction(),
   ]);
   if (!obra) {
     return (
@@ -55,23 +58,64 @@ export default async function ObraPrivadaDetailPage({
       </main>
     );
   }
+  if (!fiscalizacoesResult.success) {
+    throw new Error(fiscalizacoesResult.error);
+  }
+  if (!autosResult.success) {
+    throw new Error(autosResult.error);
+  }
+  if (!habiteSeResult.success) {
+    throw new Error(habiteSeResult.error);
+  }
+  if (!responsaveisResult.success) {
+    throw new Error(responsaveisResult.error);
+  }
+  if (!observacoesResult.success) {
+    throw new Error(observacoesResult.error);
+  }
+  if (!arquivosResult.success) {
+    throw new Error(arquivosResult.error);
+  }
+
   const vistoriadores = (usuarios?.data ?? [])
     .filter((usuario) => usuario.role !== "USER")
     .map((usuario) => ({
       id: usuario.id,
       nome: usuario.email ? `${usuario.name} — ${usuario.email}` : usuario.name,
     }));
+  const profissionaisPorId = new Map(
+    profissionais.map((profissional) => [profissional.id, profissional]),
+  );
+  const responsaveisComNome = responsaveisResult.data.map((responsavel) => {
+    const profissional = responsavel.profissionalTecnicoId
+      ? profissionaisPorId.get(responsavel.profissionalTecnicoId)
+      : undefined;
+    return {
+      ...responsavel,
+      profissionalNome: profissional?.nome ?? responsavel.profissionalNome,
+      numeroDocumento:
+        responsavel.numeroDocumento ?? profissional?.documento ?? null,
+    };
+  });
+  if (!alvarasResult.success) {
+    throw new Error(alvarasResult.error);
+  }
+  if (!timelineResult.success) {
+    throw new Error(timelineResult.error);
+  }
+
   return (
     <ObraPrivadaDetalheClient
       obra={obra}
-      alvaras={alvaras}
-      fiscalizacoes={fiscalizacoes}
-      autos={autos}
-      habiteSe={habiteSe}
-      responsaveis={responsaveis}
-      observacoes={observacoes}
-      arquivos={arquivos}
-      timeline={timeline}
+      alvaras={alvarasResult.data}
+      fiscalizacoes={fiscalizacoesResult.data}
+      autos={autosResult.data}
+      habiteSe={habiteSeResult.data}
+      responsaveis={responsaveisComNome}
+      observacoes={observacoesResult.data}
+      arquivos={arquivosResult.data}
+      timeline={timelineResult.data}
+      profissionais={profissionais}
       vistoriadores={vistoriadores}
     />
   );

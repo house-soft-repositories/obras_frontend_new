@@ -30,6 +30,12 @@ import {
   type CriarHabiteSeInput,
 } from "@/core/schemas/obras-privadas/create_obra_privada_recursos_schema";
 import type ServerActionResult from "@/core/types/server_action_result";
+import {
+  baixarResponsavelObraPrivadaSchema,
+  criarResponsavelObraPrivadaSchema,
+  type BaixarResponsavelObraPrivadaInput,
+  type CriarResponsavelObraPrivadaInput,
+} from "@/core/schemas/obras-privadas/obra_privada_responsavel_schema";
 import { confirmarUploadArquivoObraPrivadaAction } from "@/core/actions/obras-privadas/obra_privada_arquivo_actions";
 import {
   categoriaPorMime,
@@ -82,74 +88,274 @@ function normalizePage<T>(raw: unknown, take = 20): Paginated<T> {
   };
 }
 
-async function getArray<T>(url: string, tag: string): Promise<T[]> {
+export async function listAlvarasObraPrivadaAction(
+  obraPrivadaId: string,
+): Promise<ServerActionResult<AlvaraPrivado[]>> {
   try {
-    const res = await api.auth.get<T[]>(url, { next: { tags: [tag] } });
-    return Array.isArray(res.data) ? res.data : [];
-  } catch {
-    return [];
+    const res = await api.auth.get<AlvaraPrivado[]>(
+      `/api/obras-privadas/${obraPrivadaId}/alvaras`,
+      { next: { tags: [`obra-privada-${obraPrivadaId}-alvaras`] } },
+    );
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) {
+      throw error;
+    }
+    if (error instanceof HttpClientException) {
+      return {
+        success: false,
+        data: null,
+        error: obraPrivadaErrorTranslator.translate(error),
+      };
+    }
+    throw error;
   }
-}
-
-export async function listAlvarasObraPrivadaAction(obraPrivadaId: string) {
-  return getArray<AlvaraPrivado>(
-    `/api/obras-privadas/${obraPrivadaId}/alvaras`,
-    `obra-privada-${obraPrivadaId}-alvaras`,
-  );
 }
 
 export async function listFiscalizacoesObraPrivadaAction(
   obraPrivadaId: string,
-) {
-  return getArray<FiscalizacaoPrivada>(
-    `/api/obras-privadas/${obraPrivadaId}/fiscalizacoes`,
-    `obra-privada-${obraPrivadaId}-fiscalizacoes`,
-  );
+): Promise<ServerActionResult<FiscalizacaoPrivada[]>> {
+  try {
+    const res = await api.auth.get<FiscalizacaoPrivada[]>(
+      `/api/obras-privadas/${obraPrivadaId}/fiscalizacoes`,
+      { next: { tags: [`obra-privada-${obraPrivadaId}-fiscalizacoes`] } },
+    );
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) throw error;
+    if (error instanceof HttpClientException) {
+      return { success: false, data: null, error: obraPrivadaErrorTranslator.translate(error) };
+    }
+    throw error;
+  }
 }
 
-export async function listAutosObraPrivadaAction(obraPrivadaId: string) {
-  return getArray<AutoInfracaoPrivado>(
-    `/api/obras-privadas/${obraPrivadaId}/autos`,
-    `obra-privada-${obraPrivadaId}-autos`,
-  );
+export async function listAutosObraPrivadaAction(
+  obraPrivadaId: string,
+): Promise<ServerActionResult<AutoInfracaoPrivado[]>> {
+  try {
+    const res = await api.auth.get<AutoInfracaoPrivado[]>(
+      `/api/obras-privadas/${obraPrivadaId}/autos`,
+      { next: { tags: [`obra-privada-${obraPrivadaId}-autos`] } },
+    );
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) throw error;
+    if (error instanceof HttpClientException) {
+      return { success: false, data: null, error: obraPrivadaErrorTranslator.translate(error) };
+    }
+    throw error;
+  }
 }
 
-export async function listHabiteSeObraPrivadaAction(obraPrivadaId: string) {
-  return getArray<HabiteSePrivado>(
-    `/api/obras-privadas/${obraPrivadaId}/habite-se`,
-    `obra-privada-${obraPrivadaId}-habite-se`,
-  );
+export async function listHabiteSeObraPrivadaAction(
+  obraPrivadaId: string,
+): Promise<ServerActionResult<HabiteSePrivado[]>> {
+  try {
+    const res = await api.auth.get<HabiteSePrivado[]>(
+      `/api/obras-privadas/${obraPrivadaId}/habite-se`,
+      { next: { tags: [`obra-privada-${obraPrivadaId}-habite-se`] } },
+    );
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) throw error;
+    if (error instanceof HttpClientException) {
+      return { success: false, data: null, error: obraPrivadaErrorTranslator.translate(error) };
+    }
+    throw error;
+  }
 }
 
-export async function listResponsaveisObraPrivadaAction(obraPrivadaId: string) {
-  return getArray<ResponsavelPrivado>(
-    `/api/obras-privadas/${obraPrivadaId}/responsaveis`,
-    `obra-privada-${obraPrivadaId}-responsaveis`,
-  );
+export async function listResponsaveisObraPrivadaAction(
+  obraPrivadaId: string,
+): Promise<ServerActionResult<ResponsavelPrivado[]>> {
+  try {
+    const res = await api.auth.get<ResponsavelPrivado[]>(
+      `/api/obras-privadas/${obraPrivadaId}/responsaveis`,
+      { next: { tags: [`obra-privada-${obraPrivadaId}-responsaveis`] } },
+    );
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) throw error;
+    if (error instanceof HttpClientException) {
+      return { success: false, data: null, error: obraPrivadaErrorTranslator.translate(error) };
+    }
+    throw error;
+  }
 }
 
-export async function listObservacoesObraPrivadaAction(obraPrivadaId: string) {
-  return getArray<ObservacaoPrivada>(
-    `/api/obras-privadas/${obraPrivadaId}/observacoes`,
-    `obra-privada-${obraPrivadaId}-observacoes`,
-  );
+export async function createResponsavelObraPrivadaAction(
+  obraPrivadaId: string,
+  input: CriarResponsavelObraPrivadaInput,
+): Promise<ServerActionResult<ResponsavelPrivado>> {
+  const parsed = criarResponsavelObraPrivadaSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      data: null,
+      error: parsed.error.issues[0]?.message ?? "Dados inválidos.",
+    };
+  }
+
+  try {
+    const res = await api.auth.post<ResponsavelPrivado>(
+      `/api/obras-privadas/${obraPrivadaId}/responsaveis`,
+      {
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      },
+    );
+    updateTag(`obra-privada-${obraPrivadaId}-responsaveis`);
+    updateTag(`obra-privada-${obraPrivadaId}-timeline`);
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) {
+      throw error;
+    }
+    return {
+      success: false,
+      data: null,
+      error: obraPrivadaErrorTranslator.translate(error),
+    };
+  }
+}
+
+export async function baixarResponsavelObraPrivadaAction(
+  obraPrivadaId: string,
+  responsavelId: string,
+  input: BaixarResponsavelObraPrivadaInput,
+): Promise<ServerActionResult<ResponsavelPrivado>> {
+  const parsed = baixarResponsavelObraPrivadaSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      data: null,
+      error: parsed.error.issues[0]?.message ?? "Dados inválidos.",
+    };
+  }
+
+  try {
+    const res = await api.auth.patch<ResponsavelPrivado>(
+      `/api/obras-privadas/${obraPrivadaId}/responsaveis/${responsavelId}`,
+      {
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      },
+    );
+    updateTag(`obra-privada-${obraPrivadaId}-responsaveis`);
+    updateTag(`obra-privada-${obraPrivadaId}-timeline`);
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) {
+      throw error;
+    }
+    return {
+      success: false,
+      data: null,
+      error: obraPrivadaErrorTranslator.translate(error),
+    };
+  }
+}
+
+export async function createObservacaoObraPrivadaAction(
+  obraPrivadaId: string,
+  texto: string,
+): Promise<ServerActionResult<ObservacaoPrivada>> {
+  const value = texto.trim();
+  if (!value) return { success: false, data: null, error: "Informe a observação." };
+
+  try {
+    const res = await api.auth.post<ObservacaoPrivada>(
+      `/api/obras-privadas/${obraPrivadaId}/observacoes`,
+      {
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ texto: value }),
+      },
+    );
+    updateTag(`obra-privada-${obraPrivadaId}-observacoes`);
+    updateTag(`obra-privada-${obraPrivadaId}-timeline`);
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) throw error;
+    return { success: false, data: null, error: obraPrivadaErrorTranslator.translate(error) };
+  }
+}
+
+export async function listObservacoesObraPrivadaAction(
+  obraPrivadaId: string,
+): Promise<ServerActionResult<ObservacaoPrivada[]>> {
+  try {
+    const res = await api.auth.get<ObservacaoPrivada[]>(
+      `/api/obras-privadas/${obraPrivadaId}/observacoes`,
+      { next: { tags: [`obra-privada-${obraPrivadaId}-observacoes`] } },
+    );
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) throw error;
+    if (error instanceof HttpClientException) {
+      return { success: false, data: null, error: obraPrivadaErrorTranslator.translate(error) };
+    }
+    throw error;
+  }
 }
 
 export async function listArquivosObraPrivadaAction(
   obraPrivadaId: string,
   params: { vinculo?: string; vinculoId?: string; categoria?: string } = {},
-) {
-  return getArray<ArquivoPrivado>(
-    `/api/obras-privadas/${obraPrivadaId}/arquivos${qs(params)}`,
-    `obra-privada-${obraPrivadaId}-arquivos`,
-  );
+): Promise<ServerActionResult<ArquivoPrivado[]>> {
+  try {
+    const res = await api.auth.get<ArquivoPrivado[]>(
+      `/api/obras-privadas/${obraPrivadaId}/arquivos${qs(params)}`,
+      { next: { tags: [`obra-privada-${obraPrivadaId}-arquivos`] } },
+    );
+    return { success: true, data: res.data, error: null };
+  } catch (error) {
+    if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) throw error;
+    if (error instanceof HttpClientException) {
+      return { success: false, data: null, error: obraPrivadaErrorTranslator.translate(error) };
+    }
+    throw error;
+  }
 }
 
-export async function listTimelineObraPrivadaAction(obraPrivadaId: string) {
-  return getArray<Record<string, unknown>>(
-    `/api/obras-privadas/${obraPrivadaId}/timeline`,
-    `obra-privada-${obraPrivadaId}-timeline`,
-  );
+export type TimelineObraPrivadaItem = {
+  id: string;
+  tipo:
+    | "ALVARA"
+    | "FISCALIZACAO"
+    | "AUTO_INFRACAO"
+    | "HABITE_SE"
+    | "OBSERVACAO"
+    | "ARQUIVO";
+  data: string;
+  titulo: string;
+  situacao: string | null;
+  observacoes: string | null;
+};
+
+export async function listTimelineObraPrivadaAction(
+  obraPrivadaId: string,
+): Promise<ServerActionResult<TimelineObraPrivadaItem[]>> {
+  try {
+    const res = await api.auth.get<TimelineObraPrivadaItem[]>(
+      `/api/obras-privadas/${obraPrivadaId}/timeline`,
+      { next: { tags: [`obra-privada-${obraPrivadaId}-timeline`] } },
+    );
+    return {
+      success: true,
+      data: res.data,
+      error: null,
+    };
+  } catch (error) {
+    if ((error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")) {
+      throw error;
+    }
+    return {
+      success: false,
+      data: null,
+      error: obraPrivadaErrorTranslator.translate(error),
+    };
+  }
 }
 
 export async function listLicenciamentoPrivadasAction(params: {

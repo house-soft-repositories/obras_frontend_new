@@ -1,19 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState, type ChangeEvent } from "react";
-import { useForm } from "react-hook-form";
 import { Check, Loader2, Plus } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { createAlvaraObraPrivadaAction } from "@/core/actions/obras-privadas/obra_privada_recursos_actions";
 import { useToast } from "@/core/hooks/useToast";
-import { Button } from "@/core/ui/atoms/button";
-import { Input } from "@/core/ui/atoms/input";
-import { Modal } from "@/core/ui/molecules/modal";
-import {
-  SITUACAO_REGISTRO_ALVARA_LABELS,
-  TIPO_ALVARA_LABELS,
-  type AlvaraPrivado,
-} from "@/core/schemas/obras-privadas/obra_privada_schema";
 import {
   MOTIVO_ALVARA_VALUES,
   SITUACAO_REGISTRO_ALVARA_VALUES,
@@ -24,9 +16,12 @@ import {
   type CriarAlvaraInput,
 } from "@/core/schemas/obras-privadas/create_obra_privada_recursos_schema";
 import {
-  ACCEPT_ANEXO,
-  categoriaPorMime,
-} from "@/core/schemas/obras-privadas/obra_privada_arquivo_schema";
+  SITUACAO_REGISTRO_ALVARA_LABELS,
+  TIPO_ALVARA_LABELS,
+} from "@/core/schemas/obras-privadas/obra_privada_schema";
+import { Button } from "@/core/ui/atoms/button";
+import { Input } from "@/core/ui/atoms/input";
+import { Modal } from "@/core/ui/molecules/modal";
 
 const MOTIVO_ALVARA_LABELS: Record<string, string> = {
   ORIGINAL: "Original",
@@ -46,7 +41,11 @@ const USO_EDIFICACAO_LABELS: Record<string, string> = {
 
 type Props = {
   obraPrivadaId: string;
-  alvarasAnteriores?: Array<{ id: string; numero?: string | null; ano?: number | null }>;
+  alvarasAnteriores?: Array<{
+    id: string;
+    numero?: string | null;
+    ano?: number | null;
+  }>;
   triggerLabel?: string;
   onSuccess: () => void;
 };
@@ -86,8 +85,6 @@ export function CriarAlvaraModal({
   const [open, setOpen] = useState(false);
   const [apiError, setApiError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [arquivo, setArquivo] = useState<File | null>(null);
-  const [fileKey, setFileKey] = useState(0);
   const toast = useToast();
   const form = useForm<
     CriarAlvaraFormularioInput,
@@ -96,78 +93,49 @@ export function CriarAlvaraModal({
   >({
     resolver: zodResolver(criarAlvaraFormularioSchema),
     defaultValues: initialValues,
-    mode: "onBlur",
+    mode: "onTouched",
   });
 
-  const close = () => {
-    if (!submitting) {
-      setOpen(false);
-      setApiError("");
-      setArquivo(null);
-      setFileKey((key) => key + 1);
-      form.reset(initialValues);
-    }
-  };
-
-  function onArquivoChange(event: ChangeEvent<HTMLInputElement>) {
-    const selected = event.target.files?.[0] ?? null;
-    setArquivo(selected);
-    if (selected) {
-      form.setValue(
-        "arquivo",
-        {
-          nomeOriginal: selected.name,
-          categoria: categoriaPorMime(
-            selected.type || "application/octet-stream",
-          ),
-          ...(selected.type ? { mimeType: selected.type } : {}),
-        },
-        { shouldValidate: true },
-      );
-    } else {
-      form.setValue("arquivo", undefined);
-    }
+  function close() {
+    if (submitting) return;
+    setOpen(false);
+    setApiError("");
+    form.reset(initialValues);
   }
 
-  function removerArquivo() {
-    setArquivo(null);
-    setFileKey((key) => key + 1);
-    form.setValue("arquivo", undefined);
-  }
-
-  const handleOpenChange = (nextOpen: boolean) => {
+  function handleOpenChange(nextOpen: boolean) {
     if (nextOpen) {
       setOpen(true);
       return;
     }
     close();
-  };
+  }
 
-  function submit(data: CriarAlvaraInput) {
+  async function submit(data: CriarAlvaraInput) {
     setApiError("");
     setSubmitting(true);
-    void createAlvaraObraPrivadaAction(obraPrivadaId, data, arquivo ?? undefined)
-      .then((result) => {
-        if (!result.success) throw new Error(result.error);
-        const created = result.data as AlvaraPrivado;
-        toast.success(
-          `Alvará ${created.numero ?? ""}/${created.ano ?? ""} registrado com sucesso.`,
-        );
-        setOpen(false);
-        setApiError("");
-        setArquivo(null);
-        setFileKey((key) => key + 1);
-        form.reset(initialValues);
-        onSuccess();
-      })
-      .catch((error) => {
-        setApiError(
-          error instanceof Error
-            ? error.message
-            : "Não foi possível registrar o alvará. Os dados foram preservados.",
-        );
-      })
-      .finally(() => setSubmitting(false));
+    try {
+      const result = await createAlvaraObraPrivadaAction(obraPrivadaId, data);
+      if (!result.success) {
+        setApiError(result.error);
+        return;
+      }
+
+      toast.success(
+        `Alvará ${result.data.numero ?? ""}/${result.data.ano} registrado com sucesso.`,
+      );
+      setOpen(false);
+      form.reset(initialValues);
+      onSuccess();
+    } catch (error) {
+      if (error instanceof Error) {
+        setApiError(error.message);
+        return;
+      }
+      throw error;
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -206,14 +174,13 @@ export function CriarAlvaraModal({
                   placeholder="2026"
                   {...form.register("ano")}
                 />
-                <FieldError
-                  message={form.formState.errors.ano?.message}
-                />
+                <FieldError message={form.formState.errors.ano?.message} />
               </label>
               <label className="grid gap-1 text-sm font-medium">
                 Tipo *
                 <select
                   className={selectClassName}
+                  aria-invalid={Boolean(form.formState.errors.tipo)}
                   {...form.register("tipo")}
                 >
                   <option value="">Selecione</option>
@@ -223,9 +190,7 @@ export function CriarAlvaraModal({
                     </option>
                   ))}
                 </select>
-                <FieldError
-                  message={form.formState.errors.tipo?.message}
-                />
+                <FieldError message={form.formState.errors.tipo?.message} />
               </label>
               <label className="grid gap-1 text-sm font-medium">
                 Número
@@ -233,14 +198,11 @@ export function CriarAlvaraModal({
               </label>
               <label className="grid gap-1 text-sm font-medium">
                 Motivo
-                <select
-                  className={selectClassName}
-                  {...form.register("motivo")}
-                >
+                <select className={selectClassName} {...form.register("motivo")}>
                   <option value="">Selecione</option>
                   {MOTIVO_ALVARA_VALUES.map((value) => (
                     <option key={value} value={value}>
-                      {MOTIVO_ALVARA_LABELS[value] ?? value}
+                      {MOTIVO_ALVARA_LABELS[value]}
                     </option>
                   ))}
                 </select>
@@ -254,7 +216,7 @@ export function CriarAlvaraModal({
                   <option value="">Selecione</option>
                   {SITUACAO_REGISTRO_ALVARA_VALUES.map((value) => (
                     <option key={value} value={value}>
-                      {SITUACAO_REGISTRO_ALVARA_LABELS[value] ?? value}
+                      {SITUACAO_REGISTRO_ALVARA_LABELS[value]}
                     </option>
                   ))}
                 </select>
@@ -274,9 +236,7 @@ export function CriarAlvaraModal({
                     ))}
                   </select>
                   <FieldError
-                    message={
-                      form.formState.errors.alvaraAnteriorId?.message
-                    }
+                    message={form.formState.errors.alvaraAnteriorId?.message}
                   />
                 </label>
               ) : null}
@@ -292,16 +252,24 @@ export function CriarAlvaraModal({
                 Área do terreno (m²)
                 <Input
                   inputMode="decimal"
-                  placeholder="250,00"
+                  placeholder="320,00"
                   {...form.register("areaTerrenoM2")}
+                />
+                <FieldError
+                  message={form.formState.errors.areaTerrenoM2?.message}
                 />
               </label>
               <label className="grid gap-1 text-sm font-medium">
                 Área construída aprovada (m²)
                 <Input
                   inputMode="decimal"
-                  placeholder="180,50"
+                  placeholder="210,50"
                   {...form.register("areaConstruidaAprovadaM2")}
+                />
+                <FieldError
+                  message={
+                    form.formState.errors.areaConstruidaAprovadaM2?.message
+                  }
                 />
               </label>
               <label className="grid gap-1 text-sm font-medium">
@@ -310,7 +278,7 @@ export function CriarAlvaraModal({
                   <option value="">Selecione</option>
                   {USO_EDIFICACAO_VALUES.map((value) => (
                     <option key={value} value={value}>
-                      {USO_EDIFICACAO_LABELS[value] ?? value}
+                      {USO_EDIFICACAO_LABELS[value]}
                     </option>
                   ))}
                 </select>
@@ -319,7 +287,6 @@ export function CriarAlvaraModal({
                 Pavimentos
                 <Input
                   inputMode="numeric"
-                  placeholder="2"
                   {...form.register("pavimentos")}
                 />
                 <FieldError
@@ -328,11 +295,7 @@ export function CriarAlvaraModal({
               </label>
               <label className="grid gap-1 text-sm font-medium">
                 Unidades
-                <Input
-                  inputMode="numeric"
-                  placeholder="1"
-                  {...form.register("unidades")}
-                />
+                <Input inputMode="numeric" {...form.register("unidades")} />
                 <FieldError
                   message={form.formState.errors.unidades?.message}
                 />
@@ -340,34 +303,6 @@ export function CriarAlvaraModal({
               <label className="grid gap-1 text-sm font-medium sm:col-span-2">
                 Processo administrativo
                 <Input {...form.register("processoAdministrativo")} />
-              </label>
-              <label className="grid gap-1 text-sm font-medium sm:col-span-2">
-                Arquivo (PDF ou imagem)
-                <Input
-                  key={fileKey}
-                  type="file"
-                  accept={ACCEPT_ANEXO}
-                  onChange={onArquivoChange}
-                />
-                {arquivo ? (
-                  <span className="flex items-center gap-2 text-xs font-normal text-muted-foreground">
-                    {arquivo.name} — {(arquivo.size / 1024).toFixed(0)} KB
-                    <button
-                      type="button"
-                      className="underline"
-                      onClick={removerArquivo}
-                    >
-                      Remover
-                    </button>
-                  </span>
-                ) : null}
-                <FieldError
-                  message={
-                    form.formState.errors.arquivo
-                      ? "Verifique o arquivo selecionado."
-                      : undefined
-                  }
-                />
               </label>
               <label className="grid gap-1 text-sm font-medium sm:col-span-2">
                 Observações

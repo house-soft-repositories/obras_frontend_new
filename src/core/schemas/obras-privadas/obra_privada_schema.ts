@@ -158,20 +158,53 @@ export interface ArquivoUploadResposta {
   urlUpload: string;
 }
 
+export type TipoAlvara =
+  | "CONSTRUCAO"
+  | "REFORMA"
+  | "AMPLIACAO"
+  | "DEMOLICAO"
+  | "REGULARIZACAO"
+  | "MURO_TAPUME";
+export type MotivoAlvara =
+  | "ORIGINAL"
+  | "REVALIDACAO"
+  | "PRORROGACAO"
+  | "SEGUNDA_VIA";
+export type SituacaoRegistroAlvara =
+  | "VIGENTE"
+  | "SUBSTITUIDO"
+  | "VENCIDO"
+  | "INDEFERIDO";
+export type UsoEdificacao =
+  | "RESIDENCIAL_UNIFAMILIAR"
+  | "RESIDENCIAL_MULTIFAMILIAR"
+  | "COMERCIAL"
+  | "INDUSTRIAL"
+  | "MISTO"
+  | "OUTRO";
+
 export interface AlvaraPrivado {
   id: string;
-  numero?: string | null;
-  ano?: number | null;
-  tipo?: string | null;
-  motivo?: string | null;
-  situacao?: string | null;
-  dataEmissao?: string | null;
-  dataValidade?: string | null;
-  areaConstruidaAprovadaM2?: string | null;
-  uso?: string | null;
-  processoAdministrativo?: string | null;
-  observacoes?: string | null;
-  arquivoUpload?: ArquivoUploadResposta | null;
+  tenantId: string;
+  obraPrivadaId: string;
+  numero: string | null;
+  ano: number;
+  tipo: TipoAlvara;
+  motivo: MotivoAlvara;
+  situacao: SituacaoRegistroAlvara;
+  dataEmissao: string | null;
+  dataValidade: string | null;
+  alvaraAnteriorId: string | null;
+  areaTerrenoM2: string | null;
+  areaConstruidaAprovadaM2: string | null;
+  uso: UsoEdificacao | null;
+  pavimentos: number | null;
+  unidades: number | null;
+  processoAdministrativo: string | null;
+  arquivoId: string | null;
+  observacoes: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface FiscalizacaoPrivada {
@@ -243,7 +276,7 @@ export interface ArquivoPrivado {
   vinculoId?: string | null;
   categoria?: string | null;
   mimeType?: string | null;
-  tamanhoBytes?: number | null;
+  tamanhoBytes?: number | string | null;
   capturadoEm?: string | null;
   createdAt?: string | null;
 }
