@@ -14,6 +14,7 @@ export interface ListObrasParams {
   tipo?: string;
   orgaoId?: string;
   q?: string;
+  tagNames?: string[];
 }
 
 export default async function listObrasAction(
@@ -28,6 +29,8 @@ export default async function listObrasAction(
     if (params.tipo) usp.set("tipo", params.tipo);
     if (params.orgaoId) usp.set("orgaoId", params.orgaoId);
     if (params.q) usp.set("q", params.q);
+    for (const tagName of params.tagNames ?? [])
+      usp.append("tagNames", tagName);
     const qs = usp.toString() ? `?${usp.toString()}` : "";
     const res = await api.auth.get<Pagination<Obra>>(`/api/obras${qs}`, {
       next: { tags: ["list-obras"] },

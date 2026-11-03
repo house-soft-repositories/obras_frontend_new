@@ -36,6 +36,11 @@ export default async function ObrasPage({
       status: value("status"),
       tipo: value("tipo"),
       orgaoId: value("orgaoId"),
+      tagNames: Array.isArray(params.tagNames)
+        ? params.tagNames
+        : value("tagNames")
+          ? [value("tagNames")!]
+          : undefined,
     }),
     listOrgaosPaginationAction({ page: 1, order: "ASC", take: 50 }),
     listUsuariosPaginationAction({ page: 1, order: "ASC", take: 50 }),
@@ -89,6 +94,13 @@ export default async function ObrasPage({
         id: item.id,
         nome: item.nome,
       }))}
+      tagNames={
+        Array.isArray(params.tagNames)
+          ? params.tagNames
+          : value("tagNames")
+            ? [value("tagNames")!]
+            : []
+      }
     />
   );
 }
