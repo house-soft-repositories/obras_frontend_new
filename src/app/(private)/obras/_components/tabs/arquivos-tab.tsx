@@ -532,8 +532,8 @@ export function ArquivosTab({ obraId }: { obraId: string }) {
                   <Download className="size-4" />
                 </Button>
               </Tooltip>
-              <Tooltip content="Editar metadados">
-                <Button variant="ghost" size="icon" disabled={pending} onClick={() => setEditState(createEditState(arquivo))} aria-label={`Editar ${arquivo.nome}`}>
+              <Tooltip content="Renomear documento">
+                <Button variant="ghost" size="icon" disabled={pending} onClick={() => setEditState(createEditState(arquivo))} aria-label={`Renomear ${arquivo.nome}`}>
                   <Edit3 className="size-4" />
                 </Button>
               </Tooltip>
