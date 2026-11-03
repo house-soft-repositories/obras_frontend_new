@@ -315,6 +315,27 @@ export function CriarEmpresaModal() {
                             aria-invalid={
                               form.formState.errors.cnpj ? true : undefined
                             }
+                            suffixButton={
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-9 w-9 px-0 [&_svg]:!size-5"
+                                aria-label="Consultar CNPJ"
+                                disabled={isLookingUpCnpj}
+                                onClick={() => void consultarCnpj()}
+                              >
+                                {isLookingUpCnpj ? (
+                                  <LoaderCircle
+                                    className="animate-spin"
+                                    aria-hidden="true"
+                                  />
+                                ) : (
+                                  <Search aria-hidden="true" />
+                                )}
+                                <span className="sr-only">Consultar CNPJ</span>
+                              </Button>
+                            }
                           />
                         )}
                       />
@@ -326,24 +347,6 @@ export function CriarEmpresaModal() {
                           {form.formState.errors.cnpj.message}
                         </span>
                       ) : null}
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        className="w-fit"
-                        disabled={isLookingUpCnpj}
-                        onClick={() => void consultarCnpj()}
-                      >
-                        {isLookingUpCnpj ? (
-                          <LoaderCircle
-                            className="animate-spin"
-                            aria-hidden="true"
-                          />
-                        ) : (
-                          <Search aria-hidden="true" />
-                        )}
-                        Consultar CNPJ
-                      </Button>
                       {cnpjLookupMessage ? (
                         <span
                           className="text-xs font-normal text-muted"

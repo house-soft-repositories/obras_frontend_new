@@ -17,6 +17,18 @@ describe("lookupCnpjAction", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
+  it("reports provider failures separately from a missing CNPJ", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 429 }));
+
+    const result = await lookupCnpjAction({ cnpj: "00000000000191" });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Não foi possível consultar o CNPJ agora.",
+    });
+  });
+
   it("maps BrasilAPI data to the company form", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(

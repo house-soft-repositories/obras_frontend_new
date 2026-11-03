@@ -60,11 +60,21 @@ export default async function lookupCnpjAction(
       `https://brasilapi.com.br/api/cnpj/v1/${parsed.data.cnpj}`,
       {
         signal: AbortSignal.timeout(5000),
-        headers: { accept: "application/json" },
+        headers: {
+          accept: "application/json",
+          "user-agent": "ObrasGest/1.0",
+        },
       },
     );
-    if (!response.ok) {
+    if (response.status === 404) {
       return { success: false, data: null, error: "CNPJ não encontrado." };
+    }
+    if (!response.ok) {
+      return {
+        success: false,
+        data: null,
+        error: "Não foi possível consultar o CNPJ agora.",
+      };
     }
 
     const data = (await response.json()) as BrasilApiCnpjResponse;
