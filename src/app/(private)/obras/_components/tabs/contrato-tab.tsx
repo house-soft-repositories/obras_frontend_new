@@ -34,6 +34,7 @@ import {
   type Aditivo,
   type Contrato,
   type CriarAditivoInput,
+  type CriarAditivoOutput,
   type CriarContratoInput,
   type CriarParalisacaoInput,
   type Paralisacao,
@@ -573,7 +574,7 @@ function AditivoModal({ obraId, contratoId, onSaved }: { obraId: string; contrat
   const [fontes, setFontes] = useState<FonteOption[]>([]);
   const [loadingFontes, setLoadingFontes] = useState(false);
   const toast = useToast();
-  const form = useForm<CriarAditivoInput>({
+  const form = useForm<CriarAditivoInput, unknown, CriarAditivoOutput>({
     resolver: zodResolver(criarAditivoSchema),
     defaultValues: {
       numero: "",
@@ -615,7 +616,7 @@ function AditivoModal({ obraId, contratoId, onSaved }: { obraId: string; contrat
     };
   }, [open, toast]);
 
-  async function onSubmit(values: CriarAditivoInput) {
+  async function onSubmit(values: CriarAditivoOutput) {
     const res = await criarAditivoAction(obraId, contratoId, {
       ...values,
       fontes: values.fontes.map((fonte) => ({

@@ -188,7 +188,8 @@ function validarPrazoAditivo(value: AditivoPrazoInput, ctx: z.RefinementCtx) {
 export const criarAditivoSchema = criarAditivoBaseSchema.superRefine(
   validarPrazoAditivo,
 );
-export type CriarAditivoInput = z.infer<typeof criarAditivoSchema>;
+export type CriarAditivoInput = z.input<typeof criarAditivoSchema>;
+export type CriarAditivoOutput = z.output<typeof criarAditivoSchema>;
 
 export const atualizarAditivoSchema = criarAditivoBaseSchema
   .partial()
