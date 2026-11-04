@@ -6,7 +6,8 @@ export class ObraErrorTranslator extends ErrorTranslator {
       "Revise o aditivo: informe o número e a data de assinatura. Para aditivos de prazo, informe o tipo de prazo e um prazo em dias ou uma data final.",
     OBRA_INVALID_NOME: "Confira o nome.",
     OBRA_INVALID_TIPO: "Confira o tipo.",
-    OBRA_INVALID_RESPONSAVEL: "Confira o responsável.",
+    OBRA_INVALID_RESPONSAVEL:
+      "O responsável selecionado não tem permissão para ser responsável por uma obra.",
     OBRA_INVALID_ORGAO: "Confira o órgão.",
     OBRA_INVALID_SUBCLASSIFICACAO: "Confira a subclassificação.",
     OBRA_INVALID_ORCAMENTO: "Confira os orçamentos.",

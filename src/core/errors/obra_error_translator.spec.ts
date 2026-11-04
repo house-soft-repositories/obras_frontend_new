@@ -13,6 +13,16 @@ describe("obraErrorTranslator", () => {
     expect(message).toContain("tipo de prazo");
   });
 
+  it("explica quando o responsável não tem permissão para a obra", () => {
+    const message = obraErrorTranslator.translate(
+      new HttpClientException("OBRA_INVALID_RESPONSAVEL", 422),
+    );
+
+    expect(message).toBe(
+      "O responsável selecionado não tem permissão para ser responsável por uma obra.",
+    );
+  });
+
   it("traduz liquidação acima do saldo empenhado", () => {
     const message = obraErrorTranslator.translate(
       new HttpClientException("LIQUIDACAO_EXCEDE_EMPENHO", 422),

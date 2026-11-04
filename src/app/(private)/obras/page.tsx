@@ -43,7 +43,12 @@ export default async function ObrasPage({
           : undefined,
     }),
     listOrgaosPaginationAction({ page: 1, order: "ASC", take: 50 }),
-    listUsuariosPaginationAction({ page: 1, order: "ASC", take: 50 }),
+    listUsuariosPaginationAction({
+      page: 1,
+      order: "ASC",
+      take: 50,
+      role: "STAFF",
+    }),
     listFontesPaginationAction({ page: 1, order: "ASC", take: 50 }),
     listSetoresPaginationAction({ page: 1, order: "ASC", take: 50 }),
     listLocalidadesPaginationAction({ page: 1, order: "ASC", take: 50 }),
