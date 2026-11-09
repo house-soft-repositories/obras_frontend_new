@@ -463,6 +463,16 @@ export function CriarObraPrivadaModal({
                   <VisualizarLocalizacaoModal
                     latitude={watched.latitude ?? ""}
                     longitude={watched.longitude ?? ""}
+                    onSelect={({ latitude, longitude }) => {
+                      form.setValue("latitude", latitude, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      });
+                      form.setValue("longitude", longitude, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      });
+                    }}
                     endereco={[
                       watched.logradouro ?? "",
                       watched.numero ?? "",
@@ -615,11 +625,7 @@ export function CriarObraPrivadaModal({
                   Continuar <ChevronRight className="size-4" />
                 </Button>
               ) : (
-                <Button
-                  type="button"
-                  disabled={submitting}
-                  onClick={confirmar}
-                >
+                <Button type="button" disabled={submitting} onClick={confirmar}>
                   {submitting ? (
                     <Loader2 className="size-4 animate-spin" />
                   ) : (

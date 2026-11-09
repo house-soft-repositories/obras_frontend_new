@@ -42,7 +42,7 @@ function escapar(value: unknown) {
         return "&quot;";
       default:
         return "&#39;";
-      }
+    }
   });
 }
 
@@ -65,6 +65,11 @@ export function MapaObrasPrivadas({ obras }: { obras: ObraPrivada[] }) {
       await import("leaflet/dist/leaflet.css");
       if (cancelado || !ref.current) return;
 
+      L.Icon.Default.mergeOptions({
+        iconUrl: "/marker-icon.png",
+        iconRetinaUrl: "/marker-icon-2x.png",
+        shadowUrl: "/marker-shadow.png",
+      });
       mapa = L.map(ref.current).setView(CENTRO_PADRAO, 5);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "© OpenStreetMap",
@@ -110,7 +115,12 @@ export function MapaObrasPrivadas({ obras }: { obras: ObraPrivada[] }) {
 
   return (
     <section className="overflow-hidden rounded-app border border-border bg-surface shadow-card">
-      <div ref={ref} className="h-[480px] w-full" role="application" aria-label="Mapa das obras privadas" />
+      <div
+        ref={ref}
+        className="h-[480px] w-full"
+        role="application"
+        aria-label="Mapa das obras privadas"
+      />
       <div className="flex flex-wrap gap-4 border-t border-border px-5 py-3 text-xs text-muted">
         {LEGENDA.map((item) => (
           <span key={item.rotulo} className="inline-flex items-center gap-2">
